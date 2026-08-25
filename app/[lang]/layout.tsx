@@ -1,12 +1,17 @@
+import type { Metadata } from 'next';
 import Footer from '@/components/home/Footer';
 import Navbar from '@/components/common/Navbar';
 import ScrollUpButton from '@/components/common/ScrollUpButton';
+import { SITE_URL } from '@/utils/site';
 import { dir } from 'i18next'
 import { languages } from 'app/i18n/setting'
 import './globals.css';
 import { useLang } from 'stores/langStore';
 // import { EB_Garamond } from 'next/font/google'
 
+export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
+};
 
 export async function generateStaticParams() {
   return languages.map((lang) => ({ lang }));

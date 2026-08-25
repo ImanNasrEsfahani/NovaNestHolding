@@ -5,14 +5,13 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import LinkedInIcon from '../icons/footer/LinkedIn';
 import { Person } from '@/types/global';
-
+import { appHref } from '@/utils/site';
 
 export default function PersonCard({ person }: { person: Person }) {
   const router = useRouter();
-  const base = process.env.NEXT_PUBLIC_BASE_URL || '';
 
   const goToProfile = () => {
-    router.push(`${base}profile/${person.slug}`);
+    router.push(appHref(`/profile/${person.slug}`));
   };
 
   const onKeyDown = (e: React.KeyboardEvent) => {

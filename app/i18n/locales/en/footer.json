@@ -9,87 +9,33 @@
   "explore": {
     "title": "Explore",
     "text": [
-      {
-        "title": "About us",
-        "link": "about-us"
-      },
-      {
-        "title": "Investment",
-        "link": "investment"
-      },
-      {
-        "title": "Acceleration",
-        "link": "acceleration"
-      },
-      {
-        "title": "Entrepreneurship",
-        "link": "pnp"
-      },
-      {
-        "title": "Our Team",
-        "link": "our-team"
-      }
+      { "title": "About us", "link": "about-us" },
+      { "title": "Investment", "link": "investment" },
+      { "title": "Acceleration", "link": "acceleration" },
+      { "title": "Entrepreneurship", "link": "pnp" },
+      { "title": "Our Team", "link": "our-team" }
     ]
   },
   "forms": {
     "title": "Forms",
     "text": [
-      {
-        "title": "Startup Validation",
-        "link": "startups-validation"
-      },
-      {
-        "title": "Investor Registration",
-        "link": "investor-registration"
-      },
-      {
-        "title": "Affiliate Registration",
-        "link": "affiliate-registration-form"
-      },
-      {
-        "title": "Join Our Team",
-        "link": "join-our-team"
-      },
-      {
-        "title": "Join as a Mentor",
-        "link": "join-as-a-mentor"
-      },
-      {
-        "title": "Join as a Trainee",
-        "link": "join-as-a-trainee"
-      }
+      { "title": "Startup Validation", "link": "startups-validation" },
+      { "title": "Investor Registration", "link": "investor-registration" },
+      { "title": "Affiliate Registration", "link": "affiliate-registration-form" },
+      { "title": "Join Our Team", "link": "join-our-team" },
+      { "title": "Join as a Mentor", "link": "join-as-a-mentor" },
+      { "title": "Join as a Trainee", "link": "join-as-a-trainee" }
     ]
   },
   "contact": {
     "title": "Contact",
     "text": [
-      {
-        "type": "text",
-        "title": "3833 Evergreen PL,"
-      },
-      {
-        "type": "text",
-        "title": "Vancouver, British Columbia,"
-      },
-      {
-        "type": "text",
-        "title": "Canada, V3J 0M2"
-      },
-      {
-        "type": "link",
-        "title": "(+1) 778 986-5432",
-        "link": "tel:+17789865432"
-      },
-      {
-        "type": "link",
-        "title": "(+1) 604 351-5951",
-        "link": "tel:+16043515951"
-      },
-      {
-        "type": "link",
-        "title": "info@NovaNac.com",
-        "link": "mailto:info@NovaNac.com"
-      }
+      { "type": "text", "title": "3833 Evergreen PL," },
+      { "type": "text", "title": "Vancouver, British Columbia," },
+      { "type": "text", "title": "Canada, V3J 0M2" },
+      { "type": "link", "title": "(+1) 778 986-5432", "link": "tel:+17789865432" },
+      { "type": "link", "title": "(+1) 604 351-5951", "link": "tel:+16043515951" },
+      { "type": "link", "title": "info@novanestholding.com", "link": "mailto:info@novanestholding.com" }
     ]
   }
 }

@@ -2,6 +2,7 @@
 
 import { ChevronRightIcon } from '@heroicons/react/24/solid';
 import Link from 'next/link';
+import { appHref } from '@/utils/site';
 
 type ButtonProps = {
   lang?: string;
@@ -25,13 +26,14 @@ export default function ButtonRefactor({
   const baseClasses = `delay-50 flex h-[50px] w-full flex-wrap place-content-center rounded-xl text-white transition duration-150 ease-in-out py-4`;
   const disabledClasses = disabled ? 'opacity-50 cursor-not-allowed pointer-events-none' : 'hover:bg-primary';
   const bgClass = `bg-${bgColor}`;
+  const resolvedHref = href ? appHref(href) : undefined;
 
   // simple anchor link (no client navigation)
   if (type === 'simple-link') {
-    if (!href) return null;
+    if (!resolvedHref) return null;
     return (
       <a
-        href={href}
+        href={resolvedHref}
         className={`${bgClass} ${baseClasses} ${disabledClasses}`}
         aria-disabled={disabled}
         onClick={(e) => disabled && e.preventDefault()}
@@ -43,7 +45,7 @@ export default function ButtonRefactor({
 
   // client Link variant: when disabled render a non-link button to avoid navigation
   if (type === 'link') {
-    if (!href) return null;
+    if (!resolvedHref) return null;
     if (disabled) {
       return (
         <div className="group relative w-full overflow-hidden">
@@ -62,7 +64,7 @@ export default function ButtonRefactor({
     }
 
     return (
-      <Link href={href} className="group relative w-full overflow-hidden">
+      <Link href={resolvedHref} className="group relative w-full overflow-hidden">
         <button className={`${bgClass} ${baseClasses} ${disabledClasses}`}>
           <div className="z-10 flex flex-row-reverse items-center gap-2 px-8 py-4">
             <ChevronRightIcon className="size-5 rtl:rotate-180" />

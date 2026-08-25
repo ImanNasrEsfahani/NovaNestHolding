@@ -1,0 +1,16 @@
+.env.production
+README-REPLACE.txt
+app/[lang]/layout.tsx
+app/i18n/locales/en/footer.json
+app/i18n/locales/en/ourTeam.json
+app/i18n/locales/fa/footer.json
+components/common/ButtonRefactor.tsx
+components/common/DesktopMenu.tsx
+components/common/MobileMenu.tsx
+components/common/Navbar.tsx
+components/home/Academy.tsx
+components/home/Footer.tsx
+components/home/HomeCardsSection.tsx
+components/our-team/PersonCard.tsx
+next.config.js
+utils/site.ts

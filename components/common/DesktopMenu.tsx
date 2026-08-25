@@ -3,13 +3,13 @@
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import type { MenuEntry } from './menuTypes';
+import { appHref } from '@/utils/site';
 
 interface DesktopMenuProps {
   menuItems: MenuEntry[];
-  base: string;
 }
 
-export default function DesktopMenu({ menuItems, base }: DesktopMenuProps) {
+export default function DesktopMenu({ menuItems }: DesktopMenuProps) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const listRef = useRef<HTMLUListElement>(null);
 
@@ -53,7 +53,7 @@ export default function DesktopMenu({ menuItems, base }: DesktopMenuProps) {
             >
               {(item.submenuItems ?? []).map(({ label, href }) => (
                 <li className="w-full" key={label}>
-                  <Link href={`${base}${href}`} className="px-2 py-3 text-white hover:text-primary hover:font-bold" onClick={closeDropdown}>
+                  <Link href={appHref(href)} className="px-2 py-3 text-white hover:text-primary hover:font-bold" onClick={closeDropdown}>
                     {label}
                   </Link>
                 </li>
@@ -62,7 +62,7 @@ export default function DesktopMenu({ menuItems, base }: DesktopMenuProps) {
           </li>
         ) : (
           <li key={item.label}>
-            <Link href={`${base}${item.href}`} className="px-3 py-2 font-medium text-white hover:text-primary hover:font-bold">
+            <Link href={appHref(item.href)} className="px-3 py-2 font-medium text-white hover:text-primary hover:font-bold">
               {item.label}
             </Link>
           </li>

@@ -5,8 +5,7 @@ import Whatsapp from '@/components/icons/footer/Whatsapp';
 import LinkedIn from '@/components/icons/footer/LinkedIn';
 import Facebook from '@/components/icons/footer/Facebook';
 import { getServerTranslation } from 'app/i18n';
-
-const base = process.env.NEXT_PUBLIC_BASE_URL || "";
+import { appHref } from '@/utils/site';
 
 export default function Footer({
   lang
@@ -64,7 +63,7 @@ export default function Footer({
             {exploreItems.map((item, index) => (
               <Link
                 key={index}
-                href={`${base}${item.link}`}
+                href={appHref(item.link)}
                 className={`hover:text-primary ${index > 0 ? 'pt-2' : ''}`}
               >
                 {item.title}
@@ -80,7 +79,7 @@ export default function Footer({
             {formItems.map((item, index) => (
               <Link
                 key={index}
-                href={`${base}${item.link}`}
+                href={appHref(item.link)}
                 className={`hover:text-primary ${index > 0 ? 'pt-2' : ''}`}
               >
                 {item.title}
@@ -117,7 +116,7 @@ export default function Footer({
 
       <div className="max-w-responsive mx-auto p-4 border-t border-tableHeader text-center text-tableHeader">
         © Copyright {GetYear()} by{' '}
-        <Link href={`${base}`} className="text-tableHeader">
+        <Link href={appHref('/')} className="text-tableHeader">
           Nova Nest
         </Link>
       </div>

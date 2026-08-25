@@ -1,11 +1,10 @@
 import { getServerTranslation } from 'app/i18n';
 import Image from 'next/image';
 import ButtonRefactor from '@/components/common/ButtonRefactor';
-
+import { appHref } from '@/utils/site';
 
 export default function Academy({ lang }: { lang: string }) {
   const { t } = getServerTranslation(lang, 'mainPage');
-  const base = process.env.NEXT_PUBLIC_BASE_URL || "";
 
   return (
     <div className="w-full mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 py-16 md:py-36">
@@ -21,14 +20,14 @@ export default function Academy({ lang }: { lang: string }) {
           <ButtonRefactor
             text={t('visit')}
             type="link"
-            href={`${base}/join-as-a-trainee`}
+            href="/join-as-a-trainee"
           />
         </div>
       </div>
 
       <div className="flex justify-center size-full order-first md:order-2">
         <a
-          href={`${base}/join-as-a-trainee`}
+          href={appHref('/join-as-a-trainee')}
           className="w-full"
           aria-label="nova-nest-venture-academy"
         >

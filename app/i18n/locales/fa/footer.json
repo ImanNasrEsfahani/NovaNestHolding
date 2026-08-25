@@ -9,91 +9,34 @@
   "explore": {
     "title": "Explore",
     "text": [
-      {
-        "title": "درباره ما",
-        "link": "about-us"
-      },
-      {
-        "title": "سرمایه گذاری",
-        "link": "investment"
-      },
-      {
-        "title": "شتابدهی",
-        "link": "acceleration"
-      },
-      {
-        "title": "کارآفرینی",
-        "link": "pnp"
-      },
-      {
-        "title": "آکادمی",
-        "link": "academy"
-      },
-      {
-        "title": "تیم ما",
-        "link": "our-team"
-      }
+      { "title": "درباره ما", "link": "about-us" },
+      { "title": "سرمایه گذاری", "link": "investment" },
+      { "title": "شتابدهی", "link": "acceleration" },
+      { "title": "کارآفرینی", "link": "pnp" },
+      { "title": "آکادمی", "link": "academy" },
+      { "title": "تیم ما", "link": "our-team" }
     ]
   },
   "forms": {
     "title": "فرم ها",
     "text": [
-      {
-        "title": "ارزیابی استارتاپ",
-        "link": "startups-validation"
-      },
-      {
-        "title": "ثبت نام سرمایه گذار",
-        "link": "investor-registration"
-      },
-      {
-        "title": "پیوستن به تیم ما",
-        "link": "join-our-team"
-      },
-      {
-        "title": "فرم ثبت نام همکاران",
-        "link": "affiliate-registration-form"
-      },
-      {
-        "title": "پیوستن به عنوان منتور",
-        "link": "join-as-a-mentor"
-      },
-      {
-        "title": "پیوستن به عنوان کارآموز",
-        "link": "join-as-a-trainee"
-      }
+      { "title": "ارزیابی استارتاپ", "link": "startups-validation" },
+      { "title": "ثبت نام سرمایه گذار", "link": "investor-registration" },
+      { "title": "پیوستن به تیم ما", "link": "join-our-team" },
+      { "title": "فرم ثبت نام همکاران", "link": "affiliate-registration-form" },
+      { "title": "پیوستن به عنوان منتور", "link": "join-as-a-mentor" },
+      { "title": "پیوستن به عنوان کارآموز", "link": "join-as-a-trainee" }
     ]
   },
   "contact": {
     "title": "ارتباط با ما",
     "text": [
-      {
-        "type": "text",
-        "title": "کانادا، بریتیش کلمبیا"
-      },
-      {
-        "type": "text",
-        "title": "برنابی، ساختمان های EVERGREEN PL"
-      },
-      {
-        "type": "text",
-        "title": "کد پستی: V3J 0M2"
-      },
-      {
-        "type": "link",
-        "title": "(+1) 778 986-5432",
-        "link": "tel:+17789865432"
-      },
-      {
-        "type": "link",
-        "title": "(+1) 604 351-5951",
-        "link": "tel:+16043515951"
-      },
-      {
-        "type": "link",
-        "title": "info@NovaNac.com",
-        "link": "mailto:info@NovaNac.com"
-      }
+      { "type": "text", "title": "کانادا، بریتیش کلمبیا" },
+      { "type": "text", "title": "برنابی، ساختمان های EVERGREEN PL" },
+      { "type": "text", "title": "کد پستی: V3J 0M2" },
+      { "type": "link", "title": "(+1) 778 986-5432", "link": "tel:+17789865432" },
+      { "type": "link", "title": "(+1) 604 351-5951", "link": "tel:+16043515951" },
+      { "type": "link", "title": "info@novanestholding.com", "link": "mailto:info@novanestholding.com" }
     ]
   }
 }

@@ -1,8 +1,7 @@
 'use client';
 import Image from 'next/image';
 import ButtonRefactor from '@/components/common/ButtonRefactor';
-
-const base = process.env.NEXT_PUBLIC_BASE_URL || "";
+import { appHref } from '@/utils/site';
 
 export default function HomeCardsSection({
   smallTitle,
@@ -36,7 +35,7 @@ export default function HomeCardsSection({
           {text}
         </p>
         <div className="max-w-container-xxs">
-          <ButtonRefactor text={buttonText} type="link" href={`${base}${link}`} />
+          <ButtonRefactor text={buttonText} type="link" href={link} />
         </div>
       </div>
 
@@ -45,7 +44,7 @@ export default function HomeCardsSection({
         className={`flex ${reverse ? 'md:justify-start' : 'md:justify-end'} space-x-4 rtl:space-x-reverse items-center order-1 ${reverse ? 'md:order-1' : 'md:order-2'} md:pb-0`}
       >
         {images.map((image, index) => (
-          <a key={index} href={`${base}${link}`} className="w-full" aria-label={image.alt || `image-${index}`}>
+          <a key={index} href={appHref(link)} className="w-full" aria-label={image.alt || `image-${index}`}>
             <div
               className={`relative h-72 md:h-[26.5rem] w-full max-w-xs`}
               key={index}

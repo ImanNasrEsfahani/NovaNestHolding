@@ -3,16 +3,14 @@
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import type { MenuEntry } from './menuTypes';
-
-// type MenuEntry = { label: string; href: string; type?: 'dropdown' | 'link'; submenuItems?: MenuEntry[] };
+import { appHref } from '@/utils/site';
 
 interface MobileMenuProps {
   menuItems: MenuEntry[];
-  base: string;
   toggleLabel: string;
 }
 
-export default function MobileMenu({ menuItems, base, toggleLabel }: MobileMenuProps) {
+export default function MobileMenu({ menuItems, toggleLabel }: MobileMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -89,7 +87,7 @@ export default function MobileMenu({ menuItems, base, toggleLabel }: MobileMenuP
                       {(item.submenuItems ?? []).map(({ label, href }) => (
                         <li key={label}>
                           <Link
-                            href={`${base}${href}`}
+                            href={appHref(href)}
                             className="whitespace-nowrap text-base-content hover:text-primary block px-2 py-2"
                             onClick={closeMenu}
                           >
@@ -103,7 +101,7 @@ export default function MobileMenu({ menuItems, base, toggleLabel }: MobileMenuP
               </li>
             ) : (
               <li key={item.label}>
-                <Link href={`${base}${item.href}`} className="whitespace-nowrap text-base-content hover:text-primary" onClick={closeMenu}>
+                <Link href={appHref(item.href)} className="whitespace-nowrap text-base-content hover:text-primary" onClick={closeMenu}>
                   {item.label}
                 </Link>
               </li>
