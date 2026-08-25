@@ -40,7 +40,7 @@ export default function Footer({
             <Link aria-label="Instagram" href={'https://instagram.com/novanest.venture'} className="hover:text-primary" target="_blank">
               <Instagram />
             </Link>
-            <Link aria-label="Email" href={'mailto:info@NovaNestVenture.com'} className="hover:text-primary">
+            <Link aria-label="Email" href={'mailto:info@novanestholding.com'} className="hover:text-primary">
               <Envelope />
             </Link>
             <Link aria-label="Whatsapp" href={'https://wa.me/+17789865432'} className="hover:text-primary" target="_blank">
@@ -72,8 +72,6 @@ export default function Footer({
             ))}
           </div>
         </div>
-
-
 
         {/* Forms */}
         <div className="col-span-1 lg:col-span-2">
@@ -116,7 +114,6 @@ export default function Footer({
           </div>
         </div>
       </div>
-
 
       <div className="max-w-responsive mx-auto p-4 border-t border-tableHeader text-center text-tableHeader">
         © Copyright {GetYear()} by{' '}

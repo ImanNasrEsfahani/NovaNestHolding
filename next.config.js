@@ -7,11 +7,11 @@ const nextConfig = {
   images: {
     domains: [
       // 'res.cloudinary.com',
-      'panel-back.NovaNestVenture.com',
-      'panel.NovaNestVenture.com',
-      'NovaNestVenture.com',
+      'panel-back.novanestholding.com',
+      'panel.novanestholding.com',
+      'novanestholding.com',
       'localhost',
-      "nova-back.NovaNestVenture.com"
+      'nova-back.novanestholding.com'
     ],
     unoptimized: false,
   },

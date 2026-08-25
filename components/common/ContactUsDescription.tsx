@@ -26,7 +26,7 @@ export default function ContactUsDescription({ lang }: { lang: string }) {
         <Link aria-label="Instagram" href={'https://instagram.com/novanest.venture'} className="hover:text-primary" target="_blank">
           <Instagram />
         </Link>
-        <Link aria-label="Email" href={'mailto:info@NovaNestVenture.com'} className="hover:text-primary">
+        <Link aria-label="Email" href={'mailto:info@novanestholding.com'} className="hover:text-primary">
           <Envelope />
         </Link>
         <Link aria-label="Whatsapp" href={'https://wa.me/+17789865432'} className="hover:text-primary" target="_blank">

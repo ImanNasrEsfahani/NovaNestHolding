@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // Create an Axios instance with a base URL
-const baseURL = process.env.NEXT_PUBLIC_DJANGO_HOST_URL || 'https://back.novanestventure.com';
+const baseURL = process.env.NEXT_PUBLIC_DJANGO_HOST_URL || 'https://back.novanestholding.com';
 
 const apiClient = axios.create({
   baseURL: baseURL,
@@ -47,12 +47,12 @@ apiClient.interceptors.response.use(
       url: error.config?.url,
       data: error.response?.data,
     });
-    
+
     // Check for CORS or network issues
     if (!error.response) {
       console.error('Network error or CORS issue detected');
     }
-    
+
     return Promise.reject(error);
   }
 );
