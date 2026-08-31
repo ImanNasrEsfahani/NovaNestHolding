@@ -92,7 +92,7 @@
   "businessTeamText": "What Our Cooperation Members Say",
   "visit": "Visit Now",
   "Register": "Register",
-  
+
   "AboutUs": "About us",
   "AboutUsContent": "We are a network of international investors, serial entrepreneurs, and skilled professionals who support startups and businesses in transforming their ideas into reality or scaling their existing ventures. Our goal is to help them scale up so they can offer their products or services on a global level",
 
@@ -143,7 +143,7 @@
 
   "NovaNestAcademy": "NovaNest Academy",
   "NovaNestAcademyInfo": "At NovaNest, we provide a nurturing place for individuals to discover and grow their interests and skills efficiently. Our academy operates as a dynamic environment that identifies and evaluates the potential of talented individuals, particularly the youth, and invests in their development and creative ideas. By providing comprehensive programs and resources, and through a combination of mentoring, skill-building workshops, and exposure to various opportunities, NovaNest Academy equips participants with the tools and knowledge necessary to thrive and succeed in their chosen fields.",
-  
+
   "specialFeatureCards": [
     {
       "id": "mentorship",
@@ -285,7 +285,7 @@
         "image": "/static/images/home/upcomming-startup/handicraft.png",
         "subTitle": "HANDI CRAFT",
         "text": "Using Artificial Intelligence, Augmented Reality, and NFT, Landa Handicrafts aims to build a safe communication bridge between makers and purchasers.",
-        "goto": "https://craft.landaholding.com/",
+        "goto": "https://novanestholding.com/",
         "buttonText" : "Register",
         "gene": false
       },
