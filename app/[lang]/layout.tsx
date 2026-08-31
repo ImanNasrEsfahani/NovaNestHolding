@@ -8,8 +8,36 @@ import { languages } from 'app/i18n/setting';
 import './globals.css';
 import { useLang } from 'stores/langStore';
 
+const siteTitle = 'NovaNest Holding';
+const siteDescription =
+  'NovaNest Holding connects entrepreneurs, startups, investors, and partners through investment, acceleration, entrepreneurship, and business development opportunities.';
+
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
+  title: siteTitle,
+  description: siteDescription,
+  applicationName: siteTitle,
+  openGraph: {
+    title: siteTitle,
+    description: siteDescription,
+    url: SITE_URL,
+    siteName: siteTitle,
+    type: 'website',
+    images: [
+      {
+        url: '/static/images/novanest-holding.png',
+        width: 1000,
+        height: 1000,
+        alt: 'NovaNest Holding',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary',
+    title: siteTitle,
+    description: siteDescription,
+    images: ['/static/images/novanest-holding.png'],
+  },
 };
 
 export async function generateStaticParams() {
@@ -31,7 +59,6 @@ export default function RootLayout({
     <html lang={lang} dir={dir(lang)}>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-
         <link
           rel="apple-touch-icon"
           sizes="57x57"
@@ -77,7 +104,6 @@ export default function RootLayout({
           sizes="180x180"
           href="/apple-icon-180x180.png"
         />
-
         <link
           rel="icon"
           type="image/png"
@@ -102,7 +128,6 @@ export default function RootLayout({
           sizes="16x16"
           href="/favicon-16x16.png"
         />
-
         <link rel="manifest" href="/manifest.json" />
 
         <meta name="msapplication-TileColor" content="#ffffff" />
