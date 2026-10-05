@@ -1,0 +1,24 @@
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+
+# Node / Next.js
+node_modules/
+.next/
+coverage/
+
+# Local runtime data
+.data/
+
+# Editors and OS files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

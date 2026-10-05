@@ -5,11 +5,8 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# Environment files (keep only .env.production for Docker)
-.env
-.env.local
-.env.development
-.env.test
+# Environment files are supplied by root Compose, never copied into images.
+.env*
 
 # Next.js build outputs
 .next/

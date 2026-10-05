@@ -182,4 +182,3 @@ class EntrepreneurSerializer(serializers.ModelSerializer):
         send_brevo_email(to_email, subject, text_content, html=html_content, from_email=from_email)
 
         return instance
-        def create(self, validated_data):

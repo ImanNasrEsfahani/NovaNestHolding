@@ -64,6 +64,5 @@ coverage.xml
 junit.xml
 test-results/
 
-# Migrations (optional, if you regenerate them often)
-**/migrations/*.py
+# Django migrations are source code and must be committed.
 **/migrations/*.pyc

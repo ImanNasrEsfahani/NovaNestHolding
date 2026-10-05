@@ -1,24 +1,20 @@
 import { render, screen } from '@testing-library/react';
-import '@testing-library/jest-dom/extend-expect';
 
 import Navbar from '@/components/common/Navbar';
 
 describe('Navbar', () => {
-  it('renders Home link', () => {
-    render(<Navbar />);
+  it('links the logo to the home page', () => {
+    render(<Navbar lang="en" />);
 
-    const el = screen.getAllByRole('link');
-
-    expect(el[0]).toHaveTextContent('Home');
-    expect(el[0]).toHaveAttribute('href', '/');
+    expect(screen.getByRole('link', { name: 'NovaNest Holding' })).toHaveAttribute('href', '/');
   });
 
-  it('renders About link', () => {
-    render(<Navbar />);
+  it('renders the localized About us links', () => {
+    render(<Navbar lang="en" />);
 
-    const el = screen.getAllByRole('link');
+    const links = screen.getAllByRole('link', { name: 'About us' });
 
-    expect(el[1]).toHaveTextContent('About');
-    expect(el[1]).toHaveAttribute('href', '/about');
+    expect(links.length).toBeGreaterThan(0);
+    links.forEach((link) => expect(link).toHaveAttribute('href', '/en/about-us'));
   });
 });

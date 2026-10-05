@@ -20,41 +20,34 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_USE_TLS = True  # or EMAIL_USE_SSL = True
 EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.office365.com')
 EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))  # or 465 for SSL
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', 'iman.nasr.esfahan@gmail.com')
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER)
 
 # Mailgun configuration (use env vars in production)
 MAILGUN_API_KEY = os.getenv("MAILGUN_API_KEY", "")
-MAILGUN_DOMAIN = os.getenv("MAILGUN_DOMAIN", "sandboxe038667de7e1441fb8de744914edf4ea.mailgun.org")
-MAILGUN_FROM_EMAIL = os.getenv("MAILGUN_FROM_EMAIL", "postmaster@sandboxe038667de7e1441fb8de744914edf4ea.mailgun.org")
+MAILGUN_DOMAIN = os.getenv("MAILGUN_DOMAIN", "")
+MAILGUN_FROM_EMAIL = os.getenv("MAILGUN_FROM_EMAIL", "")
 MAILGUN_ADMIN_RECIPIENTS = os.getenv("MAILGUN_ADMIN_RECIPIENTS", "info@novanestventure.com").split(",")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-ike^dq05jto0^8ap4710wwr0-ige+r&#wd$6hi28ec4jwqgtj2'
+def env_list(name, default=''):
+    return [value.strip() for value in os.getenv(name, default).split(',') if value.strip()]
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
 
-ALLOWED_HOSTS = [
-    'localhost',
-    '127.0.0.1',
-    '[::1]',
-    "http://localhost:3000",
-    'back.novanestventure.com',
-    'www.novanestventure.com',
-    'novanestventure.com',
-    'https://www.novanestventure.com',
-    'https://novanestventure.com',
-    'back.novanestholding.com',
-    'www.novanestholding.com',
-    'novanestholding.com',
-    'https://www.novanestholding.com',
-    'https://novanestholding.com',
-]
+def env_bool(name, default=False):
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return value.lower() in {'1', 'true', 'yes', 'on'}
+
+
+# Never use the development fallback in production. Set DJANGO_SECRET_KEY in .env.
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'unsafe-development-key-change-me')
+DEBUG = env_bool('DJANGO_DEBUG', False)
+ALLOWED_HOSTS = env_list('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1,[::1]')
 
 
 # Application definition
@@ -76,7 +69,6 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -109,12 +101,25 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+if os.getenv('DB_ENGINE', 'sqlite').lower() == 'mysql':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': os.getenv('DB_NAME', 'novanest_db'),
+            'USER': os.getenv('DB_USER', 'novanest_user'),
+            'PASSWORD': os.getenv('DB_PASSWORD', ''),
+            'HOST': os.getenv('DB_HOST', 'db'),
+            'PORT': os.getenv('DB_PORT', '3306'),
+            'OPTIONS': {'charset': 'utf8mb4'},
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.getenv('SQLITE_PATH', BASE_DIR / 'db.sqlite3'),
+        }
+    }
 
 
 # Password validation
@@ -147,7 +152,7 @@ USE_I18N = True
 
 USE_TZ = True
 
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = env_bool('DJANGO_CORS_ALLOW_ALL_ORIGINS', False)
 
 CORS_ALLOW_METHODS = [
     'DELETE',
@@ -170,15 +175,14 @@ CORS_ALLOW_HEADERS = [
     'x-requested-with',
 ]
 
-CORS_ORIGIN_WHITELIST = [
+CORS_ALLOWED_ORIGINS = env_list(
+    'DJANGO_CORS_ALLOWED_ORIGINS',
     'http://localhost:3000',
-]
-CSRF_TRUSTED_ORIGINS = [
+)
+CSRF_TRUSTED_ORIGINS = env_list(
+    'DJANGO_CSRF_TRUSTED_ORIGINS',
     'http://localhost:3000',
-]
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',
-]
+)
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
