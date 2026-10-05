@@ -1,0 +1,11 @@
+* text=auto
+*.sh text eol=lf
+Dockerfile text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+
+# Keep release archives focused on deployable source.
+frontend/.idea export-ignore
+frontend/.vscode export-ignore
+frontend/build.log export-ignore
+frontend/cookies.txt export-ignore

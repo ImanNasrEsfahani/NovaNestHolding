@@ -1,0 +1,91 @@
+{
+  "name": "nextjs-starter",
+  "version": "0.2.0",
+  "private": true,
+  "scripts": {
+    "dev": "set NODE_ENV=development && next dev",
+    "dev:host": "set NODE_ENV=development && next dev -H 0.0.0.0",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "export": "next export",
+    "test": "jest --watch",
+    "test:ci": "jest --ci",
+    "migrate:dev": "npx dotenv -e .env.local -- prisma migrate dev",
+    "db:push": "npx dotenv -e .env.local -- prisma db push",
+    "migrate:reset": "npx dotenv -e .env.local -- prisma migrate reset",
+    "db:seed": "npx dotenv -e .env.local -- prisma db seed",
+    "prisma:generate": "npx dotenv -e .env.local -- prisma generate",
+    "prisma:studio": "npx dotenv -e .env.local -- prisma studio",
+    "production:build": "npx prisma generate && npx prisma migrate deploy && next build",
+    "prettier-format": "prettier --config .prettierrc 'src/**/*.ts' --write",
+    "prepare": "husky install",
+    "postinstall": "prisma generate"
+  },
+  "dependencies": {
+    "@heroicons/react": "^2.0.18",
+    "@prisma/client": "^5.22.0",
+    "accept-language": "^3.0.18",
+    "axios": "^1.4.0",
+    "cookies-next": "^4.1.0",
+    "dotenv-cli": "^7.2.1",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-react": "^7.37.4",
+    "formidable": "^3.5.0",
+    "framer-motion": "^12.23.12",
+    "i18next": "^23.7.11",
+    "i18next-browser-languagedetector": "^7.2.0",
+    "i18next-resources-to-backend": "^1.1.4",
+    "immer": "^10.1.1",
+    "jalali-moment": "^3.3.11",
+    "jwt-decode": "^3.1.2",
+    "moment": "^2.29.4",
+    "next": "^13.5.11",
+    "nookies": "^2.5.2",
+    "prisma": "^5.0.0",
+    "react": "^18.3.1",
+    "react-cookie": "^6.1.1",
+    "react-dom": "^18.3.1",
+    "react-hook-form": "^7.45.2",
+    "react-i18next": "^13.5.0",
+    "swiper": "^11.2.10",
+    "tailwindcss-flip": "^1.0.0",
+    "zustand": "^4.4.7"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.1.3",
+    "@testing-library/react": "^14.0.0",
+    "@types/aria-query": "^5.0.4",
+    "@types/formidable": "^3.4.0",
+    "@types/node": "^20.8.3",
+    "@types/react": "^18.0.35",
+    "@typescript-eslint/eslint-plugin": "^6.10.0",
+    "@typescript-eslint/parser": "^6.10.0",
+    "autoprefixer": "^10.4.20",
+    "daisyui": "^3.9.2",
+    "eslint": "^8.52.0",
+    "eslint-config-next": "^13.3.0",
+    "eslint-plugin-no-loops": "^0.3.0",
+    "eslint-plugin-prettier": "^5.0.1",
+    "eslint-plugin-tailwindcss": "^3.13.0",
+    "husky": "^8.0.0",
+    "jest": "^29.5.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "lint-staged": "^15.1.0",
+    "tailwindcss": "^3.3.1",
+    "ts-prune": "^0.10.3",
+    "typescript": "^5.3.2",
+    "unused-i18n": "^0.1.29"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged && pnpm run lint"
+    }
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "git add"
+    ]
+  }
+}
