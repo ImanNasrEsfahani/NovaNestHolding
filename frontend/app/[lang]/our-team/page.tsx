@@ -5,6 +5,7 @@ import '../../[lang]/globals.css';
 
 import Intro from '@/components/common/Intro';
 import PeopleCarousel from '@/components/our-team/PeopleCarousel';
+import AffiliatesSection, { AffiliatesContent } from '@/components/our-team/AffiliatesSection';
 
 export const metadata: Metadata = {
   title: 'NovaNest Venture | Our Team',
@@ -18,6 +19,8 @@ export default function TeamPage({
   params: { lang: string };
 }) {
   const { t } = getServerTranslation(lang, 'ourTeam');
+  const { t: tAffiliates } = getServerTranslation(lang, 'ourTeamAffiliates');
+  const affiliates = tAffiliates('affiliates', { returnObjects: true }) as unknown as AffiliatesContent;
 
   const roles = t('roles', { returnObjects: true });
 
@@ -77,6 +80,8 @@ export default function TeamPage({
             people={trainees.people}
           />
         </div> */}
+
+        <AffiliatesSection lang={lang} content={affiliates} />
 
         {/* <TeamPersons lang={lang} /> */}
       </div>
