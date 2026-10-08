@@ -3,11 +3,43 @@
     "eyebrow": "OUR NETWORK",
     "title": "Business Affiliates & Partners",
     "description": "Meaningful collaborations connect expertise, create opportunities, and help ambitious ideas grow. Discover the organizations working alongside NovaNest as our network expands.",
-    "focusAreas": ["Strategic collaboration", "Startup ecosystems", "Business growth"],
+    "focusAreas": [
+      "Strategic collaboration",
+      "Startup ecosystems",
+      "Business growth"
+    ],
     "ctaTitle": "Let's build what comes next.",
     "ctaDescription": "Interested in a business partnership? Connect with our team through the affiliate registration form.",
     "ctaLabel": "Become an Affiliate",
     "visitWebsiteLabel": "Visit website",
-    "partners": []
+    "partners": [
+      {
+        "name": "Sama Owj Middle East Travel Agency",
+        "logo": "/static/images/affiliates/sama-owj.webp",
+        "category": "Travel & Tourism",
+        "city": "Tehran, Iran",
+        "description": "Sama Owj Middle East is a Tehran-based travel agency providing domestic and international tours, flight ticketing, hotel reservations and tourist visa services. Its work emphasizes experienced travel professionals, modern technology and quality customer service.",
+        "address": "No. 177, Jordan Street, 1st Floor, Unit 102, Tehran, Iran",
+        "representative": {
+          "name": "Ms. Nasiri",
+          "position": "Travel agency contact"
+        },
+        "phones": [
+          "021-22018009",
+          "021-22019730",
+          "09393324686"
+        ],
+        "emails": [
+          "info@samaowj.ir",
+          "info@visaholiday.ir"
+        ],
+        "websites": [
+          "http://www.samaowj.ir",
+          "http://www.visaholiday.ir"
+        ]
+      }
+    ],
+    "contactLabel": "Contact details",
+    "representativeLabel": "Agency contact"
   }
 }
