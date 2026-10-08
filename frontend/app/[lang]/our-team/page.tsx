@@ -5,7 +5,8 @@ import '../../[lang]/globals.css';
 
 import Intro from '@/components/common/Intro';
 import PeopleCarousel from '@/components/our-team/PeopleCarousel';
-import AffiliatesSection, { AffiliatesContent } from '@/components/our-team/AffiliatesSection';
+import AffiliatesSection from '@/components/our-team/AffiliatesSection';
+import type { AffiliatesContent } from '@/components/our-team/AffiliateTypes';
 
 export const metadata: Metadata = {
   title: 'NovaNest Venture | Our Team',

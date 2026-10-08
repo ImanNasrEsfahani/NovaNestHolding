@@ -2,7 +2,7 @@
   "affiliates": {
     "eyebrow": "OUR NETWORK",
     "title": "Business Affiliates & Partners",
-    "description": "Meaningful collaborations connect expertise, create opportunities, and help ambitious ideas grow. Discover the organizations working alongside NovaNest as our network expands.",
+    "description": "Explore the businesses and organizations collaborating with NovaNest.",
     "focusAreas": [
       "Strategic collaboration",
       "Startup ecosystems",
@@ -36,10 +36,34 @@
         "websites": [
           "http://www.samaowj.ir",
           "http://www.visaholiday.ir"
-        ]
+        ],
+        "slug": "sama-owj-middle-east",
+        "about": [
+          "Sama Owj Middle East is a Tehran-based travel agency specializing in designing and operating domestic and international tours, booking flights and hotels in Iran and abroad, and assisting travelers with tourist visa services.",
+          "The agency brings together experienced travel specialists, technology-driven processes, and a commitment to service quality. It strives to follow developments in international tourism to improve the travel experience for its customers."
+        ],
+        "services": [
+          "Domestic and international tours",
+          "Domestic and international flight tickets",
+          "Hotel reservations in Iran and abroad",
+          "Tourist visa assistance"
+        ],
+        "certificates": []
       }
     ],
     "contactLabel": "Contact details",
-    "representativeLabel": "Agency contact"
+    "representativeLabel": "Agency contact",
+    "profile": {
+      "backToTeam": "Back to Our Team",
+      "about": "About",
+      "services": "Services & Expertise",
+      "certificates": "Certificates",
+      "noCertificates": "Certificates will be listed here when provided.",
+      "viewCertificate": "View certificate",
+      "websites": "Websites",
+      "phones": "Phone",
+      "emails": "Email",
+      "location": "Location"
+    }
   }
 }
