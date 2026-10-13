@@ -1,6 +1,5 @@
 name: Frontend production build
 
-# Validate the Next.js frontend after every push (any branch), and on PRs.
 on:
   push:
   pull_request:
@@ -11,39 +10,86 @@ permissions:
 
 jobs:
   build-frontend:
-    name: Build Next.js (Node 20)
+    name: Validate Next.js build (Node 20)
     runs-on: ubuntu-latest
     timeout-minutes: 35
     defaults:
       run:
         working-directory: frontend
     env:
-      # Match the build-time values expected by frontend/next.config.js and Prisma.
-      # This is a CI validation build, NOT a deployable production release.
       HUSKY: '0'
       NEXT_TELEMETRY_DISABLED: '1'
-      NEXT_PUBLIC_SITE_URL: https://www.novanestholding.com
-      NEXT_PUBLIC_DJANGO_HOST_URL: http://localhost:8000
+      NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL || 'https://www.novanestholding.com' }}
+      NEXT_PUBLIC_DJANGO_HOST_URL: ${{ vars.NEXT_PUBLIC_DJANGO_HOST_URL || 'http://localhost:8000' }}
       DATABASE_URL: postgresql://unused:unused@localhost:5432/unused
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Set up Node.js (matches frontend/Dockerfile)
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20.x'
-
       - name: Install dependencies
         shell: bash
         run: |
-          # The repository currently has no committed frontend/package-lock.json.
-          # Once a lockfile is committed, prefer reproducible npm ci automatically.
           if [[ -f package-lock.json ]]; then
             npm ci --no-audit --no-fund
           else
             npm install --no-audit --no-fund
           fi
-
       - name: Build production frontend
         run: npm run build
+
+  publish-frontend:
+    name: Publish production Docker image to GHCR
+    needs: build-frontend
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Validate build-time public URLs
+        env:
+          FRONTEND_URL: ${{ vars.NEXT_PUBLIC_SITE_URL || 'https://www.novanestholding.com' }}
+          API_URL: ${{ vars.NEXT_PUBLIC_DJANGO_HOST_URL }}
+        shell: bash
+        run: |
+          if [[ ! "$FRONTEND_URL" =~ ^https://[^[:space:]]+$ ]]; then
+            echo '::error::Set NEXT_PUBLIC_SITE_URL to the public HTTPS frontend URL.'
+            exit 1
+          fi
+          if [[ ! "$API_URL" =~ ^https://[^[:space:]]+$ ]]; then
+            echo '::error::Set repository variable NEXT_PUBLIC_DJANGO_HOST_URL to the actual public HTTPS Django API URL under Settings > Secrets and variables > Actions > Variables.'
+            exit 1
+          fi
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and publish release (main branch only)
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ghcr.io/imannasresfahani/novanestholding-frontend:latest
+            ghcr.io/imannasresfahani/novanestholding-frontend:sha-${{ github.sha }}
+          labels: |
+            org.opencontainers.image.source=https://github.com/ImanNasrEsfahani/NovaNestHolding
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.title=NovaNestHolding Frontend
+          build-args: |
+            NEXT_PUBLIC_SITE_URL=${{ vars.NEXT_PUBLIC_SITE_URL || 'https://www.novanestholding.com' }}
+            NEXT_PUBLIC_DJANGO_HOST_URL=${{ vars.NEXT_PUBLIC_DJANGO_HOST_URL }}
+          cache-from: type=gha,scope=frontend
+          cache-to: type=gha,mode=max,scope=frontend

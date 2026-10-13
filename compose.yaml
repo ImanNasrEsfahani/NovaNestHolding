@@ -58,14 +58,11 @@ services:
       - backend_media:/app/media
 
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-      args:
-        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3000}
-        NEXT_PUBLIC_DJANGO_HOST_URL: ${NEXT_PUBLIC_DJANGO_HOST_URL:-http://localhost:8000}
+    # Pull the published GitHub Actions release; do not build the frontend on the server.
+    image: ${FRONTEND_IMAGE:-ghcr.io/imannasresfahani/novanestholding-frontend:latest}
     restart: unless-stopped
     environment:
+      # NEXT_PUBLIC_* values are compiled into the image by GitHub Actions.
       NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3000}
       NEXT_PUBLIC_DJANGO_HOST_URL: ${NEXT_PUBLIC_DJANGO_HOST_URL:-http://localhost:8000}
     depends_on:

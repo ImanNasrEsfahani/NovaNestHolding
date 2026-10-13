@@ -1,0 +1,11 @@
+[Unit]
+Description=Check for new NovaNestHolding frontend releases every five minutes
+
+[Timer]
+OnCalendar=*:0/5
+Persistent=true
+RandomizedDelaySec=15s
+Unit=novanest-frontend-update.service
+
+[Install]
+WantedBy=timers.target
