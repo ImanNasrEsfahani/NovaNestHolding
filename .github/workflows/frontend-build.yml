@@ -1,0 +1,49 @@
+name: Frontend production build
+
+# Validate the Next.js frontend after every push (any branch), and on PRs.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-frontend:
+    name: Build Next.js (Node 20)
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    defaults:
+      run:
+        working-directory: frontend
+    env:
+      # Match the build-time values expected by frontend/next.config.js and Prisma.
+      # This is a CI validation build, NOT a deployable production release.
+      HUSKY: '0'
+      NEXT_TELEMETRY_DISABLED: '1'
+      NEXT_PUBLIC_SITE_URL: https://www.novanestholding.com
+      NEXT_PUBLIC_DJANGO_HOST_URL: http://localhost:8000
+      DATABASE_URL: postgresql://unused:unused@localhost:5432/unused
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js (matches frontend/Dockerfile)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          # The repository currently has no committed frontend/package-lock.json.
+          # Once a lockfile is committed, prefer reproducible npm ci automatically.
+          if [[ -f package-lock.json ]]; then
+            npm ci --no-audit --no-fund
+          else
+            npm install --no-audit --no-fund
+          fi
+
+      - name: Build production frontend
+        run: npm run build
