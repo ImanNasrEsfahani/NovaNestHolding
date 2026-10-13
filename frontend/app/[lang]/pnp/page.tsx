@@ -29,7 +29,9 @@ export default function pnp({ params: { lang } }: { params: { lang: string } }) 
         <h3 className="text-3xl font-header font-bold text-gray-800 text-center mb-12">{t('roadmap.title')}</h3>
         <Image
           src={t('roadmap.image')}
-          alt={lang === 'fa' ? 'نقشه راه برنامه‌های کارآفرینی استانی کانادا از درخواست تا راه‌اندازی کسب‌وکار' : 'Canadian Provincial Nominee Program entrepreneur immigration and business establishment roadmap'}
+          alt={lang === 'fa'
+            ? 'نقشه راه برنامه نامزدی استانی کانادا (PNP) برای کارآفرینان، از درخواست تا راه‌اندازی کسب‌وکار'
+            : 'Diagram of the Canadian Provincial Nominee Program (PNP) entrepreneur application pathway and business establishment process'}
           className="mx-auto w-full max-w-full rounded-lg"
           width={1800}
           height={2400}
