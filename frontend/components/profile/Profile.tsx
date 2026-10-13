@@ -2,15 +2,9 @@ import React from 'react';
 import { getServerTranslation } from 'app/i18n';
 
 import Image from 'next/image';
-import Link from 'next/link';
-import Instagram from '@/components/icons/footer/Instagram';
-import Envelope from '@/components/icons/footer/Envelope';
-import Whatsapp from '@/components/icons/footer/Whatsapp';
-import LinkedIn from '@/components/icons/footer/LinkedIn';
-import Facebook from '@/components/icons/footer/Facebook';
+import PreferredContactLinks from '@/components/profile/PreferredContactLinks';
 import ContactForm from '@/components/profile/ContactForm';
 import { Person } from '@/types/global';
-
 
 export default function Profile({ person, lang }: { person: Person, lang: string }) {
 
@@ -150,28 +144,7 @@ export default function Profile({ person, lang }: { person: Person, lang: string
 
                         <div className="mt-4">
                             <h4 className="text-md text-gray-600 uppercase mb-2">{tOurTeam('profile.PreferredContact')}</h4>
-                            <div className="flex items-center gap-3 justify-center">
-                                {/* {person.email ? (
-                                    <Link href={`mailto:${person.email}`} target="_blank" className="text-gray-600 hover:text-primary">
-                                        <Envelope />
-                                    </Link>
-                                ) : null} */}
-                                {/* {person.whatsapp ? (
-                                    <Link href={person.whatsapp} target="_blank" className="text-gray-600 hover:text-primary">
-                                        <Whatsapp />
-                                    </Link>
-                                ) : null} */}
-                                {person.linkedin ? (
-                                    <Link href={person.linkedin} target="_blank" className="text-gray-600 hover:text-primary">
-                                        <LinkedIn />
-                                    </Link>
-                                ) : null}
-                                {person.instagram ? (
-                                    <Link href={person.instagram} target="_blank" className="text-gray-600 hover:text-primary">
-                                        <Instagram />
-                                    </Link>
-                                ) : null}
-                            </div>
+                            <PreferredContactLinks person={person} />
                         </div>
                     </div>
                 </aside>

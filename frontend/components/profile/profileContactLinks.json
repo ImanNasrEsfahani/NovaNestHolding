@@ -1,0 +1,25 @@
+{
+  "rasoul-moradimehr": [
+    {
+      "type": "linkedin",
+      "value": "https://www.linkedin.com/in/rasoul-moradi-mehr/",
+      "label": "LinkedIn"
+    },
+    {
+      "type": "instagram",
+      "value": "https://www.instagram.com/rasoul_moradimehr/",
+      "label": "Instagram"
+    },
+    {
+      "type": "phone",
+      "value": "+1 778 9865432",
+      "label": "Call +1 778 986 5432"
+    },
+    {
+      "type": "whatsapp",
+      "value": "+1 778 9865432",
+      "message": "Hi",
+      "label": "WhatsApp — message Hi"
+    }
+  ]
+}
