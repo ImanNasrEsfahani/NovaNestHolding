@@ -24,7 +24,7 @@ export default function WhyChoose({ lang }: { lang: string }) {
                 </div>
                 <div className="md:col-span-1 flex items-center">
                     <Image
-                        src="/static/images/investment/investment-why-choose-us.png"
+                        src="/static/images/investment/investment-why-choose-us.webp"
                         alt={t('why.imageAlt') || 'Why Choose Us - Nova Nest Venture'}
                         width={500}
                         height={300}
