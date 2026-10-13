@@ -22,7 +22,8 @@
         "address": "تهران، جردن، پلاک ۱۷۷، طبقه اول، واحد ۱۰۲",
         "representative": {
           "name": "خانم نصیری",
-          "position": "رابط آژانس مسافرتی"
+          "position": "رابط آژانس مسافرتی",
+          "photo": "/static/images/affiliates/nasiri.webp"
         },
         "phones": [
           "021-22018009",
