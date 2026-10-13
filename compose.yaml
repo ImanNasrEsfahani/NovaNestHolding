@@ -49,6 +49,8 @@ services:
       MAILGUN_DOMAIN: ${MAILGUN_DOMAIN:-}
       MAILGUN_FROM_EMAIL: ${MAILGUN_FROM_EMAIL:-}
       MAILGUN_ADMIN_RECIPIENTS: ${MAILGUN_ADMIN_RECIPIENTS:-info@novanestventure.com}
+      AFFILIATE_APPLICATION_ADMIN_EMAILS: ${AFFILIATE_APPLICATION_ADMIN_EMAILS:-info@novanestholding.com}
+      AFFILIATE_REGISTRY_PATH: /app/affiliate-registry/ourTeamAffiliates.json
     depends_on:
       db:
         condition: service_healthy
@@ -56,6 +58,8 @@ services:
       - "${BACKEND_PORT:-8000}:8000"
     volumes:
       - backend_media:/app/media
+      # Bind the directory (not a single file), so Git checkouts update registry contents safely.
+      - ./frontend/app/i18n/locales/en:/app/affiliate-registry:ro
 
   frontend:
     # Pull the published GitHub Actions release; do not build the frontend on the server.

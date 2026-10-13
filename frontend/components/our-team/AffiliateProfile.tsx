@@ -60,6 +60,13 @@ export default function AffiliateProfile({ partner, content, lang, formLabels }:
             <h1 className="font-header text-3xl font-semibold text-gray-800 md:text-4xl">{partner.name}</h1>
             {partner.category && <p className="mt-2 text-lg text-gray-600">{partner.category}</p>}
           </div>
+          {/* Dedicated partner application page; the slug is resolved by the server. */}
+          <Link
+            href={`/en/affiliate/${encodeURIComponent(partner.slug)}/apply`}
+            className="w-full rounded-xl bg-primary px-5 py-3 text-center font-semibold text-white transition-colors hover:bg-[#8D6B40] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+          >
+            Apply through this affiliate <span aria-hidden="true">↗</span>
+          </Link>
           <div className="w-full space-y-5 text-base text-gray-700">
             {partner.city && (
               <div>

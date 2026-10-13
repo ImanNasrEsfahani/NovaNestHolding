@@ -25,6 +25,8 @@ export type AffiliatePartner = {
   address?: string;
   phones?: string[];
   emails?: string[];
+  /** Designates the email notified about applications submitted via this affiliate. */
+  primaryEmail?: string;
   websites?: string[];
   representative?: AffiliateRepresentative;
 };
