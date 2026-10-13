@@ -15,7 +15,7 @@
     "partners": [
       {
         "name": "Sama Owj Middle East Travel Agency",
-        "logo": "/static/images/affiliates/sama-owj.webp",
+        "logo": "/static/images/affiliates/sama-owj.svg",
         "category": "Travel & Tourism",
         "city": "Tehran, Iran",
         "description": "Sama Owj Middle East is a Tehran-based travel agency providing domestic and international tours, flight ticketing, hotel reservations and tourist visa services. Its work emphasizes experienced travel professionals, modern technology and quality customer service.",
@@ -30,6 +30,7 @@
           "09393324686"
         ],
         "emails": [
+          "SamaOwj@NovaNestHolding.com",
           "info@samaowj.ir",
           "info@visaholiday.ir"
         ],
