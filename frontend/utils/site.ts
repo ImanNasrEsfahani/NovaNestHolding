@@ -24,14 +24,9 @@ function currentSiteUrlToPath(url: URL): string {
   return `${normalizedPath(url.pathname)}${url.search}${url.hash}`;
 }
 
-/**
- * Converts links that belong to this website into same-origin paths.
- * External URLs and non-http protocols (mailto:, tel:, etc.) are preserved.
- * This prevents internal navigation from ever jumping to a different hostname.
- */
+/** Same-origin links become relative; external URLs and special schemes stay unchanged. */
 export function appHref(href: string): string {
   const value = href.trim();
-
   if (!value) return '/';
   if (value.startsWith('#') || value.startsWith('?')) return value;
 
@@ -54,6 +49,16 @@ export function appHref(href: string): string {
   }
 
   if (hasScheme.test(value)) return value;
-
   return `/${value.replace(/^\/+/, '')}`;
+}
+
+/** Consistent localized internal navigation; preserves external links, queries and hashes. */
+export function localizedHref(href: string, lang: string = 'en'): string {
+  const normalized = appHref(href);
+  if (!normalized.startsWith('/') || normalized.startsWith('//')) return normalized;
+  const locale = lang === 'fa' ? 'fa' : 'en';
+  const firstSegment = normalized.split(/[/?#]/)[1];
+  if (firstSegment === 'en' || firstSegment === 'fa') return normalized;
+  if (normalized === '/') return `/${locale}`;
+  return `/${locale}${normalized}`;
 }

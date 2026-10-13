@@ -5,20 +5,9 @@
       "type": "dropdown",
       "href": "#",
       "submenuItems": [
-        {
-          "label": "سرمایه‌گذاری",
-          "href": "en/investment"
-        },
-        {
-          "label": "شتابدهی",
-          "href": "en/acceleration"
-        },
-        {
-          "label": "کارآفرینی",
-          "type": "link",
-          "href": "en/pnp",
-          "submenuItems": []
-        }
+        { "label": "سرمایه‌گذاری", "href": "fa/investment" },
+        { "label": "شتابدهی", "href": "fa/acceleration" },
+        { "label": "کارآفرینی", "type": "link", "href": "fa/pnp", "submenuItems": [] }
       ]
     },
     {
@@ -26,43 +15,15 @@
       "type": "dropdown",
       "href": "#",
       "submenuItems": [
-        {
-          "label": "Startup Validation",
-          "href": "en/startups-validation"
-        },
-        {
-          "label": "Investor Registration",
-          "href": "en/investor-registration"
-        },
-        {
-          "label": "Affiliate Registration",
-          "href": "en/affiliate-registration-form"
-        },
-        {
-          "label": "Join Our Team",
-          "href": "en/join-our-team"
-        },
-        {
-          "label": "Join as a Mentor",
-          "href": "en/join-as-a-mentor"
-        },
-        {
-          "label": "Join as a Trainee",
-          "href": "en/join-as-a-trainee"
-        }
+        { "label": "Startup Validation", "href": "fa/startups-validation" },
+        { "label": "Investor Registration", "href": "fa/investor-registration" },
+        { "label": "Affiliate Registration", "href": "fa/affiliate-registration-form" },
+        { "label": "Join Our Team", "href": "fa/join-our-team" },
+        { "label": "Join as a Mentor", "href": "fa/join-as-a-mentor" },
+        { "label": "Join as a Trainee", "href": "fa/join-as-a-trainee" }
       ]
     },
-    {
-      "label": "درباره ما",
-      "type": "link",
-      "href": "en/about-us",
-      "submenuItems": []
-    },
-    {
-      "label": "تیم ما",
-      "type": "link",
-      "href": "en/our-team",
-      "submenuItems": []
-    }
+    { "label": "درباره ما", "type": "link", "href": "fa/about-us", "submenuItems": [] },
+    { "label": "تیم ما", "type": "link", "href": "fa/our-team", "submenuItems": [] }
   ]
 }

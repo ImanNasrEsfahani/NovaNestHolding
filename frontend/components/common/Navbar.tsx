@@ -5,7 +5,7 @@ import { getServerTranslation } from 'app/i18n';
 import MobileMenu from './MobileMenu';
 import DesktopMenu from './DesktopMenu';
 import type { MenuEntry } from './menuTypes';
-import { appHref } from '@/utils/site';
+import { localizedHref } from '@/utils/site';
 
 export default function Navbar({ lang }: { lang: string }) {
   const { t } = getServerTranslation(lang, 'layout');
@@ -16,26 +16,16 @@ export default function Navbar({ lang }: { lang: string }) {
         <div className="navbar-start gap-2 flex flex-grow lg:flex-none lg:!w-auto">
           <MobileMenu menuItems={menuItems} toggleLabel={t('menuToggle', { defaultValue: 'Toggle navigation' })} />
           <Link
-            href={appHref('/')}
+            href={localizedHref('/', lang)}
             className="absolute top-0 left-0 size-full z-[10] lg:relative btn btn-ghost px-2 normal-case flex flex-grow lg:flex-none lg:!w-auto"
           >
-            <Image
-              src="/static/images/novanest-holding.png"
-              alt="NovaNest Holding"
-              width={150}
-              height={64}
-              className="h-12 w-auto"
-              priority
-            />
+            <Image src="/static/images/novanest-holding.png" alt="NovaNest Holding" width={150} height={64} className="h-12 w-auto" priority />
           </Link>
         </div>
         <div className="navbar-center hidden lg:flex flex-grow justify-center h-full">
           <DesktopMenu menuItems={menuItems} />
         </div>
-
-        <div className="navbar-end hidden lg:flex flex-none !w-auto gap-2">
-          {/* <LanguageSwitch /> */}
-        </div>
+        <div className="navbar-end hidden lg:flex flex-none !w-auto gap-2" />
       </div>
     </nav>
   );
