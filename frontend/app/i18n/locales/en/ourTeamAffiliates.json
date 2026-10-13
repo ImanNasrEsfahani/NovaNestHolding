@@ -66,7 +66,8 @@
       "websites": "Websites",
       "phones": "Phone",
       "emails": "Email",
-      "location": "Location"
+      "location": "Location",
+      "applyCta": "Apply with this partner"
     }
   }
 }

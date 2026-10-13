@@ -47,7 +47,6 @@ export default function AffiliateProfile({ partner, content, lang, formLabels }:
         <span aria-hidden="true">←</span> {ui.backToTeam}
       </Link>
       <div className="flex flex-col gap-8 lg:flex-row lg:gap-12">
-        {/* Same profile composition as /profile/[slug]: identity + contacts at left. */}
         <aside className="flex w-full flex-col items-center gap-6 rounded-xl border border-[#E9DED1] bg-white px-4 py-6 shadow lg:w-1/3 lg:px-6">
           <div className="relative flex h-64 w-64 items-center justify-center overflow-hidden rounded-full border-4 border-white bg-whiteGold shadow-md md:h-72 md:w-72">
             {logo ? (
@@ -60,13 +59,26 @@ export default function AffiliateProfile({ partner, content, lang, formLabels }:
             <h1 className="font-header text-3xl font-semibold text-gray-800 md:text-4xl">{partner.name}</h1>
             {partner.category && <p className="mt-2 text-lg text-gray-600">{partner.category}</p>}
           </div>
-          {/* Dedicated partner application page; the slug is resolved by the server. */}
+
           <Link
-            href={`/en/affiliate/${encodeURIComponent(partner.slug)}/apply`}
-            className="w-full rounded-xl bg-primary px-5 py-3 text-center font-semibold text-white transition-colors hover:bg-[#8D6B40] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+            href={`/${lang === 'fa' ? 'fa' : 'en'}/affiliate/${encodeURIComponent(partner.slug)}/apply`}
+            className="group flex w-full items-center justify-between rounded-xl border border-[#D8C5A9] bg-white px-4 py-3 text-primary transition-all duration-200 hover:border-primary hover:bg-[#FBF7F1] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+            aria-label={ui.applyCta}
           >
-            Apply through this affiliate <span aria-hidden="true">↗</span>
+            <span className="flex items-center gap-3">
+              <span aria-hidden="true" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#D8C5A9] bg-[#FBF7F1] text-primary transition-colors group-hover:border-primary">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-[18px] w-[18px]">
+                  <path d="M12 12C14.7614 12 17 9.76142 17 7C17 4.23858 14.7614 2 12 2C9.23858 2 7 4.23858 7 7C7 9.76142 9.23858 12 12 12Z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M4 21C4 17.6863 7.58172 15 12 15C14.2065 15 16.2043 15.6691 17.6502 16.757" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M19 8V14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+                  <path d="M16 11H22" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+                </svg>
+              </span>
+              <span className="text-sm font-semibold md:text-base">{ui.applyCta}</span>
+            </span>
+            <span aria-hidden="true" className="text-2xl leading-none transition-transform duration-200 group-hover:translate-x-0.5">›</span>
           </Link>
+
           <div className="w-full space-y-5 text-base text-gray-700">
             {partner.city && (
               <div>
@@ -114,7 +126,6 @@ export default function AffiliateProfile({ partner, content, lang, formLabels }:
           </div>
         </aside>
 
-        {/* Same main-column layout as mentors, with an additional Certificates section. */}
         <div className="w-full lg:w-2/3">
           <section className="rounded-xl border border-[#E9DED1] bg-white p-6 shadow">
             <h2 className="mb-4 font-header text-2xl font-semibold text-gray-800">{ui.about}</h2>

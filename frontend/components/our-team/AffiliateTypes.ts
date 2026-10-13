@@ -49,6 +49,7 @@ export type AffiliatesContent = {
     phones: string;
     emails: string;
     location: string;
+    applyCta: string;
   };
 };
 
