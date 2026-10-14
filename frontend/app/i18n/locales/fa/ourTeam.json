@@ -139,6 +139,46 @@
             "• Senior member of IEEE and active reviewer for ISI journals",
             "• Active hiker, environmental activist, and supporter of youth programs"
           ]
+        },
+        {
+          "image": "/static/images/our-team/mentors/avesta-narimani.webp",
+          "position": "Data Science and AI Mentor",
+          "name": "Avesta Narimani",
+          "linkedIn": "https://www.linkedin.com/in/avestanarimani",
+          "text": "Mentor",
+          "slug": "avesta-narimani",
+          "first_name": "Avesta",
+          "last_name": "Narimani",
+          "websites": [],
+          "job_title": "Data Science and AI Mentor",
+          "instagram": "",
+          "email": "Avesta@novanestholding.com",
+          "linkedin": "https://www.linkedin.com/in/avestanarimani",
+          "whatsapp": "",
+          "thumbnail": "/static/images/our-team/mentors/avesta-narimani.webp",
+          "location": "Vancouver, Canada",
+          "skills": [
+            "Data Science Mentorship",
+            "Machine Learning",
+            "Data Engineering",
+            "Technical Education",
+            "Technology Commercialization"
+          ],
+          "interests": [
+            "Python in Education",
+            "Open-Source Software",
+            "Water and Sustainability Data",
+            "Applied AI and Computer Vision",
+            "Coaching Young Professionals"
+          ],
+          "education": "PHD",
+          "about": [
+            "Dr. Avesta Narimani is a Vancouver-based physicist, data engineer, and educator specializing in data science, applied artificial intelligence, and evidence-based problem-solving. He earned a PhD in Soft Condensed Matter Physics from Simon Fraser University (SFU), along with a Graduate Certificate in Science and Technology Commercialization from SFU’s Beedie School of Business. His work brings together scientific research, technology development, and real-world business applications.",
+            "Over more than a decade with SFU’s Department of Physics, he has taught and mentored students at different stages of their academic journeys. He redesigned physics laboratory instruction around interactive Jupyter notebooks, bringing Python, hands-on experimentation, and data analysis into the learning experience. His educational work has also included coaching 15 summer employees.",
+            "His applied projects include building time-series forecasting models for energy systems, creating a predictive tool to estimate how much of a customer’s water demand could be covered by harvested rainwater, and contributing to Sketch to UI for Code on the Go, an open-source Android development tool. These projects demonstrate his approach to transforming complex information into practical solutions across sustainability, software, and computer vision.",
+            "With training in science and technology commercialization, Dr. Narimani helps bridge the gap between technical innovation and market needs. He emphasizes clear problem definitions, testable assumptions, meaningful data collection, and measurable results when evaluating a new product or business opportunity.",
+            "As a Data Science and AI Mentor at NovaNest Venture, he supports startup founders in using data to validate business ideas, identify practical applications of machine learning, and measure product and business growth. He is especially passionate about accessible technical education, open-source collaboration, and coaching the next generation of professionals."
+          ]
         }
       ]
     },
