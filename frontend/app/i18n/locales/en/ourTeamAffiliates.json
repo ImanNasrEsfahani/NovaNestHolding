@@ -64,6 +64,54 @@
             "image": "/static/images/affiliates/sama-owj-novanest-social-20261014.png"
           }
         }
+      },
+      {
+        "name": "Gohar Afarinan Farda — Gold & Jewelry",
+        "category": "Gold & Jewelry Industry",
+        "description": "Gohar Afarinan Farda is an Iranian gold and jewelry industry company offering consulting, professional training, product design, innovation and business development support, and collaborating with NovaNest on international business expansion.",
+        "about": [
+          "Gohar Afarinan Farda specializes in gold and jewelry consulting, training and innovation. The company reports more than 20 years of industry experience, a team of over 30 specialists, 50+ successful projects, more than 1,000 satisfied clients and eight branches across Iran.",
+          "The company combines industry experience with modern technology and works with partner brands such as 18 Ayar, Baharan, Goharan, Nabat, Romis and Sarourian across jewelry design and production, product development, marketing and distribution.",
+          "As a NovaNest business partner, Gohar Afarinan Farda helps connect gold-industry entrepreneurs interested in expanding or relocating their businesses internationally, particularly to Canada. Together, we aim to support these entrepreneurs as they plan to establish and grow gold-related businesses in Canada."
+        ],
+        "services": [
+          "Gold and jewelry industry consulting",
+          "Professional training and education for gold-industry businesses",
+          "Jewelry design and production",
+          "Product development and innovation",
+          "Marketing, distribution, and strategic partnerships"
+        ],
+        "social": {
+          "profile": {
+            "title": "NovaNest Holding × Gohar Afarinan Farda | Affiliate Partnership",
+            "description": "Discover the NovaNest Holding and Gohar Afarinan Farda partnership supporting gold and jewelry entrepreneurs seeking international expansion, including Canada.",
+            "image": "/static/images/affiliates/gohar-afarinan-farda-novanest-social.png"
+          },
+          "application": {
+            "title": "NovaNest Holding × Gohar Afarinan Farda | Affiliate Application",
+            "description": "Apply to NovaNest Holding through our gold and jewelry industry partner Gohar Afarinan Farda and explore business opportunities in Canada.",
+            "image": "/static/images/affiliates/gohar-afarinan-farda-novanest-social.png"
+          }
+        },
+        "logo": "/static/images/affiliates/gohar-afarinan-farda.svg",
+        "city": "Tehran, Iran",
+        "address": "4th Administrative Floor, Unit 417, Almas Karim Khan Complex, Karim Khan Street at Hafez Street, Tehran, Iran",
+        "representative": {
+          "name": "Mr. Sororian",
+          "position": "Business partner contact"
+        },
+        "phones": [
+          "90001910"
+        ],
+        "emails": [
+          "info@goharafarinan.com"
+        ],
+        "websites": [
+          "https://goharafarinan.com"
+        ],
+        "slug": "gohar-afarinan-farda",
+        "certificates": [],
+        "primaryEmail": "info@goharafarinan.com"
       }
     ],
     "contactLabel": "Contact details",
