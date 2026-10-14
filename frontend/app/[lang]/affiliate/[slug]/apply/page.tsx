@@ -5,18 +5,37 @@ import { notFound } from 'next/navigation';
 import affiliateData from 'app/i18n/locales/en/ourTeamAffiliates.json';
 import AffiliateApplicationForm from '@/components/our-team/AffiliateApplicationForm';
 import { initials, safeLocalImage } from '@/components/our-team/AffiliateTypes';
+import type { AffiliatePartner } from '@/components/our-team/AffiliateTypes';
+import { createPageMetadata, safeSocialImage } from '@/utils/socialMetadata';
 
 type Params = { params: { lang: string; slug: string } };
 
-function getAffiliate(slug: string) {
-  return affiliateData.affiliates.partners.find(p => p.slug === slug && p.primaryEmail && p.emails.some(e => e.toLowerCase() === p.primaryEmail.toLowerCase()));
+function getAffiliate(slug: string): AffiliatePartner | undefined {
+  return affiliateData.affiliates.partners.find(
+    p => p.slug === slug && p.primaryEmail && p.emails.some(e => e.toLowerCase() === p.primaryEmail.toLowerCase())
+  ) as AffiliatePartner | undefined;
 }
 
 export function generateMetadata({ params: { lang, slug } }: Params): Metadata {
   const partner = lang === 'en' ? getAffiliate(slug) : undefined;
-  return partner
-    ? { title: `Apply with ${partner.name} | NovaNest Holding`, description: `Submit your application through ${partner.name}.`, robots: { index: false, follow: false } }
-    : { title: 'Affiliate application | NovaNest Holding', robots: { index: false, follow: false } };
+  if (!partner) {
+    return createPageMetadata({
+      title: 'Affiliate application | NovaNest Holding',
+      robots: { index: false, follow: false },
+    });
+  }
+
+  const social = partner.social?.application;
+  return createPageMetadata({
+    title: `Apply with ${partner.name} | NovaNest Holding`,
+    description: `Submit your application through ${partner.name}.`,
+    socialTitle: social?.title || `NovaNest Holding × ${partner.name} | Affiliate Application`,
+    socialDescription: social?.description ||
+      `Apply to NovaNest Holding through our affiliate partner ${partner.name}. Complete your application using the secure partner form.`,
+    image: safeSocialImage(social?.image),
+    path: `/${lang}/affiliate/${encodeURIComponent(slug)}/apply`,
+    robots: { index: false, follow: false },
+  });
 }
 
 export default function Page({ params: { lang, slug } }: Params) {

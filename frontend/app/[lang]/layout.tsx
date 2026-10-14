@@ -3,41 +3,18 @@ import Footer from '@/components/home/Footer';
 import Navbar from '@/components/common/Navbar';
 import ScrollUpButton from '@/components/common/ScrollUpButton';
 import { SITE_URL } from '@/utils/site';
+import { createPageMetadata, DEFAULT_SITE_TITLE } from '@/utils/socialMetadata';
 import { dir } from 'i18next';
 import { languages } from 'app/i18n/setting';
 import './globals.css';
 import { useLang } from 'stores/langStore';
 
-const siteTitle = 'NovaNest Holding';
-const siteDescription =
-  'NovaNest Holding connects entrepreneurs, startups, investors, and partners through investment, acceleration, entrepreneurship, and business development opportunities.';
-
+// The site-wide fallback. A route can override each part separately using
+// createPageMetadata in its own page.tsx / generateMetadata.
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: siteTitle,
-  description: siteDescription,
-  applicationName: siteTitle,
-  openGraph: {
-    title: siteTitle,
-    description: siteDescription,
-    url: SITE_URL,
-    siteName: siteTitle,
-    type: 'website',
-    images: [
-      {
-        url: '/static/images/novanest-holding.png',
-        width: 1000,
-        height: 1000,
-        alt: 'NovaNest Holding',
-      },
-    ],
-  },
-  twitter: {
-    card: 'summary',
-    title: siteTitle,
-    description: siteDescription,
-    images: ['/static/images/novanest-holding.png'],
-  },
+  applicationName: DEFAULT_SITE_TITLE,
+  ...createPageMetadata({ path: '/' }),
 };
 
 export async function generateStaticParams() {

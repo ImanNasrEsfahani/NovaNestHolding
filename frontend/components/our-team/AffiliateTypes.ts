@@ -1,3 +1,11 @@
+/** Optional, page-specific sharing settings for each affiliate. */
+export type AffiliateSocialMetadata = {
+  title?: string;
+  description?: string;
+  /** Local PNG/JPEG/WebP/SVG. Missing means the site-wide image. For WhatsApp, PNG is more reliable than SVG. */
+  image?: string;
+};
+
 export type AffiliateRepresentative = {
   name: string;
   position?: string;
@@ -29,6 +37,11 @@ export type AffiliatePartner = {
   primaryEmail?: string;
   websites?: string[];
   representative?: AffiliateRepresentative;
+  /** Per-affiliate, per-page Open Graph / Twitter preview configuration. */
+  social?: {
+    profile?: AffiliateSocialMetadata;
+    application?: AffiliateSocialMetadata;
+  };
 };
 
 export type AffiliatesContent = {
@@ -77,4 +90,3 @@ export function safeCertificate(path?: string): string | null {
 export function initials(name: string): string {
   return name.trim().split(/\s+/).slice(0, 2).map((word) => word.charAt(0)).join('').toUpperCase();
 }
-
