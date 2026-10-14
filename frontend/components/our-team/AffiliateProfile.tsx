@@ -4,6 +4,7 @@ import type { AffiliatePartner, AffiliatesContent } from './AffiliateTypes';
 import { initials, safeCertificate, safeLocalImage, safeWebsite } from './AffiliateTypes';
 import AffiliateContactForm from './AffiliateContactForm';
 import AffiliateApplicationForm from './AffiliateApplicationForm';
+import AffiliateCertificates from './AffiliateCertificates';
 
 const phoneHref = (phone: string): string | null => {
   const value = phone.replace(/[\s()-]/g, '');
@@ -114,9 +115,16 @@ export default function AffiliateProfile(props: AffiliateProfileProps) {
               </div>
             )}
           </div>
+          {/* Certificates are the final item in the left information column on both pages. */}
+          <AffiliateCertificates
+            certificates={certificates}
+            title={ui.certificates}
+            emptyLabel={ui.noCertificates}
+            viewLabel={ui.viewCertificate}
+          />
         </aside>
 
-        {/* Same main-column layout as mentors, with an additional Certificates section. */}
+        {/* Both affiliate routes share the same profile, with a route-specific form. */}
         <div className="w-full lg:w-2/3">
           <section className="rounded-xl border border-[#E9DED1] bg-white p-6 shadow">
             <h2 className="mb-4 font-header text-2xl font-semibold text-gray-800">{ui.about}</h2>
@@ -135,33 +143,6 @@ export default function AffiliateProfile(props: AffiliateProfileProps) {
               </ul>
             </section>
           )}
-
-          <section className="mt-6 rounded-xl border border-[#E9DED1] bg-white p-6 shadow" aria-labelledby="affiliate-certificates">
-            <h2 id="affiliate-certificates" className="mb-4 font-header text-2xl font-semibold text-gray-800">{ui.certificates}</h2>
-            {certificates.length ? (
-              <div className="grid gap-4 sm:grid-cols-2">
-                {certificates.map((certificate, index) => {
-                  const file = safeCertificate(certificate.file)!;
-                  const isPdf = file.toLowerCase().endsWith('.pdf');
-                  return (
-                    <a key={`${file}-${index}`} href={file} target="_blank" rel="noopener noreferrer"
-                      className="group overflow-hidden rounded-xl border border-[#E9DED1] bg-whiteGold transition-shadow hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
-                      <div className="relative flex h-40 items-center justify-center bg-white p-4">
-                        {isPdf ? <span aria-hidden="true" className="rounded-lg bg-primary/10 px-5 py-4 text-3xl font-semibold text-primary">PDF</span>
-                          : <Image src={file} alt={certificate.title} fill sizes="(max-width: 640px) 90vw, 300px" className="object-contain p-3" />}
-                      </div>
-                      <div className="p-4">
-                        <h3 className="font-semibold text-gray-800">{certificate.title}</h3>
-                        {certificate.issuer && <p className="mt-1 text-sm text-gray-600">{certificate.issuer}</p>}
-                        {certificate.issuedAt && <p className="text-sm text-gray-600">{certificate.issuedAt}</p>}
-                        <p className="mt-3 text-sm font-semibold text-primary group-hover:underline">{ui.viewCertificate} ↗</p>
-                      </div>
-                    </a>
-                  );
-                })}
-              </div>
-            ) : <p className="text-sm text-gray-500">{ui.noCertificates}</p>}
-          </section>
 
           <section className="mt-6 rounded-xl border border-[#E9DED1] bg-white p-2 shadow md:p-6"
             aria-label={props.formVariant === 'application' ? 'Affiliate application' : props.formLabels.formTitle}>
