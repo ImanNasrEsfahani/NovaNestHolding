@@ -12,7 +12,6 @@ from pathlib import Path
 from django.conf import settings
 from django.core.mail import send_mail
 from django.core.exceptions import ValidationError as DjangoValidationError
-from django.utils import timezone
 from django.core.validators import validate_email
 from rest_framework import serializers, status
 from rest_framework.permissions import AllowAny
@@ -61,11 +60,8 @@ class AffiliateApplicationSerializer(serializers.Serializer):
     traveled_to_canada = serializers.BooleanField()
     visa_rejected = serializers.BooleanField()
     visa_rejection_details = serializers.CharField(max_length=1800, allow_blank=True, required=False)
-    consent_to_share = serializers.BooleanField()
 
     def validate(self, attrs):
-        if not attrs['consent_to_share']:
-            raise serializers.ValidationError({'consent_to_share': 'Consent is required.'})
         if attrs['visa_rejected'] and not attrs.get('visa_rejection_details', '').strip():
             raise serializers.ValidationError({'visa_rejection_details': 'Please provide the visa refusal details.'})
         if not attrs['visa_rejected']:
@@ -116,8 +112,10 @@ def delivery_body(application):
         ('Previously traveled to Canada', 'Yes' if application.traveled_to_canada else 'No'),
         ('Canadian visa previously rejected', 'Yes' if application.visa_rejected else 'No'),
         ('Visa refusal details', application.visa_rejection_details or '—'),
-        ('Consented to sharing', application.consented_at.isoformat()),
     ])
+    # Only historical applications with recorded consent receive this label.
+    if application.consented_at is not None:
+        pairs.append(('Consented to sharing', application.consented_at.isoformat()))
     return '\n'.join(f'{label}: {value}' for label, value in pairs)
 
 
@@ -165,10 +163,9 @@ class AffiliateApplicationView(APIView):
         serializer = AffiliateApplicationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         values = dict(serializer.validated_data)
-        values.pop('consent_to_share')
         application = AffiliateApplication.objects.create(
             affiliate_slug=affiliate['slug'], affiliate_name=affiliate['name'],
-            partner_primary_email=affiliate['primary_email'], consented_at=timezone.now(), **values,
+            partner_primary_email=affiliate['primary_email'], **values,
         )
         delivered = notify_application(application)
         # Always preserve the valid submission even if SMTP is unavailable.

@@ -16,7 +16,6 @@ type Answers = {
   traveled_to_canada: string;
   visa_rejected: string;
   visa_rejection_details: string;
-  consent_to_share: boolean;
 };
 
 type Props = { slug: string; affiliateName: string };
@@ -36,7 +35,7 @@ export default function AffiliateApplicationForm({ slug, affiliateName }: Props)
     shouldFocusError: true,
     defaultValues: {
       position: '', years_of_experience: '', industry_field: '', assets_range: '',
-      traveled_to_canada: '', visa_rejected: '', consent_to_share: false
+      traveled_to_canada: '', visa_rejected: ''
     }
   });
   const [status, setStatus] = useState<{ kind: 'success' | 'error' | 'pending'; message: string } | null>(null);
@@ -229,15 +228,7 @@ export default function AffiliateApplicationForm({ slug, affiliateName }: Props)
         </div>
       </section>
 
-      <section className="rounded-2xl border border-[#E7DDD1] bg-[#F8F5F0] px-5 py-6 sm:px-8">
-        <h2 className="font-header text-lg font-semibold text-[#1D2942]">Privacy & consent</h2>
-        <p className="mt-2 text-sm leading-6 text-gray-600">Your application includes financial and immigration-history information. It will be stored by NovaNest and shared by email with NovaNest’s application team and the designated primary contact of {affiliateName}. Please submit only information you are comfortable sharing.</p>
-        <label className="mt-5 flex cursor-pointer items-start gap-3 text-sm leading-6 text-[#26324B]">
-          <input type="checkbox" className="mt-1 h-5 w-5 shrink-0 accent-[#AA8453]" aria-invalid={!!errors.consent_to_share}
-            {...register('consent_to_share', { required: 'Please confirm your consent before submitting.' })} />
-          <span>I agree to this use and sharing of my application information. <Required /></span>
-        </label>
-        <FieldError id="consent_to_share-error" text={errors.consent_to_share?.message} />
+      <div className="rounded-2xl border border-[#E7DDD1] bg-[#F8F5F0] px-5 py-6 sm:px-8">
         <button type="submit" disabled={isSubmitting}
           className="mt-6 inline-flex w-full items-center justify-center gap-3 rounded-xl bg-primary px-6 py-4 text-base font-semibold text-white shadow-sm transition-colors hover:bg-[#8D6B40] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary disabled:cursor-wait disabled:opacity-60 sm:w-auto sm:min-w-[260px]">
           {isSubmitting ? 'Submitting…' : 'Submit application'} <span aria-hidden="true">→</span>
@@ -247,7 +238,7 @@ export default function AffiliateApplicationForm({ slug, affiliateName }: Props)
             {status.message}
           </div>
         )}
-      </section>
+      </div>
     </form>
   );
 }

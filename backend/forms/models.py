@@ -123,7 +123,7 @@ class AffiliateApplication(models.Model):
   traveled_to_canada = models.BooleanField()
   visa_rejected = models.BooleanField()
   visa_rejection_details = models.TextField(blank=True)
-  consented_at = models.DateTimeField()
+  consented_at = models.DateTimeField(null=True, blank=True)
   created_at = models.DateTimeField(auto_now_add=True)
   admin_notified = models.BooleanField(default=False)
   partner_notified = models.BooleanField(default=False)

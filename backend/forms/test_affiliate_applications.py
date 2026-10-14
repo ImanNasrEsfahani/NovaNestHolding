@@ -36,7 +36,7 @@ class AffiliateApplicationTests(TestCase):
             'industry_field': 'Travel and tourism', 'assets_range': '500k_1m',
             'education_degree': 'bachelor', 'language_level': 'advanced',
             'traveled_to_canada': True, 'visa_rejected': False,
-            'visa_rejection_details': '', 'consent_to_share': True,
+            'visa_rejection_details': '',
             'primaryEmail': 'attacker@example.com',  # deliberately forged: never authoritative
         }
 
@@ -75,11 +75,13 @@ class AffiliateApplicationTests(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertIn('visa_rejection_details', response.json())
 
-    def test_consent_required(self):
-        self.payload['consent_to_share'] = False
+    def test_submission_does_not_require_or_fabricate_consent(self):
         response = self.client.post(self.url, data=self.payload, content_type='application/json')
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(AffiliateApplication.objects.count(), 0)
+        self.assertEqual(response.status_code, 201, response.content)
+        application = AffiliateApplication.objects.get()
+        self.assertIsNone(application.consented_at)
+        self.assertNotIn('Consented to sharing', mail.outbox[0].body)
+        self.assertNotIn('Consented to sharing', mail.outbox[1].body)
 
     @patch('forms.affiliate_applications.send_mail', side_effect=RuntimeError('smtp down'))
     def test_email_failure_preserves_record_for_admin_retry(self, _):
@@ -155,3 +157,4 @@ class AffiliateApplicationTests(TestCase):
         self.assertIn('Work experience in last 5 years: Legacy record', content)
         self.assertIn('Provable assets: 450000.00 CAD', content)
         self.assertNotIn('Position:', content)
+        self.assertIn('Consented to sharing:', content)
