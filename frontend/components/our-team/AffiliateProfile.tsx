@@ -91,7 +91,7 @@ export default function AffiliateProfile({ partner, content, lang, formLabels }:
               <div>
                 <h2 className="mb-1 text-sm font-semibold uppercase text-gray-600">{ui.websites}</h2>
                 {websites.map((url) => <div key={url}><Link href={url} target="_blank" rel="noopener noreferrer"
-                  className="break-all text-sm text-primary underline-offset-4 hover:underline">{new URL(url).hostname.replace(/^www\./, '')} ↗</Link></div>)}
+                  className="break-all text-sm text-primary underline-offset-4 hover:underline">{new URL(url).hostname.replace(/^www\./, '')} </Link></div>)}
               </div>
             )}
             {emails.length > 0 && (
