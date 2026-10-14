@@ -15,7 +15,6 @@ type Answers = {
   assets_range: string;
   traveled_to_canada: string;
   visa_rejected: string;
-  visa_rejection_details: string;
 };
 
 type Props = { slug: string; affiliateName: string };
@@ -29,7 +28,7 @@ function FieldError({ text, id }: { text?: string; id: string }) {
 }
 
 export default function AffiliateApplicationForm({ slug, affiliateName }: Props) {
-  const { register, handleSubmit, watch, reset, formState: { errors, isSubmitting } } = useForm<Answers>({
+  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<Answers>({
     mode: 'onBlur',
     reValidateMode: 'onChange',
     shouldFocusError: true,
@@ -39,7 +38,6 @@ export default function AffiliateApplicationForm({ slug, affiliateName }: Props)
     }
   });
   const [status, setStatus] = useState<{ kind: 'success' | 'error' | 'pending'; message: string } | null>(null);
-  const rejected = watch('visa_rejected');
 
   async function submit(values: Answers) {
     setStatus(null);
@@ -50,7 +48,6 @@ export default function AffiliateApplicationForm({ slug, affiliateName }: Props)
         phone_number: values.phone_number.replace(/[\s()-]/g, ''),
         traveled_to_canada: values.traveled_to_canada === 'true',
         visa_rejected: values.visa_rejected === 'true',
-        visa_rejection_details: values.visa_rejected === 'true' ? (values.visa_rejection_details || '').trim() : '',
         industry_field: values.industry_field.trim()
       };
       // The partner email is never supplied by the browser. The Django API resolves it
@@ -213,18 +210,7 @@ export default function AffiliateApplicationForm({ slug, affiliateName }: Props)
             <FieldError id="assets_range-error" text={errors.assets_range?.message} />
           </div>
           {yesNo('traveled_to_canada', 'Have you traveled to Canada before?')}
-          <div>
-            {yesNo('visa_rejected', 'Has your Canadian visa ever been rejected?')}
-            {rejected === 'true' && (
-              <div className="mt-4 rounded-xl border-s-4 border-primary bg-[#FAF8F5] p-4">
-                <label htmlFor="aff-visa-details" className={labelClass}>Please provide the refusal details<Required /></label>
-                <textarea id="aff-visa-details" rows={3} maxLength={1800} placeholder="Approximate date, visa type, and reason if known"
-                  className={`${fieldClass} resize-y`} aria-invalid={!!errors.visa_rejection_details}
-                  {...register('visa_rejection_details', { validate: v => rejected !== 'true' || Boolean(v?.trim()) || 'Please provide the refusal details.' })} />
-                <FieldError id="visa_rejection_details-error" text={errors.visa_rejection_details?.message} />
-              </div>
-            )}
-          </div>
+          {yesNo('visa_rejected', 'Has your Canadian visa ever been rejected?')}
         </div>
       </section>
 

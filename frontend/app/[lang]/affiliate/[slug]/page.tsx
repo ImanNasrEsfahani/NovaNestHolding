@@ -4,6 +4,7 @@ import { getServerTranslation } from 'app/i18n';
 import AffiliateProfile from '@/components/our-team/AffiliateProfile';
 import type { AffiliatePartner, AffiliatesContent } from '@/components/our-team/AffiliateTypes';
 import { createPageMetadata, safeSocialImage } from '@/utils/socialMetadata';
+import { SITE_URL } from '@/utils/site';
 
 type Params = { params: { lang: string; slug: string } };
 
@@ -23,13 +24,20 @@ export function generateMetadata({ params: { lang, slug } }: Params): Metadata {
   if (!partner) return createPageMetadata({ title: 'Affiliate | NovaNest Holding' });
 
   const social = partner.social?.profile;
+  const socialImage = safeSocialImage(social?.image);
   return createPageMetadata({
     title: `${partner.name} | NovaNest Holding`,
     description: partner.description || partner.category,
     socialTitle: social?.title || `NovaNest Holding × ${partner.name} | Affiliate Partnership`,
     socialDescription: social?.description ||
       `Discover the collaboration between NovaNest Holding and ${partner.name}. Explore the affiliate partner profile and services.`,
-    image: safeSocialImage(social?.image),
+    image: socialImage ? {
+      url: new URL(socialImage, SITE_URL).toString(),
+      width: 1200,
+      height: 1200,
+      alt: `NovaNest Holding and ${partner.name} affiliate logos`,
+    } : undefined,
+    twitterCard: 'summary_large_image',
     path: `/${lang}/affiliate/${encodeURIComponent(slug)}`,
   });
 }

@@ -59,14 +59,8 @@ class AffiliateApplicationSerializer(serializers.Serializer):
     language_level = serializers.ChoiceField(choices=LEVELS)
     traveled_to_canada = serializers.BooleanField()
     visa_rejected = serializers.BooleanField()
-    visa_rejection_details = serializers.CharField(max_length=1800, allow_blank=True, required=False)
-
-    def validate(self, attrs):
-        if attrs['visa_rejected'] and not attrs.get('visa_rejection_details', '').strip():
-            raise serializers.ValidationError({'visa_rejection_details': 'Please provide the visa refusal details.'})
-        if not attrs['visa_rejected']:
-            attrs['visa_rejection_details'] = ''
-        return attrs
+    # Refusal details are not collected by the new form. Keep the historical
+    # model column intact for previously submitted applications.
 
 
 class AffiliateApplicationThrottle(AnonRateThrottle):
@@ -111,8 +105,9 @@ def delivery_body(application):
     pairs.extend([
         ('Previously traveled to Canada', 'Yes' if application.traveled_to_canada else 'No'),
         ('Canadian visa previously rejected', 'Yes' if application.visa_rejected else 'No'),
-        ('Visa refusal details', application.visa_rejection_details or '—'),
     ])
+    if application.visa_rejection_details:
+        pairs.append(('Visa refusal details', application.visa_rejection_details))
     # Only historical applications with recorded consent receive this label.
     if application.consented_at is not None:
         pairs.append(('Consented to sharing', application.consented_at.isoformat()))

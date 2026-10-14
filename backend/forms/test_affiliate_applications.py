@@ -36,7 +36,6 @@ class AffiliateApplicationTests(TestCase):
             'industry_field': 'Travel and tourism', 'assets_range': '500k_1m',
             'education_degree': 'bachelor', 'language_level': 'advanced',
             'traveled_to_canada': True, 'visa_rejected': False,
-            'visa_rejection_details': '',
             'primaryEmail': 'attacker@example.com',  # deliberately forged: never authoritative
         }
 
@@ -69,11 +68,25 @@ class AffiliateApplicationTests(TestCase):
         self.assertEqual(response.status_code, 404)
         self.assertEqual(AffiliateApplication.objects.count(), 0)
 
-    def test_refusal_requires_details(self):
+    def test_refusal_yes_requires_no_follow_up_details(self):
         self.payload['visa_rejected'] = True
         response = self.client.post(self.url, data=self.payload, content_type='application/json')
-        self.assertEqual(response.status_code, 400)
-        self.assertIn('visa_rejection_details', response.json())
+        self.assertEqual(response.status_code, 201, response.content)
+        application = AffiliateApplication.objects.get()
+        self.assertTrue(application.visa_rejected)
+        self.assertEqual(application.visa_rejection_details, '')
+        self.assertIn('Canadian visa previously rejected: Yes', mail.outbox[0].body)
+        self.assertNotIn('Visa refusal details:', mail.outbox[0].body)
+
+    def test_unrequested_refusal_details_are_ignored(self):
+        data = {**self.payload, 'visa_rejected': True,
+                'visa_rejection_details': 'Do not store this unsolicited detail'}
+        response = self.client.post(self.url, data=data, content_type='application/json')
+        self.assertEqual(response.status_code, 201, response.content)
+        application = AffiliateApplication.objects.get()
+        self.assertTrue(application.visa_rejected)
+        self.assertEqual(application.visa_rejection_details, '')
+        self.assertNotIn('Do not store this unsolicited detail', mail.outbox[0].body)
 
     def test_submission_does_not_require_or_fabricate_consent(self):
         response = self.client.post(self.url, data=self.payload, content_type='application/json')

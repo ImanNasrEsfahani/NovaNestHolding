@@ -40,18 +40,6 @@
           "http://www.visaholiday.ir"
         ],
         "slug": "sama-owj-middle-east",
-        "social": {
-          "profile": {
-            "title": "NovaNest Holding × Sama Owj Middle East | Affiliate Partnership",
-            "description": "Explore the partnership between NovaNest Holding and Sama Owj Middle East Travel Agency, connecting businesses and opportunities through our affiliate network.",
-            "image": "/static/images/affiliates/sama-owj-novanest-social.svg"
-          },
-          "application": {
-            "title": "NovaNest Holding × Sama Owj Middle East | Affiliate Application",
-            "description": "Apply to NovaNest Holding through Sama Owj Middle East Travel Agency, an affiliate partner. Complete your application through the partner's dedicated form.",
-            "image": "/static/images/affiliates/sama-owj-novanest-social.svg"
-          }
-        },
         "about": [
           "Sama Owj Middle East is a Tehran-based travel agency specializing in designing and operating domestic and international tours, booking flights and hotels in Iran and abroad, and assisting travelers with tourist visa services.",
           "The agency brings together experienced travel specialists, technology-driven processes, and a commitment to service quality. It strives to follow developments in international tourism to improve the travel experience for its customers."
@@ -63,7 +51,19 @@
           "Tourist visa assistance"
         ],
         "certificates": [],
-        "primaryEmail": "SamaOwj@NovaNestHolding.com"
+        "primaryEmail": "SamaOwj@NovaNestHolding.com",
+        "social": {
+          "profile": {
+            "title": "NovaNest Holding × Sama Owj Middle East | Affiliate Partnership",
+            "description": "Explore the partnership between NovaNest Holding and Sama Owj Middle East Travel Agency, connecting businesses and opportunities through our affiliate network.",
+            "image": "/static/images/affiliates/sama-owj-novanest-social-20261014.png"
+          },
+          "application": {
+            "title": "NovaNest Holding × Sama Owj Middle East | Affiliate Application",
+            "description": "Apply to NovaNest Holding through Sama Owj Middle East Travel Agency, an affiliate partner. Complete your application through the partner's dedicated form.",
+            "image": "/static/images/affiliates/sama-owj-novanest-social-20261014.png"
+          }
+        }
       }
     ],
     "contactLabel": "Contact details",
