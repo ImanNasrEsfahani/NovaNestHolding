@@ -7,7 +7,6 @@ import json
 import logging
 import os
 import re
-from decimal import Decimal
 from pathlib import Path
 
 from django.conf import settings
@@ -28,7 +27,6 @@ SLUG_RE = re.compile(r'^[a-z0-9]+(?:-[a-z0-9]+)*$')
 REGISTRY_PATH = Path(os.getenv('AFFILIATE_REGISTRY_PATH', '/app/affiliate-registry/ourTeamAffiliates.json'))
 EDUCATION = ('high_school', 'bachelor', 'master', 'phd')
 LEVELS = ('none', 'basic', 'intermediate', 'advanced')
-CURRENCIES = ('CAD', 'USD', 'EUR', 'GBP', 'IRR', 'AED', 'AUD', 'INR', 'TRY', 'OTHER')
 
 
 def resolve_affiliate(slug):
@@ -54,17 +52,12 @@ class AffiliateApplicationSerializer(serializers.Serializer):
     phone_number = serializers.RegexField(r'^\+[1-9]\d{7,14}$', max_length=16,
         error_messages={'invalid': 'Use international format, e.g. +14165550123.'})
     email = serializers.EmailField(max_length=254)
-    age = serializers.IntegerField(min_value=1, max_value=120)
-    country = serializers.CharField(max_length=100)
-    city = serializers.CharField(max_length=100)
-    work_experience = serializers.CharField(max_length=2400, trim_whitespace=True)
+    position = serializers.ChoiceField(choices=AffiliateApplication.POSITION_CHOICES)
+    years_of_experience = serializers.ChoiceField(choices=AffiliateApplication.EXPERIENCE_CHOICES)
+    industry_field = serializers.CharField(max_length=180, trim_whitespace=True, allow_blank=False)
+    assets_range = serializers.ChoiceField(choices=AffiliateApplication.ASSETS_RANGE_CHOICES)
     education_degree = serializers.ChoiceField(choices=EDUCATION)
     language_level = serializers.ChoiceField(choices=LEVELS)
-    ielts_score = serializers.DecimalField(max_digits=2, decimal_places=1, min_value=Decimal('0.0'),
-                                            max_value=Decimal('9.0'), allow_null=True, required=False)
-    assets_amount = serializers.DecimalField(max_digits=17, decimal_places=2,
-                                              min_value=Decimal('0.00'))
-    assets_currency = serializers.ChoiceField(choices=CURRENCIES)
     traveled_to_canada = serializers.BooleanField()
     visa_rejected = serializers.BooleanField()
     visa_rejection_details = serializers.CharField(max_length=1800, allow_blank=True, required=False)
@@ -77,8 +70,6 @@ class AffiliateApplicationSerializer(serializers.Serializer):
             raise serializers.ValidationError({'visa_rejection_details': 'Please provide the visa refusal details.'})
         if not attrs['visa_rejected']:
             attrs['visa_rejection_details'] = ''
-        if attrs.get('ielts_score') is not None and (attrs['ielts_score'] * 2) % 1 != 0:
-            raise serializers.ValidationError({'ielts_score': 'IELTS score must be in 0.5 increments.'})
         return attrs
 
 
@@ -94,19 +85,39 @@ def delivery_body(application):
         ('Full name', application.full_name),
         ('Phone', application.phone_number),
         ('Email', application.email),
-        ('Age', str(application.age)),
-        ('Country', application.country),
-        ('City', application.city),
-        ('Work experience in last 5 years', application.work_experience),
+    ]
+    # Keep older submissions readable if their pending email is retried from Admin.
+    # Age, location, free-form experience and IELTS are not accepted by the new API.
+    if application.position:
+        pairs.extend([
+            ('Position', application.get_position_display()),
+            ('Years of professional experience', application.get_years_of_experience_display()),
+            ('Industry / field of work', application.industry_field),
+        ])
+    else:
+        pairs.extend([
+            ('Age', str(application.age) if application.age is not None else 'Not provided'),
+            ('Country', application.country),
+            ('City', application.city),
+            ('Work experience in last 5 years', application.work_experience),
+        ])
+    pairs.extend([
         ('Education', application.get_education_degree_display()),
         ('Language level', application.get_language_level_display()),
-        ('IELTS score', str(application.ielts_score) if application.ielts_score is not None else 'Not provided'),
-        ('Provable assets', f'{application.assets_amount} {application.assets_currency}'),
+    ])
+    if application.position:
+        pairs.append(('Provable assets (USD)', application.get_assets_range_display()))
+    else:
+        pairs.extend([
+            ('IELTS score', str(application.ielts_score) if application.ielts_score is not None else 'Not provided'),
+            ('Provable assets', f'{application.assets_amount} {application.assets_currency}'),
+        ])
+    pairs.extend([
         ('Previously traveled to Canada', 'Yes' if application.traveled_to_canada else 'No'),
         ('Canadian visa previously rejected', 'Yes' if application.visa_rejected else 'No'),
         ('Visa refusal details', application.visa_rejection_details or '—'),
         ('Consented to sharing', application.consented_at.isoformat()),
-    ]
+    ])
     return '\n'.join(f'{label}: {value}' for label, value in pairs)
 
 

@@ -7,15 +7,12 @@ type Answers = {
   full_name: string;
   phone_number: string;
   email: string;
-  age: number;
-  country: string;
-  city: string;
-  work_experience: string;
+  position: string;
+  years_of_experience: string;
+  industry_field: string;
   education_degree: string;
   language_level: string;
-  ielts_score: number | null;
-  assets_amount: string;
-  assets_currency: string;
+  assets_range: string;
   traveled_to_canada: string;
   visa_rejected: string;
   visa_rejection_details: string;
@@ -37,7 +34,10 @@ export default function AffiliateApplicationForm({ slug, affiliateName }: Props)
     mode: 'onBlur',
     reValidateMode: 'onChange',
     shouldFocusError: true,
-    defaultValues: { assets_currency: 'CAD', traveled_to_canada: '', visa_rejected: '', ielts_score: null, consent_to_share: false }
+    defaultValues: {
+      position: '', years_of_experience: '', industry_field: '', assets_range: '',
+      traveled_to_canada: '', visa_rejected: '', consent_to_share: false
+    }
   });
   const [status, setStatus] = useState<{ kind: 'success' | 'error' | 'pending'; message: string } | null>(null);
   const rejected = watch('visa_rejected');
@@ -52,7 +52,7 @@ export default function AffiliateApplicationForm({ slug, affiliateName }: Props)
         traveled_to_canada: values.traveled_to_canada === 'true',
         visa_rejected: values.visa_rejected === 'true',
         visa_rejection_details: values.visa_rejected === 'true' ? (values.visa_rejection_details || '').trim() : '',
-        ielts_score: values.ielts_score != null && Number.isFinite(values.ielts_score) ? values.ielts_score : null
+        industry_field: values.industry_field.trim()
       };
       // The partner email is never supplied by the browser. The Django API resolves it
       // from its trusted, read-only JSON registry using this slug.
@@ -121,48 +121,52 @@ export default function AffiliateApplicationForm({ slug, affiliateName }: Props)
               {...register('email', { required: 'Email is required.', pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Please enter a valid email.' } })} />
             <FieldError id="email-error" text={errors.email?.message} />
           </div>
-          <div>
-            <label htmlFor="aff-age" className={labelClass}>Age<Required /></label>
-            <input id="aff-age" type="number" min={1} max={120} step={1} inputMode="numeric" placeholder="e.g. 35"
-              className={fieldClass} aria-invalid={!!errors.age}
-              {...register('age', { valueAsNumber: true, required: 'Age is required.', min: { value: 1, message: 'Please enter a valid age.' }, max: { value: 120, message: 'Please enter a valid age.' } })} />
-            <FieldError id="age-error" text={errors.age?.message} />
-          </div>
-          <fieldset className="sm:col-span-2">
-            <legend className={labelClass}>Country and city of residence<Required /></legend>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label className="sr-only" htmlFor="aff-country">Country of residence</label>
-                <input id="aff-country" type="text" autoComplete="country-name" placeholder="Country" maxLength={100}
-                  className={fieldClass} aria-invalid={!!errors.country}
-                  {...register('country', { required: 'Country is required.' })} />
-                <FieldError id="country-error" text={errors.country?.message} />
-              </div>
-              <div>
-                <label className="sr-only" htmlFor="aff-city">City of residence</label>
-                <input id="aff-city" type="text" autoComplete="address-level2" placeholder="City" maxLength={100}
-                  className={fieldClass} aria-invalid={!!errors.city}
-                  {...register('city', { required: 'City is required.' })} />
-                <FieldError id="city-error" text={errors.city?.message} />
-              </div>
-            </div>
-          </fieldset>
         </div>
       </section>
 
       <section className="overflow-hidden rounded-2xl border border-[#E7DDD1] bg-white shadow-sm">
         <div className="border-b border-[#EEE5DC] bg-[#FAF8F5] px-5 py-5 sm:px-8">
           <p className="text-xs font-bold uppercase tracking-[.16em] text-primary">02 / Background</p>
-          <h2 className="mt-1 font-header text-xl font-semibold text-[#1D2942]">Experience & education</h2>
+          <h2 className="mt-1 font-header text-xl font-semibold text-[#1D2942]">Professional background & education</h2>
         </div>
         <div className="grid gap-5 px-5 py-6 sm:grid-cols-2 sm:px-8">
+          <div>
+            <label htmlFor="aff-position" className={labelClass}>Position<Required /></label>
+            <select id="aff-position" className={fieldClass} defaultValue="" aria-invalid={!!errors.position}
+              aria-describedby={errors.position ? 'position-error' : undefined}
+              {...register('position', { required: 'Please select your position.' })}>
+              <option value="" disabled>Select a position</option>
+              <option value="owner">Owner</option>
+              <option value="owner_ceo">Owner &amp; CEO</option>
+              <option value="ceo">CEO</option>
+              <option value="senior_manager">Senior Manager</option>
+              <option value="other">Other</option>
+            </select>
+            <FieldError id="position-error" text={errors.position?.message} />
+          </div>
+          <div>
+            <label htmlFor="aff-years" className={labelClass}>Years of experience<Required /></label>
+            <select id="aff-years" className={fieldClass} defaultValue="" aria-invalid={!!errors.years_of_experience}
+              aria-describedby={errors.years_of_experience ? 'years_of_experience-error' : undefined}
+              {...register('years_of_experience', { required: 'Please select your years of experience.' })}>
+              <option value="" disabled>Select experience</option>
+              <option value="under_5">Less than 5 years</option>
+              <option value="5_10">5–10 years</option>
+              <option value="10_20">10–20 years</option>
+              <option value="20_plus">20+ years</option>
+            </select>
+            <FieldError id="years_of_experience-error" text={errors.years_of_experience?.message} />
+          </div>
           <div className="sm:col-span-2">
-            <label htmlFor="aff-experience" className={labelClass}>Work experience in the last 5 years<Required /></label>
-            <p className="mt-1 text-xs text-gray-500">Describe your roles, employers, and approximate dates.</p>
-            <textarea id="aff-experience" rows={4} placeholder="Example: 2022–2026, software engineer at…" maxLength={2400}
-              className={`${fieldClass} resize-y`} aria-invalid={!!errors.work_experience}
-              {...register('work_experience', { required: 'Please tell us about your experience.', minLength: { value: 10, message: 'Please add a little more detail.' } })} />
-            <FieldError id="work_experience-error" text={errors.work_experience?.message} />
+            <label htmlFor="aff-industry" className={labelClass}>Industry / field of work<Required /></label>
+            <input id="aff-industry" type="text" maxLength={180} placeholder="e.g. Tourism, Technology, Construction"
+              className={fieldClass} aria-invalid={!!errors.industry_field}
+              aria-describedby={errors.industry_field ? 'industry_field-error' : undefined}
+              {...register('industry_field', {
+                required: 'Please enter your industry or field of work.',
+                validate: value => Boolean(value.trim()) || 'Please enter your industry or field of work.'
+              })} />
+            <FieldError id="industry_field-error" text={errors.industry_field?.message} />
           </div>
           <div>
             <label htmlFor="aff-education" className={labelClass}>Highest education degree<Required /></label>
@@ -185,11 +189,6 @@ export default function AffiliateApplicationForm({ slug, affiliateName }: Props)
               <option value="intermediate">Intermediate</option><option value="advanced">Advanced</option>
             </select>
             <FieldError id="language_level-error" text={errors.language_level?.message} />
-            <label htmlFor="aff-ielts" className="mt-4 block text-sm font-medium text-[#26324B]">IELTS overall score <span className="font-normal text-gray-500">(optional)</span></label>
-            <input id="aff-ielts" type="number" min={0} max={9} step={0.5} inputMode="decimal" placeholder="e.g. 7.0"
-              className={fieldClass} aria-invalid={!!errors.ielts_score}
-              {...register('ielts_score', { setValueAs: v => v === '' ? null : Number(v), validate: v => v === null || v === undefined || (Number.isFinite(v) && v >= 0 && v <= 9 && v * 2 % 1 === 0) || 'Enter a score from 0 to 9 in 0.5 steps.' })} />
-            <FieldError id="ielts_score-error" text={errors.ielts_score?.message} />
           </div>
         </div>
       </section>
@@ -200,25 +199,20 @@ export default function AffiliateApplicationForm({ slug, affiliateName }: Props)
           <h2 className="mt-1 font-header text-xl font-semibold text-[#1D2942]">A few final details</h2>
         </div>
         <div className="space-y-7 px-5 py-6 sm:px-8">
-          <fieldset>
-            <legend className={labelClass}>Provable assets<Required /></legend>
-            <p className="mt-1 text-xs text-gray-500">Your approximate documented assets (not an upload).</p>
-            <div className="grid gap-3 sm:grid-cols-[1fr_170px]">
-              <div>
-                <label className="sr-only" htmlFor="aff-assets">Amount</label>
-                <input id="aff-assets" type="number" min="0" step="0.01" inputMode="decimal" placeholder="Amount"
-                  className={fieldClass} aria-invalid={!!errors.assets_amount}
-                  {...register('assets_amount', { required: 'Please enter an amount.', validate: v => Number.isFinite(Number(v)) && Number(v) >= 0 || 'Enter a valid amount.' })} />
-                <FieldError id="assets_amount-error" text={errors.assets_amount?.message} />
-              </div>
-              <div>
-                <label className="sr-only" htmlFor="aff-currency">Currency</label>
-                <select id="aff-currency" className={fieldClass} {...register('assets_currency', { required: true })}>
-                  {['CAD','USD','EUR','GBP','IRR','AED','AUD','INR','TRY','OTHER'].map(v => <option key={v} value={v}>{v}</option>)}
-                </select>
-              </div>
-            </div>
-          </fieldset>
+          <div>
+            <label htmlFor="aff-assets-range" className={labelClass}>Provable assets (USD)<Required /></label>
+            <p className="mt-1 text-xs text-gray-500">Select the approximate value of assets you can document. No upload is required.</p>
+            <select id="aff-assets-range" className={fieldClass} defaultValue="" aria-invalid={!!errors.assets_range}
+              aria-describedby={errors.assets_range ? 'assets_range-error' : undefined}
+              {...register('assets_range', { required: 'Please select your provable assets range.' })}>
+              <option value="" disabled>Select an asset range</option>
+              <option value="under_300k">Less than US$300,000</option>
+              <option value="300k_500k">US$300,000–US$500,000</option>
+              <option value="500k_1m">US$500,000–US$1 million</option>
+              <option value="1m_plus">US$1 million or more</option>
+            </select>
+            <FieldError id="assets_range-error" text={errors.assets_range?.message} />
+          </div>
           {yesNo('traveled_to_canada', 'Have you traveled to Canada before?')}
           <div>
             {yesNo('visa_rejected', 'Has your Canadian visa ever been rejected?')}

@@ -86,21 +86,40 @@ class Entrepreneur(models.Model):
 class AffiliateApplication(models.Model):
   EDUCATION_CHOICES = [('high_school','High school'), ('bachelor','Bachelor'), ('master','Master'), ('phd','PhD')]
   LANGUAGE_CHOICES = [('none','None'), ('basic','Basic'), ('intermediate','Intermediate'), ('advanced','Advanced')]
+  POSITION_CHOICES = [
+    ('owner', 'Owner'), ('owner_ceo', 'Owner & CEO'), ('ceo', 'CEO'),
+    ('senior_manager', 'Senior Manager'), ('other', 'Other'),
+  ]
+  EXPERIENCE_CHOICES = [
+    ('under_5', 'Less than 5 years'), ('5_10', '5–10 years'),
+    ('10_20', '10–20 years'), ('20_plus', '20+ years'),
+  ]
+  ASSETS_RANGE_CHOICES = [
+    ('under_300k', 'Less than US$300,000'),
+    ('300k_500k', 'US$300,000–US$500,000'),
+    ('500k_1m', 'US$500,000–US$1 million'),
+    ('1m_plus', 'US$1 million or more'),
+  ]
   affiliate_slug = models.SlugField(max_length=100, db_index=True)
   affiliate_name = models.CharField(max_length=250)
   partner_primary_email = models.EmailField()
   full_name = models.CharField(max_length=180)
   phone_number = models.CharField(max_length=16)
   email = models.EmailField()
-  age = models.PositiveSmallIntegerField()
-  country = models.CharField(max_length=100)
-  city = models.CharField(max_length=100)
-  work_experience = models.TextField()
+  # Deprecated fields stay nullable/optional to preserve historic submissions.
+  age = models.PositiveSmallIntegerField(null=True, blank=True)
+  country = models.CharField(max_length=100, blank=True)
+  city = models.CharField(max_length=100, blank=True)
+  work_experience = models.TextField(blank=True)
+  position = models.CharField(max_length=20, choices=POSITION_CHOICES)
+  years_of_experience = models.CharField(max_length=20, choices=EXPERIENCE_CHOICES)
+  industry_field = models.CharField(max_length=180)
+  assets_range = models.CharField(max_length=20, choices=ASSETS_RANGE_CHOICES)
   education_degree = models.CharField(max_length=20, choices=EDUCATION_CHOICES)
   language_level = models.CharField(max_length=20, choices=LANGUAGE_CHOICES)
   ielts_score = models.DecimalField(max_digits=2, decimal_places=1, null=True, blank=True)
-  assets_amount = models.DecimalField(max_digits=17, decimal_places=2)
-  assets_currency = models.CharField(max_length=8)
+  assets_amount = models.DecimalField(max_digits=17, decimal_places=2, null=True, blank=True)
+  assets_currency = models.CharField(max_length=8, blank=True)
   traveled_to_canada = models.BooleanField()
   visa_rejected = models.BooleanField()
   visa_rejection_details = models.TextField(blank=True)
