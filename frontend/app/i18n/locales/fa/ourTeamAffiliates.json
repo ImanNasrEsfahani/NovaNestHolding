@@ -59,7 +59,19 @@
             "file": "/static/images/affiliates/certificates/sama-owj-middle-east-certificate-of-affiliation.webp"
           }
         ],
-        "primaryEmail": "SamaOwj@NovaNestHolding.com"
+        "primaryEmail": "SamaOwj@NovaNestHolding.com",
+        "social": {
+          "profile": {
+            "title": "نووانست هلدینگ × سمااوج خاورمیانه | همکاری افیلیت",
+            "description": "آشنایی با همکاری نووانست هلدینگ و آژانس مسافرتی سمااوج خاورمیانه در شبکه افیلیت نووانست و فرصت‌های ارتباط با کارآفرینان.",
+            "image": "/static/images/affiliates/sama-owj-novanest-social-20261014.png"
+          },
+          "application": {
+            "title": "نووانست هلدینگ × سمااوج خاورمیانه | فرم اختصاصی درخواست",
+            "description": "فرم درخواست اختصاصی نووانست هلدینگ از طریق افیلیت سمااوج خاورمیانه را تکمیل و ثبت کنید.",
+            "image": "/static/images/affiliates/sama-owj-novanest-social-20261014.png"
+          }
+        }
       },
       {
         "name": "گوهرآفرینان فردا — طلا و جواهر",

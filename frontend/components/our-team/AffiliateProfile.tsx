@@ -52,10 +52,10 @@ export default function AffiliateProfile(props: AffiliateProfileProps) {
   const emails = (partner.emails ?? []).filter((email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email));
 
   return (
-    <div className="mx-auto max-w-responsive px-2 pb-16 pt-32 md:px-4 lg:px-8">
+    <div className="mx-auto max-w-responsive px-2 pb-16 pt-32 md:px-4 lg:px-8" dir={lang === 'fa' ? 'rtl' : 'ltr'}>
       <Link href={`/${lang === 'fa' ? 'fa' : 'en'}/our-team`}
         className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
-        <span aria-hidden="true">←</span> {ui.backToTeam}
+        <span aria-hidden="true">{lang === 'fa' ? '→' : '←'}</span> {ui.backToTeam}
       </Link>
       <div className="flex flex-col gap-8 lg:flex-row lg:gap-12">
         <aside className="flex w-full flex-col items-center gap-6 rounded-xl border border-[#E9DED1] bg-white px-4 py-6 shadow lg:w-1/3 lg:px-6">
@@ -88,13 +88,13 @@ export default function AffiliateProfile(props: AffiliateProfileProps) {
             {emails.length > 0 && (
               <div>
                 <h2 className="mb-1 text-sm font-semibold uppercase text-gray-600">{ui.emails}</h2>
-                {emails.map((email) => <div key={email} dir="ltr" className="text-start"><a className="break-all text-sm text-primary hover:underline" href={`mailto:${email}`}>{email}</a></div>)}
+                {emails.map((email) => <div key={email} dir="ltr" className={lang === 'fa' ? 'text-right' : 'text-start'}><a className="break-all text-sm text-primary hover:underline" href={`mailto:${email}`}>{email}</a></div>)}
               </div>
             )}
             {!!partner.phones?.length && (
               <div>
                 <h2 className="mb-1 text-sm font-semibold uppercase text-gray-600">{ui.phones}</h2>
-                {partner.phones.map((phone) => <div key={phone} dir="ltr" className="text-start">{phoneHref(phone)
+                {partner.phones.map((phone) => <div key={phone} dir="ltr" className={lang === 'fa' ? 'text-right' : 'text-start'}>{phoneHref(phone)
                   ? <a className="text-sm text-primary hover:underline" href={phoneHref(phone)!}>{phone}</a>
                   : <span className="text-sm">{phone}</span>}</div>)}
               </div>
@@ -145,9 +145,9 @@ export default function AffiliateProfile(props: AffiliateProfileProps) {
           )}
 
           <section className="mt-6 rounded-xl border border-[#E9DED1] bg-white p-2 shadow md:p-6"
-            aria-label={props.formVariant === 'application' ? 'Affiliate application' : props.formLabels.formTitle}>
+            aria-label={props.formVariant === 'application' ? (lang === 'fa' ? 'فرم درخواست افیلیت' : 'Affiliate application') : props.formLabels.formTitle}>
             {props.formVariant === 'application' ? (
-              <AffiliateApplicationForm slug={partner.slug} affiliateName={partner.name} />
+              <AffiliateApplicationForm slug={partner.slug} affiliateName={partner.name} lang={lang} />
             ) : (
               <AffiliateContactForm affiliateName={partner.name} affiliateSlug={partner.slug} labels={props.formLabels} />
             )}
