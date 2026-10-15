@@ -40,15 +40,25 @@ jobs:
       - name: Build production frontend
         run: npm run build
 
-  publish-frontend:
-    name: Publish production Docker image to GHCR
+  publish-frontend-platform:
+    name: Build and push frontend (${{ matrix.arch }})
     needs: build-frontend
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
     timeout-minutes: 120
     permissions:
       contents: read
       packages: write
+    env:
+      REGISTRY_IMAGE: ghcr.io/imannasresfahani/novanestholding-frontend
     steps:
       - name: Validate build-time public URLs
         env:
@@ -64,31 +74,28 @@ jobs:
             echo '::error::Set repository variable NEXT_PUBLIC_DJANGO_HOST_URL to the actual public HTTPS Django API URL under Settings > Secrets and variables > Actions > Variables.'
             exit 1
           fi
+
       - name: Checkout repository
         uses: actions/checkout@v4
-      # GitHub-hosted runner is x86_64. Enable ARM64 emulation before initializing Buildx.
-      - name: Set up QEMU for ARM64
-        uses: docker/setup-qemu-action@v3
-        with:
-          platforms: arm64
-      - name: Set up Docker Buildx
+
+      - name: Set up Docker Buildx (native runner, no QEMU)
         uses: docker/setup-buildx-action@v3
+
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build and publish multi-architecture release (main branch only)
+
+      - name: Build and push native ${{ matrix.arch }} image
         uses: docker/build-push-action@v6
         with:
           context: ./frontend
           file: ./frontend/Dockerfile
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/${{ matrix.arch }}
           push: true
-          tags: |
-            ghcr.io/imannasresfahani/novanestholding-frontend:latest
-            ghcr.io/imannasresfahani/novanestholding-frontend:sha-${{ github.sha }}
+          tags: ${{ env.REGISTRY_IMAGE }}:build-${{ github.sha }}-${{ matrix.arch }}
           labels: |
             org.opencontainers.image.source=https://github.com/ImanNasrEsfahani/NovaNestHolding
             org.opencontainers.image.revision=${{ github.sha }}
@@ -96,5 +103,48 @@ jobs:
           build-args: |
             NEXT_PUBLIC_SITE_URL=${{ vars.NEXT_PUBLIC_SITE_URL || 'https://www.novanestholding.com' }}
             NEXT_PUBLIC_DJANGO_HOST_URL=${{ vars.NEXT_PUBLIC_DJANGO_HOST_URL }}
-          cache-from: type=gha,scope=frontend
-          cache-to: type=gha,mode=max,scope=frontend
+          cache-from: type=gha,scope=frontend-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=frontend-${{ matrix.arch }}
+
+  publish-frontend:
+    name: Publish production Docker image to GHCR
+    needs: publish-frontend-platform
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write
+    env:
+      REGISTRY_IMAGE: ghcr.io/imannasresfahani/novanestholding-frontend
+    steps:
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Update latest only after BOTH native platform builds succeed.
+      # Keep the existing image tags that Docker Compose expects.
+      - name: Assemble and publish multi-architecture manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker buildx imagetools create \
+            --tag "${REGISTRY_IMAGE}:latest" \
+            --tag "${REGISTRY_IMAGE}:sha-${GITHUB_SHA}" \
+            "${REGISTRY_IMAGE}:build-${GITHUB_SHA}-amd64" \
+            "${REGISTRY_IMAGE}:build-${GITHUB_SHA}-arm64"
+
+      - name: Verify published image contains both architectures
+        shell: bash
+        run: |
+          set -euo pipefail
+          manifest="$(docker buildx imagetools inspect "${REGISTRY_IMAGE}:sha-${GITHUB_SHA}")"
+          printf '%s\n' "$manifest"
+          grep -q 'linux/amd64' <<< "$manifest"
+          grep -q 'linux/arm64' <<< "$manifest"
