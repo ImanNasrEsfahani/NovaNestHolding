@@ -50,7 +50,15 @@
           "رزرو هتل در ایران و جهان",
           "خدمات ویزای گردشگری"
         ],
-        "certificates": [],
+        "certificates": [
+          {
+            "title": "گواهی همکاری افیلیت — سمااوج خاورمیانه",
+            "issuer": "NovaNest Holding",
+            "issuedAt": "2026-10-07",
+            "thumbnail": "/static/images/affiliates/certificates/sama-owj-middle-east-certificate-of-affiliation-thumbnail.webp",
+            "file": "/static/images/affiliates/certificates/sama-owj-middle-east-certificate-of-affiliation.webp"
+          }
+        ],
         "primaryEmail": "SamaOwj@NovaNestHolding.com"
       },
       {
@@ -99,7 +107,15 @@
           "https://goharafarinan.com"
         ],
         "slug": "gohar-afarinan-farda",
-        "certificates": [],
+        "certificates": [
+          {
+            "title": "گواهی همکاری افیلیت — گوهرآفرینان فردا",
+            "issuer": "NovaNest Holding",
+            "issuedAt": "2026-10-07",
+            "thumbnail": "/static/images/affiliates/certificates/gohar-afarinan-farda-certificate-of-affiliation-thumbnail.webp",
+            "file": "/static/images/affiliates/certificates/gohar-afarinan-farda-certificate-of-affiliation.webp"
+          }
+        ],
         "primaryEmail": "info@goharafarinan.com"
       }
     ],

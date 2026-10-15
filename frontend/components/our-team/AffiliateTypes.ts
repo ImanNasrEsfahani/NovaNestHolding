@@ -17,6 +17,9 @@ export type AffiliateCertificate = {
   title: string;
   issuer?: string;
   issuedAt?: string;
+  /** Optional lightweight preview: only fetched in the certificate listing. */
+  thumbnail?: string;
+  /** Full-quality file: fetched only after opening the preview. */
   file: string;
 };
 

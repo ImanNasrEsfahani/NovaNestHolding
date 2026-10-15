@@ -50,7 +50,15 @@
           "Hotel reservations in Iran and abroad",
           "Tourist visa assistance"
         ],
-        "certificates": [],
+        "certificates": [
+          {
+            "title": "Certificate of Affiliation — Sama Owj Middle East",
+            "issuer": "NovaNest Holding",
+            "issuedAt": "2026-10-07",
+            "thumbnail": "/static/images/affiliates/certificates/sama-owj-middle-east-certificate-of-affiliation-thumbnail.webp",
+            "file": "/static/images/affiliates/certificates/sama-owj-middle-east-certificate-of-affiliation.webp"
+          }
+        ],
         "primaryEmail": "SamaOwj@NovaNestHolding.com",
         "social": {
           "profile": {
@@ -111,7 +119,15 @@
           "https://goharafarinan.com"
         ],
         "slug": "gohar-afarinan-farda",
-        "certificates": [],
+        "certificates": [
+          {
+            "title": "Certificate of Affiliation — Gohar Afarinan Farda",
+            "issuer": "NovaNest Holding",
+            "issuedAt": "2026-10-07",
+            "thumbnail": "/static/images/affiliates/certificates/gohar-afarinan-farda-certificate-of-affiliation-thumbnail.webp",
+            "file": "/static/images/affiliates/certificates/gohar-afarinan-farda-certificate-of-affiliation.webp"
+          }
+        ],
         "primaryEmail": "info@goharafarinan.com"
       }
     ],
