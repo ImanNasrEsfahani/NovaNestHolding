@@ -2,16 +2,21 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRef } from 'react';
 
 import { AffiliatePartner, AffiliatesContent, initials, safeLocalImage } from './AffiliateTypes';
+import useSeamlessAutoScroll from './useSeamlessAutoScroll';
 
-export function AffiliateCard({ partner, lang }: { partner: AffiliatePartner; lang: string }) {
+export function AffiliateCard({ partner, lang, duplicate = false }: {
+  partner: AffiliatePartner;
+  lang: string;
+  duplicate?: boolean;
+}) {
   const logo = safeLocalImage(partner.logo);
   return (
     <Link
       href={`/${lang === 'fa' ? 'fa' : 'en'}/affiliate/${encodeURIComponent(partner.slug)}`}
       aria-label={partner.name}
+      tabIndex={duplicate ? -1 : undefined}
       className="group/card flex h-full flex-col overflow-hidden rounded-2xl border border-[#E9DED1] bg-white shadow-md transition-all duration-500 hover:-translate-y-2 hover:scale-[1.01] hover:shadow-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
     >
       <div className="relative aspect-[0.75/1] overflow-hidden bg-gradient-to-br from-primary/10 to-primary/5">
@@ -29,7 +34,7 @@ export function AffiliateCard({ partner, lang }: { partner: AffiliatePartner; la
           </div>
         )}
       </div>
-      <div className="flex flex-1 flex-col justify-between p-6">
+      <div className="flex flex-1 flex-col justify-between p-6" dir={lang === 'fa' ? 'rtl' : 'ltr'}>
         <div>
           <h3 className="mb-3 font-header text-2xl font-bold leading-snug text-blue">{partner.name}</h3>
           {partner.category && (
@@ -46,12 +51,15 @@ export function AffiliateCard({ partner, lang }: { partner: AffiliatePartner; la
   );
 }
 
+const copies = [0, 1, 2] as const;
+
 export default function AffiliatesSection({ lang, content }: { lang: string; content: AffiliatesContent }) {
-  const scroller = useRef<HTMLDivElement>(null);
   const partners = Array.isArray(content.partners)
     ? content.partners.filter((p) => p && typeof p.slug === 'string' && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(p.slug) && p.name)
     : [];
+  const { scrollerRef, middleGroupRef, repeats, moveBy } = useSeamlessAutoScroll(partners.length, 15);
   if (!partners.length) return null;
+  const isLooping = partners.length > 1;
 
   return (
     <section aria-labelledby="business-affiliates-title" className="max-w-responsive mx-auto my-16 px-2 lg:px-6">
@@ -62,22 +70,46 @@ export default function AffiliatesSection({ lang, content }: { lang: string; con
         <p className="mx-auto mb-7 max-w-3xl text-center text-base leading-relaxed text-gray-600">{content.description}</p>
       )}
       <div className="relative">
-        {partners.length > 1 && (
+        {isLooping && (
           <div className="mb-3 flex justify-end gap-2" dir="ltr">
-            <button type="button" aria-label="Scroll affiliates left" onClick={() => scroller.current?.scrollBy({left: -320, behavior: 'smooth'})}
+            <button type="button" aria-label="Scroll affiliates left" onClick={() => moveBy(-320)}
               className="flex h-10 w-10 items-center justify-center rounded-full border border-[#E9DED1] bg-white text-primary transition-colors hover:bg-whiteGold focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">←</button>
-            <button type="button" aria-label="Scroll affiliates right" onClick={() => scroller.current?.scrollBy({left: 320, behavior: 'smooth'})}
+            <button type="button" aria-label="Scroll affiliates right" onClick={() => moveBy(320)}
               className="flex h-10 w-10 items-center justify-center rounded-full border border-[#E9DED1] bg-white text-primary transition-colors hover:bg-whiteGold focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">→</button>
           </div>
         )}
-        <div ref={scroller} tabIndex={0} aria-label={content.title}
-          className="flex snap-x snap-mandatory gap-5 overflow-x-auto px-2 py-4 scroll-smooth focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary md:gap-8 md:px-6"
-          style={{ scrollbarWidth: 'thin', scrollbarColor: '#AA8453 #F8F5F0' }}>
-          {partners.map((partner) => (
-            <div key={partner.slug} className="w-[76vw] max-w-72 shrink-0 snap-start sm:w-64 md:w-72">
-              <AffiliateCard partner={partner} lang={lang} />
-            </div>
-          ))}
+        <div
+          ref={scrollerRef}
+          dir="ltr"
+          tabIndex={0}
+          aria-label={content.title}
+          className="overflow-x-auto overflow-y-hidden px-2 py-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary md:px-6"
+          style={{ scrollbarWidth: 'thin', scrollbarColor: '#AA8453 #F8F5F0' }}
+        >
+          <div className="flex w-max items-stretch">
+            {(isLooping ? copies : [1]).map((groupNumber) => (
+              <div
+                key={groupNumber}
+                ref={groupNumber === 1 ? middleGroupRef : undefined}
+                className="flex shrink-0 items-stretch gap-5 pr-5 md:gap-8 md:pr-8"
+              >
+                {Array.from({ length: isLooping ? repeats : 1 }, (_, repetition) =>
+                  partners.map((partner) => {
+                    const duplicate = groupNumber !== 1 || repetition !== 0;
+                    return (
+                      <div
+                        key={`${groupNumber}-${repetition}-${partner.slug}`}
+                        aria-hidden={duplicate || undefined}
+                        className="w-[76vw] max-w-72 shrink-0 sm:w-64 md:w-72"
+                      >
+                        <AffiliateCard partner={partner} lang={lang} duplicate={duplicate} />
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>
