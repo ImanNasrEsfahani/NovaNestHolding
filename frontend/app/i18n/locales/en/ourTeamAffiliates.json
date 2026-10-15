@@ -1,7 +1,7 @@
 {
   "affiliates": {
     "eyebrow": "OUR NETWORK",
-    "title": "Business Affiliates & Partners",
+    "title": "Business Affiliates",
     "description": "Explore the businesses and organizations collaborating with NovaNest.",
     "focusAreas": [
       "Strategic collaboration",
@@ -9,7 +9,7 @@
       "Business growth"
     ],
     "ctaTitle": "Let's build what comes next.",
-    "ctaDescription": "Interested in a business partnership? Connect with our team through the affiliate registration form.",
+    "ctaDescription": "Interested in joining our affiliate network? Connect with our team through the affiliate registration form.",
     "ctaLabel": "Become an Affiliate",
     "visitWebsiteLabel": "Visit website",
     "partners": [
@@ -68,11 +68,11 @@
       {
         "name": "Gohar Afarinan Farda — Gold & Jewelry",
         "category": "Gold & Jewelry Industry",
-        "description": "Gohar Afarinan Farda is an Iranian gold and jewelry industry company offering consulting, professional training, product design, innovation and business development support, and collaborating with NovaNest on international business expansion.",
+        "description": "Gohar Afarinan Farda is an Iranian company specializing in gold and jewelry services, consulting, training, and innovation. As a NovaNest affiliate, it helps gold-industry entrepreneurs explore opportunities to expand or relocate their businesses abroad, especially to Canada.",
         "about": [
-          "Gohar Afarinan Farda specializes in gold and jewelry consulting, training and innovation. The company reports more than 20 years of industry experience, a team of over 30 specialists, 50+ successful projects, more than 1,000 satisfied clients and eight branches across Iran.",
-          "The company combines industry experience with modern technology and works with partner brands such as 18 Ayar, Baharan, Goharan, Nabat, Romis and Sarourian across jewelry design and production, product development, marketing and distribution.",
-          "As a NovaNest business partner, Gohar Afarinan Farda helps connect gold-industry entrepreneurs interested in expanding or relocating their businesses internationally, particularly to Canada. Together, we aim to support these entrepreneurs as they plan to establish and grow gold-related businesses in Canada."
+          "Gohar Afarinan Farda is an Iranian company specializing in gold and jewelry services, consulting, training, and innovation. With more than 20 years of experience, a team of over 30 specialists, and 50+ successful projects serving more than 1,000 satisfied clients across 8 branches in Iran, the company is a recognized pioneer in the gold and jewelry industry.",
+          "The company brings together deep industry experience, modern technology, and a network of trusted partner brands — including 18 Ayar, Baharan, Goharan, Nabat, Romis, and Sarourian — across design, production, product development, marketing, and distribution.",
+          "As a NovaNest affiliate, Gohar Afarinan Farda connects us with gold-industry entrepreneurs who want to expand or relocate their business abroad — especially to Canada. Together, we help these entrepreneurs pave their path to launching and growing a gold business in Canada."
         ],
         "services": [
           "Gold and jewelry industry consulting",
@@ -89,7 +89,7 @@
           },
           "application": {
             "title": "NovaNest Holding × Gohar Afarinan Farda | Affiliate Application",
-            "description": "Apply to NovaNest Holding through our gold and jewelry industry partner Gohar Afarinan Farda and explore business opportunities in Canada.",
+            "description": "Apply to NovaNest Holding through our gold and jewelry industry affiliate Gohar Afarinan Farda and explore business opportunities in Canada.",
             "image": "/static/images/affiliates/gohar-afarinan-farda-novanest-social.png"
           }
         },
@@ -98,7 +98,7 @@
         "address": "4th Administrative Floor, Unit 417, Almas Karim Khan Complex, Karim Khan Street at Hafez Street, Tehran, Iran",
         "representative": {
           "name": "Mr. Sororian",
-          "position": "Business partner contact",
+          "position": "Affiliate contact",
           "photo": "/static/images/affiliates/sororian.webp"
         },
         "phones": [
@@ -116,7 +116,7 @@
       }
     ],
     "contactLabel": "Contact details",
-    "representativeLabel": "Agency contact",
+    "representativeLabel": "Affiliate contact",
     "profile": {
       "backToTeam": "Back to Our Team",
       "about": "About",
