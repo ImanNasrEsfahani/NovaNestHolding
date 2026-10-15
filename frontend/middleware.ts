@@ -8,10 +8,18 @@ export const config = {
   ],
 };
 
-function withHeadersAndEnglishCookie(response: NextResponse, req: NextRequest): NextResponse {
-  // Replace any previously saved Persian language preference.
-  if (req.cookies.get(cookieName)?.value !== 'en') {
-    response.cookies.set(cookieName, 'en', { path: '/', sameSite: 'lax' });
+// Persian is currently public ONLY for the two approved affiliate profiles
+// and their dedicated application forms. Other Persian URLs remain retired.
+const allowedPersianAffiliatePage =
+  /^\/fa\/affiliate\/(?:sama-owj-middle-east|gohar-afarinan-farda)(?:\/apply)?\/?$/;
+
+function withHeadersAndLanguageCookie(
+  response: NextResponse,
+  req: NextRequest,
+  language: 'en' | 'fa'
+): NextResponse {
+  if (req.cookies.get(cookieName)?.value !== language) {
+    response.cookies.set(cookieName, language, { path: '/', sameSite: 'lax' });
   }
 
   response.headers.set('X-Content-Type-Options', 'nosniff');
@@ -25,11 +33,17 @@ export function middleware(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
 
   if (pathname === '/en' || pathname.startsWith('/en/')) {
-    return withHeadersAndEnglishCookie(NextResponse.next(), req);
+    return withHeadersAndLanguageCookie(NextResponse.next(), req, 'en');
   }
 
-  // Retire the public Persian URLs but preserve the same destination,
-  // query parameters and the ability to re-enable Persian later.
+  // Keep these exact four Persian URLs (two profiles and two forms) in Persian.
+  // This does not enable any other /fa page.
+  if (allowedPersianAffiliatePage.test(pathname)) {
+    return withHeadersAndLanguageCookie(NextResponse.next(), req, 'fa');
+  }
+
+  // Preserve the existing English-only behavior for every other route,
+  // including query parameters and the existing redirect status.
   const target = req.nextUrl.clone();
   if (pathname === '/fa') {
     target.pathname = '/en';
@@ -39,5 +53,5 @@ export function middleware(req: NextRequest) {
     target.pathname = `/en${pathname === '/' ? '' : pathname}`;
   }
 
-  return withHeadersAndEnglishCookie(NextResponse.redirect(target, 307), req);
+  return withHeadersAndLanguageCookie(NextResponse.redirect(target, 307), req, 'en');
 }
