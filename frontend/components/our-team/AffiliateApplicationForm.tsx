@@ -100,7 +100,6 @@ export default function AffiliateApplicationForm({ slug, affiliateName, lang = '
       <section className="overflow-hidden rounded-2xl border border-[#E7DDD1] bg-white shadow-sm">
         <div className="border-b border-[#EEE5DC] bg-[#FAF8F5] px-5 py-5 sm:px-8">
           <p className="text-xs font-bold uppercase tracking-[.16em] text-primary">01 / {t.section1}</p>
-          <h2 className="mt-1 font-header text-xl font-semibold text-[#1D2942]">{t.section1Title}</h2>
         </div>
         <div className="grid gap-5 px-5 py-6 sm:grid-cols-2 sm:px-8">
           <div>
@@ -130,7 +129,6 @@ export default function AffiliateApplicationForm({ slug, affiliateName, lang = '
       <section className="overflow-hidden rounded-2xl border border-[#E7DDD1] bg-white shadow-sm">
         <div className="border-b border-[#EEE5DC] bg-[#FAF8F5] px-5 py-5 sm:px-8">
           <p className="text-xs font-bold uppercase tracking-[.16em] text-primary">02 / {t.section2}</p>
-          <h2 className="mt-1 font-header text-xl font-semibold text-[#1D2942]">{t.section2Title}</h2>
         </div>
         <div className="grid gap-5 px-5 py-6 sm:grid-cols-2 sm:px-8">
           <div>
@@ -199,7 +197,6 @@ export default function AffiliateApplicationForm({ slug, affiliateName, lang = '
       <section className="overflow-hidden rounded-2xl border border-[#E7DDD1] bg-white shadow-sm">
         <div className="border-b border-[#EEE5DC] bg-[#FAF8F5] px-5 py-5 sm:px-8">
           <p className="text-xs font-bold uppercase tracking-[.16em] text-primary">03 / {t.section3}</p>
-          <h2 className="mt-1 font-header text-xl font-semibold text-[#1D2942]">{t.section3Title}</h2>
         </div>
         <div className="space-y-7 px-5 py-6 sm:px-8">
           <div>
@@ -221,9 +218,9 @@ export default function AffiliateApplicationForm({ slug, affiliateName, lang = '
         </div>
       </section>
 
-      <div className="rounded-2xl border border-[#E7DDD1] bg-[#F8F5F0] px-5 py-6 sm:px-8">
+      <div className="pt-1">
         <button type="submit" disabled={isSubmitting}
-          className="mt-6 inline-flex w-full items-center justify-center gap-3 rounded-xl bg-primary px-6 py-4 text-base font-semibold text-white shadow-sm transition-colors hover:bg-[#8D6B40] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary disabled:cursor-wait disabled:opacity-60 sm:w-auto sm:min-w-[260px]">
+          className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-[#D7D3CB] bg-white px-6 py-3 text-sm font-semibold text-[#26324B] transition-colors hover:bg-[#FAF8F5] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-wait disabled:opacity-60 sm:w-auto sm:min-w-[220px]">
           {isSubmitting ? t.submitting : t.submit} <span aria-hidden="true">{isFa ? '←' : '→'}</span>
         </button>
         {status && (

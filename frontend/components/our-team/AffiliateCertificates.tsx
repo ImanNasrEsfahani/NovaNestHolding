@@ -91,7 +91,7 @@ export default function AffiliateCertificates({ certificates, title, emptyLabel,
       </h2>
 
       {available.length > 0 ? (
-        <div className="grid grid-cols-2 gap-3">
+        <div className="w-full space-y-4">
           {available.map((certificate, index) => (
             <button
               type="button"
@@ -99,29 +99,22 @@ export default function AffiliateCertificates({ certificates, title, emptyLabel,
               onClick={() => openPreview(certificate)}
               aria-label={`${viewLabel}: ${certificate.title}`}
               aria-haspopup="dialog"
-              className="group min-w-0 overflow-hidden rounded-xl border border-[#E9DED1] bg-[#FAF8F5] text-left shadow-sm transition hover:border-primary hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              className="block w-full cursor-zoom-in bg-transparent p-0 text-start focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             >
-              <span className="relative flex h-40 w-full items-center justify-center overflow-hidden bg-white">
-                {certificate.thumbnail || !isPdf(certificate.file) ? (
-                  <Image
-                    src={certificate.thumbnail || certificate.file}
-                    alt={certificate.title}
-                    fill
-                    unoptimized
-                    loading="lazy"
-                    sizes="(max-width: 1024px) 45vw, 180px"
-                    className="object-contain p-2 transition-transform duration-200 group-hover:scale-[1.03]"
-                  />
-                ) : (
-                  <span aria-hidden="true" className="rounded-lg border border-primary/20 bg-[#F8F5F0] px-4 py-3 text-2xl font-bold text-primary">PDF</span>
-                )}
-              </span>
-              <span className="block p-2.5">
-                <span className="block break-words text-xs font-semibold text-gray-800">{certificate.title}</span>
-                {certificate.issuer && <span className="mt-1 block text-xs text-gray-600">{certificate.issuer}</span>}
-                {certificate.issuedAt && <span className="mt-1 block text-xs text-gray-500">{certificate.issuedAt}</span>}
-                <span className="mt-2 block text-xs font-semibold text-primary group-hover:underline">{viewLabel} ↗</span>
-              </span>
+              {certificate.thumbnail || !isPdf(certificate.file) ? (
+                <Image
+                  src={certificate.thumbnail || certificate.file}
+                  alt={certificate.title}
+                  width={1448}
+                  height={1086}
+                  unoptimized
+                  loading="lazy"
+                  sizes="(max-width: 1024px) 100vw, 480px"
+                  className="block h-auto w-full object-contain"
+                />
+              ) : (
+                <span className="block w-full py-6 text-center text-gray-700">PDF</span>
+              )}
             </button>
           ))}
         </div>

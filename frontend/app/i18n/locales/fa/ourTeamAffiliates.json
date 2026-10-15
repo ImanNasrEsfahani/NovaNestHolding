@@ -15,7 +15,7 @@
     "partners": [
       {
         "name": "آژانس مسافرتی سمااوج خاورمیانه",
-        "logo": "/static/images/affiliates/sama-owj.webp",
+        "logo": "/static/images/affiliates/sama-owj.svg",
         "category": "خدمات گردشگری و مسافرتی",
         "city": "تهران، ایران",
         "description": "آژانس مسافرتی سمااوج خاورمیانه در زمینه طراحی و اجرای تورهای ایرانگردی و جهانگردی، فروش بلیت پروازهای داخلی و خارجی، رزرو هتل و خدمات ویزای گردشگری فعالیت می‌کند. این مجموعه بر تجربه کارشناسان، فناوری‌های روز و کیفیت خدمات تمرکز دارد.",
@@ -106,13 +106,14 @@
         "address": "تهران، خیابان کریمخان، نبش خیابان حافظ، مجتمع الماس کریمخان، طبقه ۴ اداری، واحد ۴۱۷",
         "representative": {
           "name": "آقای سروریان",
-          "position": "رابط افیلیت",
+          "position": "مدیر",
           "photo": "/static/images/affiliates/sororian.webp"
         },
         "phones": [
-          "90001910"
+          "+9890001910"
         ],
         "emails": [
+          "goharafarinan@NovaNestHolding.com",
           "info@goharafarinan.com"
         ],
         "websites": [
