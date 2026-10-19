@@ -1,0 +1,10 @@
+{
+  "syntax_python_files": 10,
+  "compose": "passed",
+  "shared_template": "passed",
+  "graph_backend_mocked": "passed",
+  "graph_403_handling": "passed",
+  "missing_credentials": "passed",
+  "django_integration": "Not run (Django absent in this container)",
+  "live_graph_send": "Not run (requires Microsoft 365 admin configuration)"
+}

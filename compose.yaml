@@ -40,14 +40,12 @@ services:
       DB_PASSWORD: ${DB_PASSWORD:-change-this-database-password}
       DB_HOST: db
       DB_PORT: 3306
-      EMAIL_HOST: ${EMAIL_HOST:-smtp.office365.com}
-      EMAIL_PORT: ${EMAIL_PORT:-587}
-      EMAIL_HOST_USER: ${EMAIL_HOST_USER:-}
-      EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD:-}
-      DEFAULT_FROM_EMAIL: ${DEFAULT_FROM_EMAIL:-}
-      MAILGUN_API_KEY: ${MAILGUN_API_KEY:-}
-      MAILGUN_DOMAIN: ${MAILGUN_DOMAIN:-}
-      MAILGUN_FROM_EMAIL: ${MAILGUN_FROM_EMAIL:-}
+      # Microsoft Graph OAuth2 app-only: no SMTP basic credentials.
+      MS365_TENANT_ID: ${MS365_TENANT_ID:-}
+      MS365_CLIENT_ID: ${MS365_CLIENT_ID:-}
+      MS365_CLIENT_SECRET: ${MS365_CLIENT_SECRET:-}
+      MS365_SENDER_EMAIL: ${MS365_SENDER_EMAIL:-}
+      # Legacy variable name retained only for Startup admin recipient list.
       MAILGUN_ADMIN_RECIPIENTS: ${MAILGUN_ADMIN_RECIPIENTS:-info@novanestventure.com}
       AFFILIATE_APPLICATION_ADMIN_EMAILS: ${AFFILIATE_APPLICATION_ADMIN_EMAILS:-info@novanestholding.com}
       AFFILIATE_REGISTRY_PATH: /app/affiliate-registry/ourTeamAffiliates.json
@@ -58,15 +56,12 @@ services:
       - "${BACKEND_PORT:-8000}:8000"
     volumes:
       - backend_media:/app/media
-      # Bind the directory (not a single file), so Git checkouts update registry contents safely.
       - ./frontend/app/i18n/locales/en:/app/affiliate-registry:ro
 
   frontend:
-    # Pull the published GitHub Actions release; do not build the frontend on the server.
     image: ${FRONTEND_IMAGE:-ghcr.io/imannasresfahani/novanestholding-frontend:latest}
     restart: unless-stopped
     environment:
-      # NEXT_PUBLIC_* values are compiled into the image by GitHub Actions.
       NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3000}
       NEXT_PUBLIC_DJANGO_HOST_URL: ${NEXT_PUBLIC_DJANGO_HOST_URL:-http://localhost:8000}
     depends_on:

@@ -1,6 +1,6 @@
 """Form serializers using one shared NovaNest HTML email layout.
 
-Delivery uses the same Brevo SMTP configuration as before; only presentation
+Delivery uses the same Microsoft 365 Graph configuration as before; only presentation
 is centralized. Each email has its own wording, but the shared template
 provides a consistent header, footer, responsive styling, and plaintext copy.
 """
@@ -9,7 +9,7 @@ import logging
 from django.conf import settings
 from rest_framework import serializers
 
-from .email_service import send_branded_brevo_email
+from .email_service import send_branded_email
 from .models import ContactUs, Entrepreneur, InvestorRegistration, PartnerMembership, StartUpsForm
 
 logger = logging.getLogger(__name__)
@@ -29,7 +29,7 @@ class StartupFormSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         instance = super().create(validated_data)
         name = f'{instance.firstName} {instance.lastName}'.strip()
-        send_branded_brevo_email(
+        send_branded_email(
             instance.email,
             subject='Thank you for registering your startup',
             title='Startup registration received',
@@ -42,7 +42,7 @@ class StartupFormSerializer(serializers.ModelSerializer):
         # Keep the existing internal-notification recipient setting and behavior.
         admin_list = getattr(settings, 'MAILGUN_ADMIN_RECIPIENTS', [])
         if admin_list:
-            send_branded_brevo_email(
+            send_branded_email(
                 admin_list,
                 subject=f'New startup registration: {name}',
                 title='New startup registration',
@@ -62,7 +62,7 @@ class ContactUsSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         instance = super().create(validated_data)
-        send_branded_brevo_email(
+        send_branded_email(
             instance.email,
             subject='Thanks for contacting NovaNest Holding',
             title='We received your message',
@@ -82,7 +82,7 @@ class PartnerMembershipSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         instance = super().create(validated_data)
-        send_branded_brevo_email(
+        send_branded_email(
             instance.email,
             subject='Thanks for joining our partner network',
             title='Partner registration received',
@@ -103,7 +103,7 @@ class InvestorRegistrationSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         instance = super().create(validated_data)
-        send_branded_brevo_email(
+        send_branded_email(
             instance.email,
             subject='Thank you for registering as an investor',
             title='Investor registration received',
@@ -124,7 +124,7 @@ class EntrepreneurSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         instance = super().create(validated_data)
-        send_branded_brevo_email(
+        send_branded_email(
             instance.email,
             subject='Thank you for registering as an entrepreneur',
             title='Entrepreneur registration received',

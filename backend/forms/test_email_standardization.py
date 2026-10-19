@@ -1,10 +1,10 @@
-"""Shared email layout and legacy-form regression tests (network-free)."""
+"""Unified HTML mail formatting and serializer tests; all tests are network-free."""
 from types import SimpleNamespace
 from unittest.mock import patch
 
 from django.test import SimpleTestCase, override_settings
 
-from .email_service import render_standard_email
+from .email_service import render_standard_email, send_branded_email
 from .serializers import (
     ContactUsSerializer, EntrepreneurSerializer, InvestorRegistrationSerializer,
     PartnerMembershipSerializer, StartupFormSerializer,
@@ -39,6 +39,27 @@ class SharedEmailTemplateTests(SimpleTestCase):
         self.assertIn('dir="rtl"', html)
 
 
+@override_settings(
+    EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend',
+    DEFAULT_FROM_EMAIL='test-sender@example.com',
+)
+class UnifiedMailTests(SimpleTestCase):
+    def test_shared_sender_attaches_html_and_plaintext(self):
+        from django.core import mail
+        mail.outbox = []
+        self.assertTrue(send_branded_email(
+            'recipient@example.com', subject='Test', title='Sample',
+            intro='Hello', rows=[('Reference', 123)],
+        ))
+        self.assertEqual(len(mail.outbox), 1)
+        message = mail.outbox[0]
+        self.assertEqual(message.from_email, 'test-sender@example.com')
+        self.assertEqual(message.to, ['recipient@example.com'])
+        self.assertIn('Reference: 123', message.body)
+        self.assertIn('Synergy of energy', message.alternatives[0][0])
+        self.assertEqual(message.alternatives[0][1], 'text/html')
+
+
 @override_settings(MAILGUN_ADMIN_RECIPIENTS=['admin@example.com'])
 class LegacySerializerEmailTests(SimpleTestCase):
     def setUp(self):
@@ -49,7 +70,7 @@ class LegacySerializerEmailTests(SimpleTestCase):
             companyName='Demo Company', pk=3,
         )
 
-    def test_all_legacy_forms_use_shared_sender(self):
+    def test_all_existing_forms_use_shared_sender(self):
         for serializer_class, expected_calls in (
             (StartupFormSerializer, 2),
             (ContactUsSerializer, 1),
@@ -59,40 +80,10 @@ class LegacySerializerEmailTests(SimpleTestCase):
         ):
             with self.subTest(serializer=serializer_class.__name__):
                 with patch('rest_framework.serializers.ModelSerializer.create', return_value=self.example):
-                    with patch('forms.serializers.send_branded_brevo_email', return_value=True) as sender:
+                    with patch('forms.serializers.send_branded_email', return_value=True) as sender:
                         serializer_class().create({})
                         self.assertEqual(sender.call_count, expected_calls)
                         for args, kwargs in sender.call_args_list:
                             self.assertTrue(kwargs['subject'])
                             self.assertTrue(kwargs['title'])
                             self.assertNotIn('html', kwargs)
-
-
-@override_settings(
-    BREVO_SMTP_HOST='example.invalid', BREVO_SMTP_PORT=587,
-    BREVO_SMTP_LOGIN='smtp-login@example.com',
-    BREVO_SMTP_PASSWORD='placeholder-test-password',
-    BREVO_FROM_EMAIL='sender@example.com',
-    MAILGUN_DOMAIN='example.invalid',
-    MAILGUN_API_KEY='placeholder-test-key',
-    MAILGUN_FROM_EMAIL='sender@example.com',
-)
-class TransportFallbackTests(SimpleTestCase):
-    def test_brevo_direct_calls_without_html_use_shared_template(self):
-        from .brevo import send_brevo_email
-        with patch('forms.brevo.smtplib.SMTP') as smtp:
-            self.assertTrue(send_brevo_email('recipient@example.com', 'Test', 'Hi'))
-            sent = smtp.return_value.__enter__.return_value.send_message.call_args[0][0]
-            body = sent.get_body(preferencelist=('html',))
-            self.assertIsNotNone(body)
-            self.assertIn('Synergy of energy', body.get_content())
-
-    def test_mailgun_direct_calls_without_html_use_shared_template(self):
-        from .mailgun import send_mailgun_message
-        with patch('forms.mailgun.requests.post') as sender:
-            sender.return_value.status_code = 200
-            result = send_mailgun_message('recipient@example.com', 'Test', 'Hi')
-            self.assertIs(result, sender.return_value)
-            data = sender.call_args.kwargs['data']
-            self.assertIn('Synergy of energy', data['html'])
-            self.assertEqual(data['text'], 'Hi')

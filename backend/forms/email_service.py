@@ -9,7 +9,8 @@ from typing import Iterable, Optional, Sequence, Tuple
 
 from django.template.loader import render_to_string
 
-from .brevo import send_brevo_email
+from django.conf import settings
+from django.core.mail import EmailMultiAlternatives
 
 Row = Tuple[str, object]
 
@@ -51,7 +52,7 @@ def render_standard_email(
     return '\n\n'.join(segments), html
 
 
-def send_branded_brevo_email(
+def send_branded_email(
     to: str | Iterable[str],
     *,
     subject: str,
@@ -64,9 +65,17 @@ def send_branded_brevo_email(
     preheader: str = '',
     from_email: Optional[str] = None,
 ) -> bool:
-    """Use the existing Brevo SMTP transport with the shared layout."""
+    """Send HTML + plain text via the configured Microsoft 365 Graph backend."""
     plain, html = render_standard_email(
         title=title, intro=intro, message=message, rows=rows,
         note=note, language=language, preheader=preheader,
     )
-    return send_brevo_email(to, subject, plain, html=html, from_email=from_email)
+    recipients = [to] if isinstance(to, str) else list(to)
+    email = EmailMultiAlternatives(
+        subject=subject,
+        body=plain,
+        from_email=from_email or settings.DEFAULT_FROM_EMAIL,
+        to=recipients,
+    )
+    email.attach_alternative(html, 'text/html')
+    return email.send(fail_silently=False) == 1
