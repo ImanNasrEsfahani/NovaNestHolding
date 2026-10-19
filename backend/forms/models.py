@@ -133,3 +133,24 @@ class AffiliateApplication(models.Model):
 
   class Meta:
     ordering = ['-created_at']
+
+
+class AffiliateInquiry(models.Model):
+  """Message from an affiliate's public profile, separate from an Apply request."""
+  affiliate_slug = models.SlugField(max_length=100, db_index=True)
+  affiliate_name = models.CharField(max_length=250)
+  partner_primary_email = models.EmailField()
+  first_name = models.CharField(max_length=150)
+  last_name = models.CharField(max_length=150)
+  email = models.EmailField()
+  phone_number = models.CharField(max_length=50)
+  message = models.TextField(max_length=1300)
+  submission_language = models.CharField(max_length=2, choices=[('en', 'English'), ('fa', 'Persian')], default='en')
+  created_at = models.DateTimeField(auto_now_add=True)
+  admin_notified = models.BooleanField(default=False)
+  partner_notified = models.BooleanField(default=False)
+  applicant_notified = models.BooleanField(default=False)
+  notification_error = models.CharField(max_length=200, blank=True)
+
+  class Meta:
+    ordering = ['-created_at']
