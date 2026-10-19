@@ -1,10 +1,16 @@
-from .models import StartUpsForm, ContactUs, PartnerMembership, InvestorRegistration, Entrepreneur
+"""Form serializers using one shared NovaNest HTML email layout.
 
-from rest_framework import serializers
-from .brevo import send_brevo_email
-from django.template.loader import render_to_string
-from django.conf import settings
+Delivery uses the same Brevo SMTP configuration as before; only presentation
+is centralized. Each email has its own wording, but the shared template
+provides a consistent header, footer, responsive styling, and plaintext copy.
+"""
 import logging
+
+from django.conf import settings
+from rest_framework import serializers
+
+from .email_service import send_branded_brevo_email
+from .models import ContactUs, Entrepreneur, InvestorRegistration, PartnerMembership, StartUpsForm
 
 logger = logging.getLogger(__name__)
 
@@ -17,168 +23,115 @@ class StartupFormSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = StartUpsForm
-        fields = "__all__"
-        read_only_fields = ["id", "createdAt"]
+        fields = '__all__'
+        read_only_fields = ['id', 'createdAt']
 
     def create(self, validated_data):
         instance = super().create(validated_data)
+        name = f'{instance.firstName} {instance.lastName}'.strip()
+        send_branded_brevo_email(
+            instance.email,
+            subject='Thank you for registering your startup',
+            title='Startup registration received',
+            intro=f'Hello {instance.firstName}, thank you for registering your startup with NovaNest Holding.',
+            message='Our team will review your submission and contact you if further information is needed.',
+            rows=[('Applicant', name), ('Email', instance.email), ('Startup / product', instance.productName)],
+            note='This email confirms receipt of your registration, not approval.',
+        )
 
-        subject = "Thank you for registering your startup"
-        to_email = instance.email
-        context = {"first_name": instance.firstName}
-        text_content = f"Hi {instance.firstName},\n\nThanks for registering your startup with us."
-        html_content = render_to_string("startup_registration_email.html", context)
-
-        # Send to the user via Brevo SMTP
-        send_brevo_email(to_email, subject, text_content, html=html_content)
-
-        # Notify admins
-        admin_list = getattr(settings, "MAILGUN_ADMIN_RECIPIENTS", [])
+        # Keep the existing internal-notification recipient setting and behavior.
+        admin_list = getattr(settings, 'MAILGUN_ADMIN_RECIPIENTS', [])
         if admin_list:
-            admin_subject = f"New startup registration: {instance.firstName} {instance.lastName}"
-            admin_text = f"New registration details: email={instance.email}"
-            send_brevo_email(admin_list, admin_subject, admin_text)
-
+            send_branded_brevo_email(
+                admin_list,
+                subject=f'New startup registration: {name}',
+                title='New startup registration',
+                intro='A new startup registration was submitted to NovaNest Holding.',
+                rows=[('Applicant', name), ('Email', instance.email),
+                      ('Startup / product', instance.productName), ('Submission ID', instance.pk)],
+                note='Internal notification. Handle applicant information confidentially.',
+            )
         return instance
 
 
 class ContactUsSerializer(serializers.ModelSerializer):
     class Meta:
         model = ContactUs
-        fields = "__all__"
-        read_only_fields = ["id", "createdAt"]
+        fields = '__all__'
+        read_only_fields = ['id', 'createdAt']
 
     def create(self, validated_data):
         instance = super().create(validated_data)
-from .models import StartUpsForm, ContactUs, PartnerMembership, InvestorRegistration, Entrepreneur
-
-from rest_framework import serializers
-from .brevo import send_brevo_email
-from django.template.loader import render_to_string
-from django.conf import settings
-import logging
-
-logger = logging.getLogger(__name__)
-
-
-class StartupFormSerializer(serializers.ModelSerializer):
-    financialModelFile = serializers.FileField(required=False)
-    financialFile = serializers.FileField(required=False)
-    pitchDeckFile = serializers.FileField(required=False)
-    businessPlanFile = serializers.FileField(required=False)
-
-    class Meta:
-        model = StartUpsForm
-        fields = "__all__"
-        read_only_fields = ["id", "createdAt"]
-
-    def create(self, validated_data):
-        instance = super().create(validated_data)
-
-        subject = "Thank you for registering your startup"
-        to_email = instance.email
-        context = {"first_name": instance.firstName}
-        text_content = f"Hi {instance.firstName},\n\nThanks for registering your startup with us."
-        html_content = render_to_string("startup_registration_email.html", context)
-
-        # Send to the user via Brevo SMTP
-        send_brevo_email(to_email, subject, text_content, html=html_content)
-
-        # Notify admins
-        admin_list = getattr(settings, "MAILGUN_ADMIN_RECIPIENTS", [])
-        if admin_list:
-            admin_subject = f"New startup registration: {instance.firstName} {instance.lastName}"
-            admin_text = f"New registration details: email={instance.email}"
-            send_brevo_email(admin_list, admin_subject, admin_text)
-
-        return instance
-
-
-class ContactUsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ContactUs
-        fields = "__all__"
-        read_only_fields = ["id", "createdAt"]
-
-    def create(self, validated_data):
-        instance = super().create(validated_data)
-
-        subject = "Thanks for contacting us!"
-        from_email = "amir.esfahanizadeh@landaholding.com"
-        to_email = instance.email
-        context = {"name": instance.name}
-        text_content = f"Hi {instance.name},\n\nThanks for reaching out. We'll respond to your message shortly."
-        html_content = render_to_string("contact_us_email.html", context)
-
-        send_brevo_email(to_email, subject, text_content, html=html_content, from_email=from_email)
-
+        send_branded_brevo_email(
+            instance.email,
+            subject='Thanks for contacting NovaNest Holding',
+            title='We received your message',
+            intro=f'Hello {instance.name}, thank you for contacting NovaNest Holding.',
+            message='Our team will get back to you as soon as possible.',
+            rows=[('Subject', instance.subject), ('Your message', instance.message)],
+            note='This is an automated acknowledgement of your message.',
+        )
         return instance
 
 
 class PartnerMembershipSerializer(serializers.ModelSerializer):
     class Meta:
         model = PartnerMembership
-        fields = "__all__"
-        read_only_fields = ["id", "createdAt"]
+        fields = '__all__'
+        read_only_fields = ['id', 'createdAt']
 
     def create(self, validated_data):
         instance = super().create(validated_data)
-
-        subject = "Thanks for joining our partner network"
-        from_email = "amir.esfahanizadeh@landaholding.com"
-        to_email = instance.email
-        context = {"name": instance.firstName}
-        text_content = f"Hi {instance.firstName},\n\nWe're excited to have you as a partner!"
-        html_content = render_to_string("partner_membership_email.html", context)
-
-        send_brevo_email(to_email, subject, text_content, html=html_content, from_email=from_email)
-
+        send_branded_brevo_email(
+            instance.email,
+            subject='Thanks for joining our partner network',
+            title='Partner registration received',
+            intro=f'Hello {instance.firstName}, thank you for your interest in the NovaNest Holding partner network.',
+            message='Our partnerships team will review the information you submitted.',
+            rows=[('Applicant', f'{instance.firstName} {instance.lastName}'.strip()),
+                  ('Email', instance.email), ('Company', instance.companyName)],
+            note='This message confirms receipt of your registration, not acceptance.',
+        )
         return instance
 
 
 class InvestorRegistrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = InvestorRegistration
-        fields = "__all__"
-        read_only_fields = ["id", "createdAt"]
+        fields = '__all__'
+        read_only_fields = ['id', 'createdAt']
 
     def create(self, validated_data):
         instance = super().create(validated_data)
-
-        subject = "Thank you for registering as an investor"
-        from_email = "amir.esfahanizadeh@landaholding.com"
-        to_email = instance.email
-        context = {"first_name": instance.firstName}
-        text_content = (
-            f"Hi {instance.firstName},\n\nThank you for registering as an investor. "
-            "We appreciate your interest and will get back to you shortly.\n\nBest regards,\nThe Investment Platform Team"
+        send_branded_brevo_email(
+            instance.email,
+            subject='Thank you for registering as an investor',
+            title='Investor registration received',
+            intro=f'Hello {instance.firstName}, thank you for registering as an investor with NovaNest Holding.',
+            message='Our team will review your registration and contact you when appropriate.',
+            rows=[('Applicant', f'{instance.firstName} {instance.lastName}'.strip()),
+                  ('Email', instance.email), ('Company', instance.companyName)],
+            note='This message confirms receipt of your registration, not approval.',
         )
-        html_content = render_to_string("investor_registration_email.html", context)
-
-        send_brevo_email(to_email, subject, text_content, html=html_content, from_email=from_email)
-
         return instance
 
 
 class EntrepreneurSerializer(serializers.ModelSerializer):
     class Meta:
         model = Entrepreneur
-        fields = "__all__"
-        read_only_fields = ["id", "createdAt"]
+        fields = '__all__'
+        read_only_fields = ['id', 'createdAt']
 
     def create(self, validated_data):
         instance = super().create(validated_data)
-
-        subject = "Thank you for registering as an investor"
-        from_email = "amir.esfahanizadeh@landaholding.com"
-        to_email = instance.email
-        context = {"first_name": instance.firstName}
-        text_content = (
-            f"Hi {instance.firstName},\n\nThank you for registering as an investor. "
-            "We appreciate your interest and will get back to you shortly.\n\nBest regards,\nThe Investment Platform Team"
+        send_branded_brevo_email(
+            instance.email,
+            subject='Thank you for registering as an entrepreneur',
+            title='Entrepreneur registration received',
+            intro=f'Hello {instance.firstName}, thank you for registering as an entrepreneur with NovaNest Holding.',
+            message='Our team will review your registration and follow up when appropriate.',
+            rows=[('Applicant', f'{instance.firstName} {instance.lastName}'.strip()),
+                  ('Email', instance.email), ('Company', instance.companyName)],
+            note='This message confirms receipt of your registration, not approval.',
         )
-        html_content = render_to_string("Entrepreneur_registration_email.html", context)
-
-        send_brevo_email(to_email, subject, text_content, html=html_content, from_email=from_email)
-
         return instance

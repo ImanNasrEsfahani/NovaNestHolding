@@ -79,7 +79,10 @@ class AffiliateApplicationTests(TestCase):
             self.assertEqual(item.alternatives[0][1], 'text/html')
             html = item.alternatives[0][0]
             self.assertIn('NovaNest', html)
-            self.assertIn('Affiliate', html)
+            self.assertIn('novanest-email-mark.png', html)
+            self.assertIn('Synergy of energy', html)
+            self.assertIn('3833 Evergreen', html)
+            self.assertIn('application', html.lower())
             self.assertIn('info@novanestholding.com', html)
             self.assertIn('Example Applicant', html)
             self.assertIn('Travel and tourism', html)

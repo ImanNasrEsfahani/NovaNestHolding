@@ -14,13 +14,13 @@ from django.conf import settings
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.core.mail import EmailMultiAlternatives
 from django.core.validators import validate_email
-from django.template.loader import render_to_string
 from rest_framework import serializers, status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
 from rest_framework.views import APIView
 
+from .email_service import render_standard_email
 from .models import AffiliateApplication
 
 logger = logging.getLogger(__name__)
@@ -205,21 +205,14 @@ def build_email(application, recipient_type, addresses, reply_to):
     rows = application_details(application)
     if localized:
         rows = [(FA_LABELS.get(label, label), FA_VALUES.get(str(value), str(value))) for label, value in rows]
-    context = {
-        **spec,
-        'reference': str(application.pk),
-        'rows': rows,
-        'is_fa': localized,
-        'website': 'https://www.novanestholding.com',
-    }
-    # The plaintext fallback and the HTML contain the same submitted details.
-    plaintext = '\n\n'.join([
-        spec['title'],
-        spec['intro'],
-        '\n'.join(f'{label}: {value}' for label, value in rows),
-        spec['note'],
-        'NovaNest Holding | https://www.novanestholding.com | info@novanestholding.com',
-    ])
+    plaintext, html = render_standard_email(
+        title=spec['title'],
+        intro=spec['intro'],
+        rows=rows,
+        note=spec['note'],
+        language=spec['language'],
+        preheader=spec['subject'],
+    )
     email = EmailMultiAlternatives(
         subject=spec['subject'],
         body=plaintext,
@@ -227,7 +220,7 @@ def build_email(application, recipient_type, addresses, reply_to):
         to=addresses,
         reply_to=reply_to,
     )
-    email.attach_alternative(render_to_string('affiliate_application_email.html', context), 'text/html')
+    email.attach_alternative(html, 'text/html')
     return email
 
 

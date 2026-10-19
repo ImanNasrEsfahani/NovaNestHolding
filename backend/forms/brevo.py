@@ -1,37 +1,28 @@
-"""Brevo (SMTP) helper.
+"""Brevo SMTP transport for NovaNest Holding emails.
 
-This module sends email via Brevo SMTP (smtp-relay.brevo.com) using smtplib.
-Configuration is read from Django settings or environment variables:
- - BREVO_SMTP_HOST (default smtp-relay.brevo.com)
- - BREVO_SMTP_PORT (default 587)
- - BREVO_SMTP_LOGIN
- - BREVO_SMTP_PASSWORD
- - BREVO_FROM_EMAIL
-
-Functions:
- - send_brevo_email(to, subject, text, html=None, from_email=None, cc=None, bcc=None)
-
-The function returns True on success, raises exceptions on failure.
+A message without supplied HTML is wrapped in default_email.html, so calling
+this transport directly cannot accidentally generate an unbranded plain email.
 """
 from __future__ import annotations
 
+import logging
 import os
 import smtplib
 from email.message import EmailMessage
 from typing import Iterable, Optional, Union
 
 from django.conf import settings
-import logging
+from django.template.loader import render_to_string
 
 logger = logging.getLogger(__name__)
 
 
 def _get_smtp_config() -> tuple[str, int, Optional[str], Optional[str], Optional[str]]:
-    host = getattr(settings, "BREVO_SMTP_HOST", None) or os.getenv("BREVO_SMTP_HOST", "smtp-relay.brevo.com")
-    port = int(getattr(settings, "BREVO_SMTP_PORT", os.getenv("BREVO_SMTP_PORT", 587)))
-    login = getattr(settings, "BREVO_SMTP_LOGIN", None) or os.getenv("BREVO_SMTP_LOGIN")
-    password = getattr(settings, "BREVO_SMTP_PASSWORD", None) or os.getenv("BREVO_SMTP_PASSWORD")
-    default_from = getattr(settings, "BREVO_FROM_EMAIL", None) or os.getenv("BREVO_FROM_EMAIL")
+    host = getattr(settings, 'BREVO_SMTP_HOST', None) or os.getenv('BREVO_SMTP_HOST', 'smtp-relay.brevo.com')
+    port = int(getattr(settings, 'BREVO_SMTP_PORT', os.getenv('BREVO_SMTP_PORT', 587)))
+    login = getattr(settings, 'BREVO_SMTP_LOGIN', None) or os.getenv('BREVO_SMTP_LOGIN')
+    password = getattr(settings, 'BREVO_SMTP_PASSWORD', None) or os.getenv('BREVO_SMTP_PASSWORD')
+    default_from = getattr(settings, 'BREVO_FROM_EMAIL', None) or os.getenv('BREVO_FROM_EMAIL')
     return host, port, login, password, default_from
 
 
@@ -39,8 +30,7 @@ def _normalize_list(x: Optional[Union[str, Iterable[str]]]) -> list[str]:
     if not x:
         return []
     if isinstance(x, str):
-        parts = [p.strip() for p in x.replace(";", ",").split(",") if p.strip()]
-        return parts
+        return [p.strip() for p in x.replace(';', ',').split(',') if p.strip()]
     return list(x)
 
 
@@ -54,41 +44,35 @@ def send_brevo_email(
     bcc: Optional[Union[str, Iterable[str]]] = None,
     timeout: int = 10,
 ) -> bool:
-    """Send an email through Brevo SMTP.
-
-    Raises smtplib.SMTPException on failure. Returns True on success.
-    """
+    """Send a multipart text/HTML message through the existing Brevo settings."""
     host, port, login, password, default_from = _get_smtp_config()
     if not login or not password:
-        logger.error("Brevo SMTP credentials not configured (BREVO_SMTP_LOGIN/BREVO_SMTP_PASSWORD)")
-        raise RuntimeError("Brevo SMTP credentials not configured")
+        logger.error('Brevo SMTP credentials not configured (BREVO_SMTP_LOGIN/BREVO_SMTP_PASSWORD)')
+        raise RuntimeError('Brevo SMTP credentials not configured')
 
     from_addr = from_email or default_from or login
     to_list = _normalize_list(to)
     cc_list = _normalize_list(cc)
     bcc_list = _normalize_list(bcc)
-
     if not to_list:
-        raise ValueError("No recipients provided for send_brevo_email")
+        raise ValueError('No recipients provided for send_brevo_email')
+
+    if html is None:
+        html = render_to_string('default_email.html', {
+            'title': subject, 'message': text, 'preheader': subject, 'language': 'en',
+        })
 
     msg = EmailMessage()
-    msg["Subject"] = subject
-    msg["From"] = from_addr
-    msg["To"] = ", ".join(to_list)
+    msg['Subject'] = subject
+    msg['From'] = from_addr
+    msg['To'] = ', '.join(to_list)
     if cc_list:
-        msg["Cc"] = ", ".join(cc_list)
-    # Bcc is not set as header
-
-    # Set body
+        msg['Cc'] = ', '.join(cc_list)
     msg.set_content(text)
-    if html:
-        msg.add_alternative(html, subtype="html")
+    msg.add_alternative(html, subtype='html')
 
     all_recipients = to_list + cc_list + bcc_list
-
-    logger.debug("Sending Brevo SMTP message from %s to %s via %s:%s", from_addr, all_recipients, host, port)
-
-    # Connect and send
+    logger.debug('Sending Brevo SMTP message from %s to %s via %s:%s', from_addr, all_recipients, host, port)
     with smtplib.SMTP(host, port, timeout=timeout) as smtp:
         smtp.ehlo()
         if port == 587:
@@ -96,9 +80,8 @@ def send_brevo_email(
             smtp.ehlo()
         smtp.login(login, password)
         smtp.send_message(msg, from_addr=from_addr, to_addrs=all_recipients)
-
-    logger.info("Brevo email sent to %s (subject=%s)", all_recipients, subject)
+    logger.info('Brevo email sent to %s (subject=%s)', all_recipients, subject)
     return True
 
 
-__all__ = ["send_brevo_email"]
+__all__ = ['send_brevo_email']
