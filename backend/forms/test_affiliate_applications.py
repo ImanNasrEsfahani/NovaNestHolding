@@ -198,10 +198,27 @@ class AffiliateApplicationTests(TestCase):
             ('position', ''), ('years_of_experience', ''), ('assets_range', ''),
         ):
             with self.subTest(field=field, value=value):
+                # Each invalid value is an independent validation scenario.
+                # The real view throttles after 5 requests/hour; without a
+                # cache reset, later scenarios incorrectly receive HTTP 429.
+                cache.clear()
                 response = self.submit(data={**self.payload, field: value})
                 self.assertEqual(response.status_code, 400, response.content)
                 self.assertIn(field, response.json())
         self.assertEqual(AffiliateApplication.objects.count(), 0)
+
+    def test_throttle_still_blocks_the_sixth_request(self):
+        # Keep the production throttle at 5/hour. All requests intentionally
+        # fail validation, proving invalid requests count towards this limit.
+        invalid = {**self.payload, 'position': 'invalid-position'}
+        for attempt in range(5):
+            with self.subTest(attempt=attempt + 1):
+                response = self.submit(data=invalid)
+                self.assertEqual(response.status_code, 400, response.content)
+        response = self.submit(data=invalid)
+        self.assertEqual(response.status_code, 429, response.content)
+        self.assertEqual(AffiliateApplication.objects.count(), 0)
+        self.assertEqual(len(mail.outbox), 0)
 
     def test_older_frontend_language_defaults_to_english(self):
         response = self.submit(data={key: value for key, value in self.payload.items() if key != 'language'})
