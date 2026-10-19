@@ -53,7 +53,8 @@ export default function AffiliateApplicationForm({ slug, affiliateName, lang = '
         phone_number: values.phone_number.replace(/[\s()-]/g, ''),
         traveled_to_canada: values.traveled_to_canada === 'true',
         visa_rejected: values.visa_rejected === 'true',
-        industry_field: values.industry_field.trim()
+        industry_field: values.industry_field.trim(),
+        language: isFa ? 'fa' : 'en'
       };
       // The API resolves the destination email from its read-only registry; no recipient is submitted.
       const response = await fetch(`${base}/affiliate-applications/${encodeURIComponent(slug)}`, {

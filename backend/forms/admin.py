@@ -10,8 +10,10 @@ admin.site.register(ContactUs)
 
 @admin.register(AffiliateApplication)
 class AffiliateApplicationAdmin(admin.ModelAdmin):
-    list_display = ('id', 'created_at', 'affiliate_slug', 'full_name', 'email', 'admin_notified', 'partner_notified')
-    list_filter = ('affiliate_slug', 'admin_notified', 'partner_notified', 'created_at')
+    list_display = ('id', 'created_at', 'affiliate_slug', 'full_name', 'email',
+                    'admin_notified', 'partner_notified', 'applicant_notified')
+    list_filter = ('affiliate_slug', 'admin_notified', 'partner_notified',
+                   'applicant_notified', 'created_at')
     search_fields = ('full_name', 'email', 'affiliate_slug')
     readonly_fields = [field.name for field in AffiliateApplication._meta.fields]
     actions = ['retry_failed_notifications']

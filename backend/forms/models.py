@@ -54,8 +54,8 @@ class PartnerMembership(models.Model):
   companyName=models.CharField(max_length=500,blank=True)
   investmentCeiling=models.CharField(max_length=500,blank=True)
   howDidYouKnowUs=models.CharField(max_length=500,blank=True)
-  createdAt=models.DateTimeField(auto_now_add=True,blank=True)
-  updatedAt=models.DateTimeField(auto_now=True,blank=True)
+  createdAt=models.DateTimeField(auto_now_add=True)
+  updatedAt=models.DateTimeField(auto_now=True)
 
 class InvestorRegistration(models.Model):
   firstName=models.CharField(max_length=500,blank=True)
@@ -127,6 +127,8 @@ class AffiliateApplication(models.Model):
   created_at = models.DateTimeField(auto_now_add=True)
   admin_notified = models.BooleanField(default=False)
   partner_notified = models.BooleanField(default=False)
+  applicant_notified = models.BooleanField(default=False)
+  submission_language = models.CharField(max_length=2, choices=[('en', 'English'), ('fa', 'Persian')], default='en')
   notification_error = models.CharField(max_length=200, blank=True)
 
   class Meta:
