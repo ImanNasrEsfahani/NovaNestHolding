@@ -10,7 +10,6 @@ Restrict this application's mailbox access using Exchange application RBAC.
 
 import base64
 import logging
-from email.policy import SMTP
 from email.utils import getaddresses
 from uuid import UUID
 from urllib.parse import quote
@@ -118,7 +117,10 @@ def _send_one(message):
     # MIME-only endpoint needs Bcc in the RFC 5322 message for routing.
     if message.bcc:
         mime['Bcc'] = ', '.join(message.bcc)
-    raw = mime.as_bytes(policy=SMTP)
+    # Django 4.2's SafeMIMEText/SafeMIMEMultipart use MIMEMixin.as_bytes(),
+    # which accepts `linesep` (not the stdlib `policy` keyword). Use CRLF
+    # to serialize a valid RFC 5322 message for Microsoft Graph's MIME API.
+    raw = mime.as_bytes(linesep='\r\n')
     payload = base64.b64encode(raw).decode('ascii')
     token = _access_token(tenant, client_id, client_secret)
     url = f'https://graph.microsoft.com/v1.0/users/{quote(sender, safe="")}/sendMail'

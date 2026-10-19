@@ -51,6 +51,11 @@ class Microsoft365BackendTests(SimpleTestCase):
         self.assertIn('/v1.0/users/info%40novanestholding.com/sendMail', graph_call.args[0])
         self.assertEqual(graph_call.kwargs['headers']['Content-Type'], 'text/plain')
         mime = base64.b64decode(graph_call.kwargs['data'], validate=True)
+        # Regression for Django 4.2 MIMEMixin: serialization must use
+        # as_bytes(linesep='\r\n'), never as_bytes(policy=SMTP).
+        self.assertIn(b'\r\n', mime)
+        self.assertIn(b'\r\n\r\n', mime)
+        self.assertNotIn(b'\n', mime.replace(b'\r\n', b''))
         parsed = BytesParser(policy=policy.default).parsebytes(mime)
         self.assertEqual(parsed['Subject'], 'Trial')
         self.assertEqual(parsed['To'], 'test@example.com')
