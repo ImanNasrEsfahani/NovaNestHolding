@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="{{ language|default:'en' }}" dir="{% if language == 'fa' %}rtl{% else %}ltr{% endif %}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="supported-color-schemes" content="light dark">
+  <title>{{ title|default:'NovaNest Holding' }}</title>
+  <style>
+    :root { color-scheme: light dark; supported-color-schemes: light dark; }
+    /* No colored banner or card. The email adapts to the client's theme. */
+    body.email-page { margin: 0; padding: 0; background-color: #ffffff; color: #202733; }
+    .email-wrap { background-color: #ffffff; }
+    .email-ink { color: #202733; }
+    .email-secondary { color: #626a75; }
+    .email-rule { border-color: #d9dce1; }
+    .email-link { color: #344255; }
+    .email-footline { color: #69717e; }
+    a.email-link { text-decoration: none; }
+    @media only screen and (max-width: 540px) {
+      .email-pad { padding-left: 20px !important; padding-right: 20px !important; }
+      .email-head { padding-top: 20px !important; padding-bottom: 16px !important; }
+      .email-brand { font-size: 23px !important; line-height: 29px !important; }
+      .email-head-mark { width: 43px !important; height: 43px !important; }
+      .email-foot-mark { width: 34px !important; height: 34px !important; }
+      .email-footer-left, .email-footer-right, .email-contact-cell { display: block !important; width: 100% !important; box-sizing: border-box !important; }
+      .email-footer-left { padding-bottom: 15px !important; }
+      .email-footer-divider { display: none !important; }
+      .email-footer-right { border-top: 1px solid #d9dce1 !important; padding-top: 15px !important; }
+      .email-contact-cell { padding: 0 0 10px !important; }
+      .email-contact-cell:last-child { padding-bottom: 0 !important; }
+      .email-message { padding-top: 24px !important; padding-bottom: 28px !important; }
+    }
+    @media (prefers-color-scheme: dark) {
+      body.email-page, .email-wrap { background-color: #16191e !important; }
+      .email-ink { color: #f0f1f3 !important; }
+      .email-secondary, .email-footline { color: #c0c5ce !important; }
+      .email-link { color: #f0f1f3 !important; }
+      .email-rule { border-color: #535964 !important; }
+      .email-footer-right { border-color: #535964 !important; }
+    }
+    /* For Outlook apps that expose a dark-mode attribute. */
+    [data-ogsc] .email-ink { color: #f0f1f3 !important; }
+    [data-ogsc] .email-secondary, [data-ogsc] .email-footline { color: #c0c5ce !important; }
+    [data-ogsc] .email-link { color: #f0f1f3 !important; }
+    [data-ogsc] .email-rule { border-color: #535964 !important; }
+  </style>
+</head>
+<body class="email-page" style="margin:0;padding:0;background-color:#ffffff;color:#202733;font-family:Arial,Helvetica,Tahoma,sans-serif;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
+  <div style="display:none!important;font-size:1px;line-height:1px;color:transparent;max-height:0;max-width:0;opacity:0;overflow:hidden;mso-hide:all;">{{ preheader|default:'' }}</div>
+  <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" class="email-wrap" style="width:100%;border-collapse:collapse;background-color:#ffffff;">
+    <tr><td align="center" style="padding:0;">
+      <!-- All transactional email types use this one shared header/footer. -->
+      <table role="presentation" width="600" border="0" cellspacing="0" cellpadding="0" class="email-wrap" style="width:100%;max-width:600px;border-collapse:collapse;background-color:#ffffff;">
+        <tr>
+          <td class="email-pad email-head email-rule" style="padding:25px 28px 19px;border-bottom:1px solid #d9dce1;" align="left" dir="ltr">
+            <table role="presentation" border="0" cellspacing="0" cellpadding="0"><tr>
+              <td valign="middle" style="padding:0 12px 0 0;">
+                <a href="https://www.novanestholding.com/" style="text-decoration:none;" aria-label="NovaNest Holding">
+                  <img class="email-head-mark" src="https://www.novanestholding.com/static/images/email/novanest-email-mark.png" alt="N" width="50" height="50" style="display:block;width:50px;height:50px;border:0;outline:none;text-decoration:none;" />
+                </a>
+              </td>
+              <td valign="middle">
+                <a href="https://www.novanestholding.com/" class="email-ink email-brand" style="font-size:25px;line-height:32px;letter-spacing:-.6px;color:#202733;text-decoration:none;white-space:nowrap;"><strong>NovaNest</strong> Holding</a>
+              </td>
+            </tr></table>
+          </td>
+        </tr>
+        <!-- Message is purposefully neutral; content changes by email type. -->
+        <tr>
+          <td class="email-pad email-message" style="padding:34px 28px 38px;" dir="{% if language == 'fa' %}rtl{% else %}ltr{% endif %}" align="{% if language == 'fa' %}right{% else %}left{% endif %}">
+            {% if title %}<h1 class="email-ink" style="margin:0 0 13px;font-size:20px;line-height:1.5;font-weight:700;color:#202733;">{{ title }}</h1>{% endif %}
+            {% if intro %}<p class="email-ink" style="margin:0 0 16px;font-size:15px;line-height:1.8;color:#202733;">{{ intro }}</p>{% endif %}
+            {% if message %}<div class="email-ink" style="margin:0 0 17px;font-size:14px;line-height:1.9;color:#202733;">{{ message|linebreaksbr }}</div>{% endif %}
+            {% if rows %}
+              <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;">
+                {% for label, value in rows %}
+                <tr>
+                  <td class="email-secondary email-rule" valign="top" width="43%" style="width:43%;padding:9px 10px 9px 0;border-bottom:1px solid #d9dce1;color:#626a75;font-size:13px;line-height:1.6;">{{ label }}</td>
+                  <td class="email-ink email-rule" valign="top" style="padding:9px 0 9px 7px;border-bottom:1px solid #d9dce1;color:#202733;font-size:13px;line-height:1.6;overflow-wrap:anywhere;word-break:break-word;">{{ value|default_if_none:'' }}</td>
+                </tr>
+                {% endfor %}
+              </table>
+            {% endif %}
+            {% if note %}<p class="email-secondary" style="margin:18px 0 0;font-size:12px;line-height:1.8;color:#626a75;">{{ note }}</p>{% endif %}
+          </td>
+        </tr>
+        <!-- Footer option 6: logo/tagline at left, contact details at right. -->
+        <tr>
+          <td class="email-pad email-rule" style="padding:19px 28px 24px;border-top:1px solid #d9dce1;" dir="ltr">
+            <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;">
+              <tr>
+                <td class="email-footer-left" width="41%" valign="top" style="width:41%;padding:2px 16px 0 0;">
+                  <table role="presentation" border="0" cellspacing="0" cellpadding="0"><tr>
+                    <td valign="middle" style="padding-right:8px;">
+                      <img class="email-foot-mark" src="https://www.novanestholding.com/static/images/email/novanest-email-mark.png" alt="N" width="32" height="32" style="display:block;width:32px;height:32px;border:0;" />
+                    </td>
+                    <td valign="middle" class="email-ink" style="font-size:16px;line-height:22px;color:#202733;white-space:nowrap;"><strong>NovaNest</strong> Holding</td>
+                  </tr></table>
+                  <div class="email-footline" style="padding:6px 0 0 1px;font-size:12px;line-height:18px;color:#69717e;letter-spacing:.25px;">Synergy of energy</div>
+                </td>
+                <td class="email-footer-divider email-rule" width="1" style="width:1px;border-left:1px solid #d9dce1;font-size:1px;">&nbsp;</td>
+                <td class="email-footer-right" width="59%" valign="top" style="width:59%;padding-left:16px;">
+                  <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;">
+                    <tr>
+                      <td class="email-contact-cell" width="52%" valign="top" style="width:52%;padding:0 8px 9px 0;">
+                        <a class="email-link" href="https://www.novanestholding.com/" style="color:#344255;text-decoration:none;font-size:12px;line-height:18px;overflow-wrap:anywhere;">www.novanestholding.com</a>
+                      </td>
+                      <td class="email-contact-cell" width="48%" valign="top" style="width:48%;padding:0 0 9px 0;">
+                        <a class="email-link" href="mailto:info@novanestholding.com" style="color:#344255;text-decoration:none;font-size:12px;line-height:18px;overflow-wrap:anywhere;">info@novanestholding.com</a>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="email-contact-cell email-secondary" valign="top" style="padding:0 8px 0 0;color:#626a75;font-size:12px;line-height:18px;">3833 Evergreen Pl,<br>Vancouver, BC V3J 0M2, Canada</td>
+                      <td class="email-contact-cell" valign="top" style="padding:0;">
+                        <a class="email-link" href="tel:+17789865432" style="color:#344255;text-decoration:none;font-size:12px;line-height:18px;white-space:nowrap;">+1 (778) 986-5432</a>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>
