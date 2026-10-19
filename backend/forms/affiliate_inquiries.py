@@ -154,7 +154,9 @@ def notify_inquiry(inquiry):
 
 
 class AffiliateInquiryThrottle(AnonRateThrottle):
-    rate = '5/hour'
+    # Separate per-IP quota for the short affiliate profile contact form.
+    scope = 'affiliate_inquiry'
+    rate = '20/hour'
 
 
 class AffiliateInquiryView(APIView):

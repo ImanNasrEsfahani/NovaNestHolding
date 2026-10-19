@@ -199,7 +199,7 @@ class AffiliateApplicationTests(TestCase):
         ):
             with self.subTest(field=field, value=value):
                 # Each invalid value is an independent validation scenario.
-                # The real view throttles after 5 requests/hour; without a
+                # The real view throttles after 20 requests/hour; without a
                 # cache reset, later scenarios incorrectly receive HTTP 429.
                 cache.clear()
                 response = self.submit(data={**self.payload, field: value})
@@ -207,11 +207,11 @@ class AffiliateApplicationTests(TestCase):
                 self.assertIn(field, response.json())
         self.assertEqual(AffiliateApplication.objects.count(), 0)
 
-    def test_throttle_still_blocks_the_sixth_request(self):
-        # Keep the production throttle at 5/hour. All requests intentionally
+    def test_throttle_blocks_the_twenty_first_request(self):
+        # Confirm the production throttle is 20/hour. All requests intentionally
         # fail validation, proving invalid requests count towards this limit.
         invalid = {**self.payload, 'position': 'invalid-position'}
-        for attempt in range(5):
+        for attempt in range(20):
             with self.subTest(attempt=attempt + 1):
                 response = self.submit(data=invalid)
                 self.assertEqual(response.status_code, 400, response.content)

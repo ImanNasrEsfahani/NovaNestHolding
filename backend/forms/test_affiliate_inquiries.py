@@ -119,6 +119,19 @@ class AffiliateInquiryTests(TestCase):
         self.assertEqual(AffiliateInquiry.objects.count(), 0)
         self.assertEqual(len(mail.outbox), 0)
 
+    def test_throttle_blocks_twenty_first_inquiry(self):
+        # Invalid submissions still consume the per-IP quota, but do not save
+        # database records or send mail.
+        invalid = {**self.payload, 'email': 'invalid-email'}
+        for attempt in range(20):
+            with self.subTest(attempt=attempt + 1):
+                response = self.post_inquiry(payload=invalid)
+                self.assertEqual(response.status_code, 400, response.content)
+        response = self.post_inquiry(payload=invalid)
+        self.assertEqual(response.status_code, 429, response.content)
+        self.assertEqual(AffiliateInquiry.objects.count(), 0)
+        self.assertEqual(len(mail.outbox), 0)
+
     def test_untrusted_message_is_html_escaped(self):
         response = self.post_inquiry(payload={**self.payload, 'message': '<script>alert(1)</script>'})
         self.assertEqual(response.status_code, 201)

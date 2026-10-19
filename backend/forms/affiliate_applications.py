@@ -256,7 +256,9 @@ def notify_application(application):
 
 
 class AffiliateApplicationThrottle(AnonRateThrottle):
-    rate = '5/hour'
+    # Independent per-IP quota for affiliate application submissions.
+    scope = 'affiliate_application'
+    rate = '20/hour'
 
 
 class AffiliateApplicationView(APIView):
