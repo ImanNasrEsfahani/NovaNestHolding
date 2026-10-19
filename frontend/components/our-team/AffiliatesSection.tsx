@@ -5,6 +5,7 @@ import Link from 'next/link';
 
 import { AffiliatePartner, AffiliatesContent, initials, safeLocalImage } from './AffiliateTypes';
 import useSeamlessAutoScroll from './useSeamlessAutoScroll';
+import styles from './PeopleCarousel.module.css';
 
 export function AffiliateCard({ partner, lang, duplicate = false }: {
   partner: AffiliatePartner;
@@ -57,9 +58,8 @@ export default function AffiliatesSection({ lang, content }: { lang: string; con
   const partners = Array.isArray(content.partners)
     ? content.partners.filter((p) => p && typeof p.slug === 'string' && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(p.slug) && p.name)
     : [];
-  const { scrollerRef, middleGroupRef, repeats, moveBy } = useSeamlessAutoScroll(partners.length, 15);
+  const { scrollerRef, middleGroupRef, repeats, isLooping, moveBy } = useSeamlessAutoScroll(partners.length, 15);
   if (!partners.length) return null;
-  const isLooping = partners.length > 1;
 
   return (
     <section aria-labelledby="business-affiliates-title" className="max-w-responsive mx-auto my-16 px-2 lg:px-6">
@@ -81,17 +81,16 @@ export default function AffiliatesSection({ lang, content }: { lang: string; con
         <div
           ref={scrollerRef}
           dir="ltr"
-          tabIndex={0}
+          tabIndex={isLooping ? 0 : undefined}
           aria-label={content.title}
-          className="overflow-x-auto overflow-y-hidden px-2 py-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary md:px-6"
-          style={{ scrollbarWidth: 'thin', scrollbarColor: '#AA8453 #F8F5F0' }}
+          className={`${styles.scrollContainer} overflow-x-auto overflow-y-hidden px-2 py-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary md:px-6`}
         >
-          <div className="flex w-max items-stretch">
+          <div className="flex w-max min-w-full items-stretch justify-center">
             {(isLooping ? copies : [1]).map((groupNumber) => (
               <div
                 key={groupNumber}
                 ref={groupNumber === 1 ? middleGroupRef : undefined}
-                className="flex shrink-0 items-stretch gap-5 pr-5 md:gap-8 md:pr-8"
+                className={`flex shrink-0 items-stretch gap-5 md:gap-8 ${isLooping ? 'pr-5 md:pr-8' : ''}`}
               >
                 {Array.from({ length: isLooping ? repeats : 1 }, (_, repetition) =>
                   partners.map((partner) => {

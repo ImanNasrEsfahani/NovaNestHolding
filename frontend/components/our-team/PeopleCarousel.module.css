@@ -1,22 +1,11 @@
-/* set vertical scrollbar width (for this component only) */
+/* Hide the visual scrollbar without disabling wheel, touch, or drag scrolling. */
 .scrollContainer {
-  /* Firefox */
-  scrollbar-width: auto; /* auto | thin | none */
-  scrollbar-color: rgba(0,0,0,0.25) transparent;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Legacy Microsoft browsers */
 }
 
-/* WebKit browsers (Chrome, Edge, Safari) */
 .scrollContainer::-webkit-scrollbar {
-  width: 8px;   /* vertical scrollbar thickness */
-  height: 8px;  /* horizontal scrollbar thickness (if present) */
-}
-
-.scrollContainer::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.scrollContainer::-webkit-scrollbar-thumb {
-  background-color: rgba(0,0,0,0.25);
-  border-radius: 9999px;
-  border: 2px solid transparent;
+  display: none; /* Chrome, Edge, and Safari */
+  width: 0;
+  height: 0;
 }

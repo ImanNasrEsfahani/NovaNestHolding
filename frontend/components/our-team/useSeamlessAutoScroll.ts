@@ -1,16 +1,21 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+
+// Measure the carousel before its first browser paint, without running a
+// layout effect during server-side rendering.
+const useClientLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 
 /**
- * Smooth, truly cyclic horizontal scrolling for the Our Team carousels.
+ * Responsive, seamless horizontal carousel behavior for Our Team.
  *
- * Render three IDENTICAL groups side-by-side and start at the middle group.
- * When scrolling crosses a group boundary, moving by one group is visually
- * invisible: the next/previous item sequence is exactly the same.
+ * Only enable the infinite loop when the ORIGINAL, unique cards do not fit
+ * inside the available viewport. Otherwise show each card exactly once and
+ * keep the row stationary. The decision follows actual card/viewport sizes,
+ * not hard-coded mobile/tablet/desktop breakpoints.
  *
- * `repeats` fills a group beyond the viewport, even when there are only two
- * source cards. That is necessary for a seamless wrap on wide screens.
+ * While looping, three identical groups are rendered. The middle group is
+ * the starting position; crossing a group boundary is visually seamless.
  */
 export default function useSeamlessAutoScroll(itemCount: number, speed = 15) {
   const scrollerRef = useRef<HTMLDivElement>(null);
@@ -18,21 +23,71 @@ export default function useSeamlessAutoScroll(itemCount: number, speed = 15) {
   const cycleWidthRef = useRef(0);
   const pauseUntilRef = useRef(0);
   const [repeats, setRepeats] = useState(1);
+  const [isLooping, setIsLooping] = useState(false);
 
   const moveBy = useCallback((distance: number) => {
     const element = scrollerRef.current;
-    if (!element) return;
+    if (!element || !isLooping) return;
     pauseUntilRef.current = performance.now() + 2200;
     element.scrollBy({
       left: distance,
       behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
     });
-  }, []);
+  }, [isLooping]);
+
+  // Determine whether ONE copy of the original cards fits, regardless of
+  // how many extra copies the seamless scrolling mode currently renders.
+  useClientLayoutEffect(() => {
+    const element = scrollerRef.current;
+    const middle = middleGroupRef.current;
+    if (!element || !middle) return;
+
+    const firstCard = middle.firstElementChild as HTMLElement | null;
+    const measureFit = () => {
+      if (itemCount < 2 || !firstCard) {
+        setIsLooping((previous) => previous ? false : previous);
+        return;
+      }
+
+      const cardWidth = firstCard.getBoundingClientRect().width;
+      const gap = parseFloat(window.getComputedStyle(middle).columnGap) || 0;
+      const containerStyle = window.getComputedStyle(element);
+      const paddingLeft = parseFloat(containerStyle.paddingLeft) || 0;
+      const paddingRight = parseFloat(containerStyle.paddingRight) || 0;
+      const viewportWidth = element.clientWidth - paddingLeft - paddingRight;
+      if (cardWidth <= 0 || viewportWidth <= 0) return;
+
+      const uniqueCardsWidth = itemCount * cardWidth + (itemCount - 1) * gap;
+      const shouldLoop = uniqueCardsWidth > viewportWidth + 1;
+      setIsLooping((previous) => previous === shouldLoop ? previous : shouldLoop);
+    };
+
+    const observer = typeof ResizeObserver !== 'undefined'
+      ? new ResizeObserver(measureFit)
+      : null;
+    observer?.observe(element);
+    if (firstCard) observer?.observe(firstCard);
+    window.addEventListener('resize', measureFit);
+    measureFit();
+
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener('resize', measureFit);
+    };
+  }, [itemCount, isLooping]);
+
+  // When a carousel becomes stationary after resizing, return to the start.
+  useClientLayoutEffect(() => {
+    if (isLooping) return;
+    cycleWidthRef.current = 0;
+    const element = scrollerRef.current;
+    if (element) element.scrollLeft = 0;
+  }, [isLooping]);
 
   useEffect(() => {
     const element = scrollerRef.current;
     const middle = middleGroupRef.current;
-    if (!element || !middle || itemCount < 2) {
+    if (!isLooping || !element || !middle || itemCount < 2) {
       cycleWidthRef.current = 0;
       return;
     }
@@ -47,7 +102,7 @@ export default function useSeamlessAutoScroll(itemCount: number, speed = 15) {
     let suppressNextClick = false;
     let suppressClickTimer: ReturnType<typeof setTimeout> | undefined;
 
-    // Returns the scroll correction so mouse drag can stay continuous across wraps.
+    // Return the scroll correction so dragging stays continuous at wraps.
     const wrap = () => {
       const cycle = cycleWidthRef.current;
       if (cycle <= 0) return 0;
@@ -63,7 +118,7 @@ export default function useSeamlessAutoScroll(itemCount: number, speed = 15) {
       const viewport = element.clientWidth;
       if (cycle <= 0 || viewport <= 0) return;
 
-      // Each complete source-list repetition ends with the same trailing gap.
+      // Make each group wider than the viewport for seamless wraps.
       const widthPerRepetition = cycle / repeats;
       const needed = Math.max(1, Math.min(12, Math.ceil((viewport + 24) / widthPerRepetition)));
       if (needed !== repeats) {
@@ -76,7 +131,7 @@ export default function useSeamlessAutoScroll(itemCount: number, speed = 15) {
         cycleWidthRef.current = cycle;
         element.scrollLeft = cycle;
       } else if (Math.abs(cycle - oldCycle) > 0.5) {
-        // Retain the logical card position after window resizing or font loading.
+        // Keep the same relative card position after resizing or font loading.
         const logicalPosition = (((element.scrollLeft - oldCycle) % oldCycle + oldCycle) % oldCycle);
         cycleWidthRef.current = cycle;
         element.scrollLeft = cycle + (logicalPosition / oldCycle) * cycle;
@@ -112,7 +167,7 @@ export default function useSeamlessAutoScroll(itemCount: number, speed = 15) {
       pauseUntilRef.current = performance.now() + 2200;
       if (drag?.id === event.pointerId) {
         if (drag.moved) {
-          // Don't accidentally open a profile when releasing after dragging.
+          // Prevent an accidental profile visit at the end of a drag.
           suppressNextClick = true;
           if (suppressClickTimer) clearTimeout(suppressClickTimer);
           suppressClickTimer = setTimeout(() => { suppressNextClick = false; }, 180);
@@ -162,9 +217,8 @@ export default function useSeamlessAutoScroll(itemCount: number, speed = 15) {
       if (
         elapsed > 0 && visible && !document.hidden && !reducedMotion && !hovered &&
         !pointerDown && !drag && !element.contains(document.activeElement) &&
-        now >= pauseUntilRef.current && cycleWidthRef.current > element.clientWidth
+        now >= pauseUntilRef.current && cycleWidthRef.current > 0
       ) {
-        // No scroll-smooth or scroll-snap CSS: both disrupt subpixel movement.
         element.scrollLeft += (speed * elapsed) / 1000;
         wrap();
       }
@@ -190,7 +244,7 @@ export default function useSeamlessAutoScroll(itemCount: number, speed = 15) {
       else mediaQuery.removeListener(updateMotionPreference);
       if (suppressClickTimer) clearTimeout(suppressClickTimer);
     };
-  }, [itemCount, repeats, speed]);
+  }, [itemCount, isLooping, repeats, speed]);
 
-  return { scrollerRef, middleGroupRef, repeats, moveBy };
+  return { scrollerRef, middleGroupRef, repeats, isLooping, moveBy };
 }

@@ -12,26 +12,25 @@ type Props = {
 const copies = [0, 1, 2] as const;
 
 export default function PeopleCarousel({ people }: Props) {
-  const { scrollerRef, middleGroupRef, repeats } = useSeamlessAutoScroll(people.length, 15);
+  const { scrollerRef, middleGroupRef, repeats, isLooping } = useSeamlessAutoScroll(people.length, 15);
 
   if (!people.length) return null;
-  const isLooping = people.length > 1;
 
   return (
     <section className="relative w-full">
       <div
         ref={scrollerRef}
         dir="ltr"
-        tabIndex={0}
+        tabIndex={isLooping ? 0 : undefined}
         aria-label="Mentors carousel"
         className={`${styles.scrollContainer} overflow-x-auto overflow-y-hidden px-4 py-4 md:px-6`}
       >
-        <div className="flex w-max items-stretch">
+        <div className="flex w-max min-w-full items-stretch justify-center">
           {(isLooping ? copies : [1]).map((groupNumber) => (
             <div
               key={groupNumber}
               ref={groupNumber === 1 ? middleGroupRef : undefined}
-              className="flex shrink-0 items-stretch gap-6 pr-6 md:gap-8 md:pr-8"
+              className={`flex shrink-0 items-stretch gap-6 md:gap-8 ${isLooping ? 'pr-6 md:pr-8' : ''}`}
             >
               {Array.from({ length: isLooping ? repeats : 1 }, (_, repetition) =>
                 people.map((person, index) => {
