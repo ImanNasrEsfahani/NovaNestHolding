@@ -3,11 +3,30 @@ from .models import InvestorRegistration, StartUpsForm, PartnerMembership, Conta
 from .affiliate_applications import notify_application
 from .affiliate_inquiries import notify_inquiry
 from .contact_us_notifications import notify_contact_us
+from .startup_validation_notifications import notify_startup_validation
 from .consultation_requests import notify_consultation
 
 admin.site.register(InvestorRegistration)
-admin.site.register(StartUpsForm)
 admin.site.register(PartnerMembership)
+
+
+@admin.register(StartUpsForm)
+class StartUpsFormAdmin(admin.ModelAdmin):
+    list_display = ('id', 'createdAt', 'firstName', 'lastName', 'email', 'productName',
+                    'submission_language', 'applicant_notified', 'admin_notified')
+    list_filter = ('submission_language', 'applicant_notified', 'admin_notified', 'createdAt')
+    search_fields = ('firstName', 'lastName', 'email', 'productName')
+    readonly_fields = [field.name for field in StartUpsForm._meta.fields]
+    actions = ['retry_failed_startup_emails']
+
+    def has_add_permission(self, request):
+        return False
+
+    @admin.action(description='Retry only failed Startup Validation email notifications')
+    def retry_failed_startup_emails(self, request, queryset):
+        completed = sum(1 for startup in queryset if notify_startup_validation(startup))
+        self.message_user(request,
+            f'Both notifications accepted for {completed} of {queryset.count()} selected startup applications.')
 
 
 @admin.register(ContactUs)

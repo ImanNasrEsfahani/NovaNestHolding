@@ -11,47 +11,40 @@ from rest_framework import serializers
 
 from .email_service import send_branded_email
 from .contact_us_notifications import notify_contact_us
+from .startup_validation_notifications import notify_startup_validation
 from .models import ContactUs, Entrepreneur, InvestorRegistration, PartnerMembership, StartUpsForm
 
 logger = logging.getLogger(__name__)
 
 
 class StartupFormSerializer(serializers.ModelSerializer):
+    """Public Startup Validation form, with independently retriable notifications."""
     financialModelFile = serializers.FileField(required=False)
     financialFile = serializers.FileField(required=False)
     pitchDeckFile = serializers.FileField(required=False)
     businessPlanFile = serializers.FileField(required=False)
+    firstName = serializers.CharField(max_length=300, trim_whitespace=True)
+    lastName = serializers.CharField(max_length=300, trim_whitespace=True)
+    email = serializers.EmailField()
+    phoneNumber = serializers.CharField(max_length=50, trim_whitespace=True)
+    startupType = serializers.CharField(max_length=100, trim_whitespace=True)
+    language = serializers.ChoiceField(choices=('en', 'fa'), required=False,
+                                       default='en', write_only=True)
 
     class Meta:
         model = StartUpsForm
         fields = '__all__'
-        read_only_fields = ['id', 'createdAt']
+        read_only_fields = [
+            'id', 'createdAt', 'updatedAt', 'submission_language',
+            'applicant_notified', 'admin_notified', 'notification_error',
+        ]
 
     def create(self, validated_data):
-        instance = super().create(validated_data)
-        name = f'{instance.firstName} {instance.lastName}'.strip()
-        send_branded_email(
-            instance.email,
-            subject='Thank you for registering your startup',
-            title='Startup registration received',
-            intro=f'Hello {instance.firstName}, thank you for registering your startup with NovaNest Holding.',
-            message='Our team will review your submission and contact you if further information is needed.',
-            rows=[('Applicant', name), ('Email', instance.email), ('Startup / product', instance.productName)],
-            note='This email confirms receipt of your registration, not approval.',
-        )
-
-        # Keep the existing internal-notification recipient setting and behavior.
-        admin_list = getattr(settings, 'MAILGUN_ADMIN_RECIPIENTS', [])
-        if admin_list:
-            send_branded_email(
-                admin_list,
-                subject=f'New startup registration: {name}',
-                title='New startup registration',
-                intro='A new startup registration was submitted to NovaNest Holding.',
-                rows=[('Applicant', name), ('Email', instance.email),
-                      ('Startup / product', instance.productName), ('Submission ID', instance.pk)],
-                note='Internal notification. Handle applicant information confidentially.',
-            )
+        language = validated_data.pop('language', 'en')
+        instance = super().create({**validated_data, 'submission_language': language})
+        # Save before attempting email. One failed recipient does not prevent
+        # delivery to the other, and a retry never duplicates accepted emails.
+        notify_startup_validation(instance)
         return instance
 
 

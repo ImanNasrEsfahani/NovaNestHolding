@@ -12,8 +12,21 @@ from .serializers import StartupFormSerializer,ContactUsSerializer,PartnerMember
 class StartUpsFormView(CreateAPIView):
     queryset = StartUpsForm.objects.all()
     serializer_class = StartupFormSerializer
-    parser_classes = [FormParser,MultiPartParser]
+    parser_classes = [FormParser, MultiPartParser]
     http_method_names = ['post']
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        startup = serializer.instance
+        accepted = startup.applicant_notified and startup.admin_notified
+        return Response({
+            'reference': startup.pk,
+            'notifications_sent': accepted,
+            'message': ('Startup application saved; both email notifications accepted.'
+                        if accepted else 'Startup application saved; email delivery pending. Do not resubmit.'),
+        }, status=status.HTTP_201_CREATED if accepted else status.HTTP_202_ACCEPTED)
 
 class ContactUsView(CreateAPIView):
     queryset = ContactUs.objects.all()

@@ -71,10 +71,8 @@ class LegacySerializerEmailTests(SimpleTestCase):
         )
 
     def test_all_existing_forms_use_shared_sender(self):
-        # Contact Us sends two independent messages through its own notifier;
-        # the other existing serializers still use send_branded_email directly.
+        # Contact Us and Startup Validation use separately retriable notifiers.
         for serializer_class, expected_calls in (
-            (StartupFormSerializer, 2),
             (PartnerMembershipSerializer, 1),
             (InvestorRegistrationSerializer, 1),
             (EntrepreneurSerializer, 1),
@@ -93,4 +91,10 @@ class LegacySerializerEmailTests(SimpleTestCase):
         with patch('rest_framework.serializers.ModelSerializer.create', return_value=self.example):
             with patch('forms.serializers.notify_contact_us', return_value=True) as notifier:
                 ContactUsSerializer().create({'language': 'en', 'subject': 'Contact Us'})
+                notifier.assert_called_once_with(self.example)
+
+    def test_startup_serializer_uses_dual_recipient_notifier(self):
+        with patch('rest_framework.serializers.ModelSerializer.create', return_value=self.example):
+            with patch('forms.serializers.notify_startup_validation', return_value=True) as notifier:
+                StartupFormSerializer().create({'language': 'fa'})
                 notifier.assert_called_once_with(self.example)

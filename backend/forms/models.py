@@ -4,7 +4,7 @@ from django.db import models
 class StartUpsForm(models.Model):
   firstName=models.CharField(max_length=300,blank=True)
   lastName=models.CharField(max_length=300,blank=True)
-  birthDate=models.DateField(blank=True)
+  birthDate=models.DateField(blank=True,null=True)
   email=models.EmailField(blank=True)
   countryOfResidence=models.CharField(max_length=300,blank=True)
   provinceOfResidence=models.CharField(max_length=300,blank=True)
@@ -35,6 +35,17 @@ class StartUpsForm(models.Model):
   neededCapital=models.TextField(blank=True)
   createdAt=models.DateTimeField(auto_now_add=True,blank=True)
   updatedAt=models.DateTimeField(auto_now=True,blank=True)
+  # Startup Validation: store fields sent by the current public form.
+  phoneNumber=models.CharField(max_length=50,blank=True)
+  cityOfResidence=models.CharField(max_length=300,blank=True)
+  startupType=models.CharField(max_length=100,blank=True)
+  uniqueValueProposition=models.TextField(blank=True)
+  technologyReadinessLevel=models.CharField(max_length=200,blank=True)
+  howDidYouKnowUs=models.TextField(blank=True)
+  submission_language=models.CharField(max_length=2,choices=[('en','English'),('fa','Persian')],default='en')
+  applicant_notified=models.BooleanField(default=False)
+  admin_notified=models.BooleanField(default=False)
+  notification_error=models.CharField(max_length=200,blank=True)
 
 class ContactUs(models.Model):
   name=models.CharField(max_length=250,blank=True)
