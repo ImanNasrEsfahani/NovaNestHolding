@@ -26,6 +26,7 @@ type Labels = {
   firstNameRequired: string;
   lastNameRequired: string;
   emailRequired: string;
+  emailInvalid: string;
   phoneNumberRequired: string;
   messageRequired: string;
   sendButton: string;
@@ -129,7 +130,9 @@ export default function AffiliateContactForm({ affiliateName, affiliateSlug, lab
             label={labels.lastName} required={labels.lastNameRequired} patternValue="" patternMessage=""
             placeholder={labels.lastName} className="input col-span-1 mb-1 w-full" />
           <Input id="affiliate-email" nameInput="email" register={register} errors={errors} type="email"
-            label={labels.email} required={labels.emailRequired} patternValue="^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$" patternMessage={labels.emailRequired}
+            label={labels.email} required={labels.emailRequired}
+            patternValue={String.raw`^[^\s@]+@[^\s@]+\.[^\s@]+$`}
+            patternMessage={labels.emailInvalid}
             placeholder="name@example.com" className="input col-span-1 mb-1 w-full" />
           <Input id="affiliate-phone" nameInput="phoneNumber" register={register} errors={errors} type="tel"
             label={labels.phoneNumber} required={labels.phoneNumberRequired} patternValue="" patternMessage=""

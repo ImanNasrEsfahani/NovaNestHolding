@@ -59,6 +59,7 @@ export default function AffiliatePage({ params: { lang, slug } }: Params) {
     firstNameRequired: t('firstNameRequired'),
     lastNameRequired: t('lastNameRequired'),
     emailRequired: t('emailRequired'),
+    emailInvalid: t('emailErrorMessage'),
     phoneNumberRequired: t('phoneNumberRequired'),
     messageRequired: t('contactForm.messageRequired'),
     sendButton: t('sendButton'),

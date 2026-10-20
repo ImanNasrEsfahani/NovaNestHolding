@@ -22,6 +22,7 @@ type ContactFormLabels = {
   firstNameRequired: string;
   lastNameRequired: string;
   emailRequired: string;
+  emailInvalid: string;
   phoneNumberRequired: string;
   messageRequired: string;
   sendButton: string;
