@@ -43,6 +43,10 @@ class ContactUs(models.Model):
   subject=models.CharField(max_length=500,blank=True)
   message=models.TextField(blank=True)
   createdAt=models.DateTimeField(auto_now_add=True,blank=True)
+  submission_language=models.CharField(max_length=2, choices=[('en', 'English'), ('fa', 'Persian')], default='en')
+  visitor_notified=models.BooleanField(default=False)
+  admin_notified=models.BooleanField(default=False)
+  notification_error=models.CharField(max_length=200, blank=True)
 
 class PartnerMembership(models.Model):
   firstName=models.CharField(max_length=500,blank=True)

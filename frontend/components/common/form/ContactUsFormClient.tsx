@@ -1,179 +1,89 @@
 'use client';
-import React from 'react';
+
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { ContactFormDataType } from '@/types/global';
-// import GetCsrfToken from '@/utils/get-csrf-token';
-import NotificationSendForm from '@/components/common/form/NotificationSendForm';
+import type { ContactFormDataType } from '@/types/global';
 import { initialContactFormData } from '../../../initials/initObjects';
 import { submitContactForm } from '../../../pages/api/contact-us';
 import PersonalInfoInput from '@/components/common/form/PersonalInfoInput';
-import Input from '@/components/common/form/Input';
 import TextArea from '@/components/common/TextArea';
-import { useSubmit } from 'stores/dataStore';
-import ButtonRefactor from '@/components/common/ButtonRefactor';
 import FormTitle from './FormTitle';
+import { UnifiedFormSubmit, UnifiedFormStatus, type SubmissionStatus } from './UnifiedFormSubmit';
 
-interface Translations {
+type Translations = React.ComponentProps<typeof PersonalInfoInput>['translations'] & {
   title: string;
   subTitle: string;
-
   message: string;
   messageRequired: string;
   messagePlaceholder: string;
   messagePlaceholderErrorMessage: string;
-
   sendingButton: string;
   sendButton: string;
   successMessage: string;
   failedMessage: string;
+};
 
-  firstName: string;
-  firstNameRequired: string;
-  firstNamePlaceholder: string;
+type Props = { lang: string; translations: Translations };
+type SubmissionResult = { status: SubmissionStatus; message: string } | null;
 
-  lastName: string;
-  lastNameRequired: string;
-  lastNamePlaceholder: string;
-
-  email: string;
-  emailRequired: string;
-  emailErrorMessage: string;
-  emailPlaceholder: string;
-
-  phoneNumber: string;
-  phoneNumberRequired: string;
-  phoneNumberErrorMessage: string;
-  phoneNumberPlaceholder: string;
-
-  countries: string[];
-  countryName: string;
-  countryNameRequired: string;
-  countryNamePlaceholder: string;
-
-  provinceOfResidence: string;
-  provinceOfResidenceRequired: string;
-  provinceOfResidencePlaceholder: string;
-
-  cityOfResidence: string;
-  cityOfResidenceRequired: string;
-  cityOfResidencePlaceholder: string;
-
-  TypeOfCollaboration: string;
-  TypeOfCollaborationRequired: string;
-  TypeOfCollaborationPlaceholder: string;
-  TypeOfCollaborationData: { value: string; label: string }[];
-
-  FieldOfExpert: string;
-  FieldOfExpertRequired: string;
-  FieldOfExpertPlaceholder: string;
-  FieldOfExpertData: { value: string; label: string }[];
-
-  FieldOfExpertOther: string;
-  FieldOfExpertOtherRequired: string;
-  FieldOfExpertOtherPlaceholder: string;
-
-  FieldOfInterest: string;
-  FieldOfInterestRequired: string;
-  FieldOfInterestPlaceholder: string;
-  FieldOfInterestData: { value: string; label: string }[];
-
-  FieldOfInterestOther: string;
-  FieldOfInterestOtherRequired: string;
-  FieldOfInterestOtherPlaceholder: string;
-}
-
-interface Props {
-  lang: string;
-  translations: Translations;
-}
-
+/** The About Us Contact form. API success/error and button state are LOCAL
+ * to this form; another form's Zustand flags can never change its message.
+ */
 export default function ContactUsFormClient({ lang, translations }: Props) {
-
   const {
     register,
     handleSubmit,
-    formState: { errors },
-    reset
+    reset,
+    formState: { errors, isSubmitting },
   } = useForm<ContactFormDataType>({
     mode: 'onBlur',
-    defaultValues: initialContactFormData
+    reValidateMode: 'onChange',
+    defaultValues: initialContactFormData,
   });
+  const [result, setResult] = useState<SubmissionResult>(null);
+  const language = lang === 'fa' ? 'fa' : 'en';
 
-  const {
-    // csrfToken,
-    // handleTokenChange,
-    handleSubmitingChange,
-    handleSendChange,
-    handleNotifChange,
-    handleSuccessChange
-  } = useSubmit((s) => s);
-
-  const { send } = useSubmit();
-
-  // useEffect(() => {
-  //   async function fetchCsrfToken() {
-  //     const token = await GetCsrfToken(
-  //       `${process.env.NEXT_PUBLIC_DJANGO_HOST_URL}/get-csrf-token`
-  //     );
-  //     handleTokenChange(token);
-  //   }
-
-  //   fetchCsrfToken();
-  // }, []);
-
-  const onSubmit = async (formData: ContactFormDataType) => {
-    // Set loading and sending states.
-    handleSubmitingChange(true);
-    handleSendChange(true);
-
-    // Create a FormData object for form data.
-    const sendFormData = new FormData();
-
-    // Append all non-file form fields.
-    Object.entries(formData).forEach(([fieldName, fieldValue]) => {
-      if (typeof fieldValue !== 'object' || fieldValue === null) {
-        sendFormData.append(fieldName, String(fieldValue));
+  async function onSubmit(form: ContactFormDataType) {
+    setResult(null);
+    try {
+      const data = new FormData();
+      for (const [key, value] of Object.entries(form)) {
+        data.append(key, String(value ?? ''));
       }
-    });
-
-    // Send the form data to the API.
-    submitContactForm(sendFormData)
-      .then((response) => {
-        console.log(response);
-
-        handleSuccessChange(true);
-        handleNotifChange(true);
-        handleSendChange(false);
-        reset(initialContactFormData); // Reset the form after successful submission
-        setTimeout(() => {
-          handleNotifChange(false);
-        }, 10000); // 10 seconds in milliseconds
-      })
-      .catch(() => {
-        handleNotifChange(true);
-        handleSendChange(false);
-        handleSuccessChange(false);
-        reset(initialContactFormData);
-
-        setTimeout(() => {
-          handleNotifChange(false);
-        }, 10000); // 10 seconds in milliseconds
-      });
-  };
-
-  const errorsList = Object.entries(errors).map(([name, value]) => ({
-    name: name,
-    value: value
-  }));
+      // The API adapter converts firstName/lastName/phoneNumber into the
+      // unchanged Django model field names and passes the form locale.
+      const response = await submitContactForm(data, language);
+      if (!response || (response.status !== 201 && response.status !== 202)) {
+        throw new Error('Unexpected Contact Us API response');
+      }
+      const reference = response.data?.reference;
+      reset(initialContactFormData);
+      if (response.status === 202 || response.data?.notifications_sent === false) {
+        setResult({
+          status: 'pending',
+          message: language === 'fa'
+            ? `پیام شما${reference ? ` با شماره پیگیری ${reference}` : ''} ثبت شد، اما ارسال یک یا چند ایمیل در انتظار بررسی است. لطفاً دوباره ثبت نکنید.`
+            : `Your message${reference ? ` (reference #${reference})` : ''} was saved, but email notifications are pending. Please do not submit again.`,
+        });
+      } else {
+        setResult({
+          status: 'success',
+          message: `${translations.successMessage}${reference ? ` (#${reference})` : ''}`,
+        });
+      }
+    } catch {
+      // Do not reset the user's inputs after a rejected/network-failed request.
+      setResult({ status: 'error', message: translations.failedMessage });
+    }
+  }
 
   return (
     <div className="flex h-full flex-col items-center justify-between md:items-start">
-      <div className="w-full h-[75px] md:h-[125px]">
+      <div className="h-[75px] w-full md:h-[125px]">
         <FormTitle formTitle={translations.title} formSubtitle={translations.subTitle} />
       </div>
-
-      <form onSubmit={handleSubmit(onSubmit)} className="w-full pt-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <form onSubmit={handleSubmit(onSubmit, () => setResult(null))} className="w-full pt-6" noValidate>
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           <PersonalInfoInput
             register={register}
             errors={errors}
@@ -187,68 +97,12 @@ export default function ContactUsFormClient({ lang, translations }: Props) {
               cityOfResidence: '',
               TypeOfCollaboration: '',
               FieldOfExpert: '',
-              FieldOfInterest: ''
+              FieldOfInterest: '',
             }}
             noLabel={false}
-            translations={{
-
-              firstName: translations.firstName,
-              firstNameRequired: translations.firstNameRequired,
-              firstNamePlaceholder: translations.firstNamePlaceholder,
-
-              lastName: translations.lastName,
-              lastNameRequired: translations.lastNameRequired,
-              lastNamePlaceholder: translations.lastNamePlaceholder,
-
-              email: translations.email,
-              emailRequired: translations.emailRequired,
-              emailErrorMessage: translations.emailErrorMessage,
-              emailPlaceholder: translations.emailPlaceholder,
-
-              phoneNumber: translations.phoneNumber,
-              phoneNumberRequired: translations.phoneNumberRequired,
-              phoneNumberErrorMessage: translations.phoneNumberErrorMessage,
-              phoneNumberPlaceholder: translations.phoneNumberPlaceholder,
-
-              countries: translations.countries,
-              countryName: translations.countryName,
-              countryNameRequired: translations.countryNameRequired,
-              countryNamePlaceholder: translations.countryNamePlaceholder,
-
-              provinceOfResidence: translations.provinceOfResidence,
-              provinceOfResidenceRequired: translations.provinceOfResidenceRequired,
-              provinceOfResidencePlaceholder: translations.provinceOfResidencePlaceholder,
-
-              cityOfResidence: translations.cityOfResidence,
-              cityOfResidenceRequired: translations.cityOfResidenceRequired,
-              cityOfResidencePlaceholder: translations.cityOfResidencePlaceholder,
-
-              TypeOfCollaboration: translations.TypeOfCollaboration,
-              TypeOfCollaborationRequired: translations.TypeOfCollaborationRequired,
-              TypeOfCollaborationPlaceholder: translations.TypeOfCollaborationPlaceholder,
-              TypeOfCollaborationData: translations.TypeOfCollaborationData,
-
-              FieldOfExpert: translations.FieldOfExpert,
-              FieldOfExpertRequired: translations.FieldOfExpertRequired,
-              FieldOfExpertPlaceholder: translations.FieldOfExpertPlaceholder,
-              FieldOfExpertData: translations.FieldOfExpertData,
-
-              FieldOfExpertOther: translations.FieldOfExpertOther,
-              FieldOfExpertOtherRequired: translations.FieldOfExpertOtherRequired,
-              FieldOfExpertOtherPlaceholder: translations.FieldOfExpertOtherPlaceholder,
-
-              FieldOfInterest: translations.FieldOfInterest,
-              FieldOfInterestRequired: translations.FieldOfInterestRequired,
-              FieldOfInterestPlaceholder: translations.FieldOfInterestPlaceholder,
-              FieldOfInterestData: translations.FieldOfInterestData,
-
-              FieldOfInterestOther: translations.FieldOfInterestOther,
-              FieldOfInterestOtherRequired: translations.FieldOfInterestOtherRequired,
-              FieldOfInterestOtherPlaceholder: translations.FieldOfInterestOtherPlaceholder,
-            }}
+            translations={translations}
           />
         </div>
-
         <TextArea
           title={translations.message}
           register={register}
@@ -264,17 +118,19 @@ export default function ContactUsFormClient({ lang, translations }: Props) {
           maxLengthMessage={translations.messagePlaceholderErrorMessage}
           validate=""
         />
-
-        <div className="mx-auto pb-4 mt-20">
-          <ButtonRefactor
-            type='submit'
-            text={send ? translations.sendingButton : translations.sendButton}
-            disabled={errorsList[0] ? true : false}
+        <div className="mx-auto mt-20 flex justify-center pb-4">
+          <UnifiedFormSubmit
+            lang={language}
+            label={translations.sendButton}
+            loadingLabel={translations.sendingButton}
+            busy={isSubmitting}
+            className="w-44 md:w-52"
           />
         </div>
       </form>
-
-      <NotificationSendForm lang={lang} successMessage={translations.successMessage} failedMessage={translations.failedMessage} />
+      <div className="mx-auto w-64 lg:w-96">
+        <UnifiedFormStatus status={result?.status ?? null} message={result?.message} />
+      </div>
     </div>
   );
 }

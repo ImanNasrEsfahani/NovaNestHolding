@@ -10,6 +10,7 @@ from django.conf import settings
 from rest_framework import serializers
 
 from .email_service import send_branded_email
+from .contact_us_notifications import notify_contact_us
 from .models import ContactUs, Entrepreneur, InvestorRegistration, PartnerMembership, StartUpsForm
 
 logger = logging.getLogger(__name__)
@@ -55,22 +56,30 @@ class StartupFormSerializer(serializers.ModelSerializer):
 
 
 class ContactUsSerializer(serializers.ModelSerializer):
+    # The About Us page sends the historical model keys: name, number, etc.
+    # Enforce the fields actually required by the public Contact Us form.
+    name = serializers.CharField(max_length=250, trim_whitespace=True)
+    email = serializers.EmailField()
+    number = serializers.CharField(max_length=250, trim_whitespace=True)
+    message = serializers.CharField(trim_whitespace=True)
+    subject = serializers.CharField(max_length=500, required=False, allow_blank=True)
+    language = serializers.ChoiceField(choices=('en', 'fa'), required=False,
+                                       default='en', write_only=True)
+
     class Meta:
         model = ContactUs
         fields = '__all__'
-        read_only_fields = ['id', 'createdAt']
+        read_only_fields = ['id', 'createdAt', 'submission_language',
+                            'visitor_notified', 'admin_notified', 'notification_error']
 
     def create(self, validated_data):
-        instance = super().create(validated_data)
-        send_branded_email(
-            instance.email,
-            subject='Thanks for contacting NovaNest Holding',
-            title='We received your message',
-            intro=f'Hello {instance.name}, thank you for contacting NovaNest Holding.',
-            message='Our team will get back to you as soon as possible.',
-            rows=[('Subject', instance.subject), ('Your message', instance.message)],
-            note='This is an automated acknowledgement of your message.',
-        )
+        language = validated_data.pop('language', 'en')
+        if not validated_data.get('subject', '').strip():
+            validated_data['subject'] = 'Contact Us'
+        instance = super().create({**validated_data, 'submission_language': language})
+        # Each message is independent. A failed delivery never discards a
+        # successfully saved contact or silently skips the other recipient.
+        notify_contact_us(instance)
         return instance
 
 
