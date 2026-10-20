@@ -1,7 +1,7 @@
-
 'use client';
-import Check from '@/components/icons/common/Check';
+
 import { useSubmit } from 'stores/dataStore';
+import { UnifiedFormStatus } from './UnifiedFormSubmit';
 
 interface Props {
   lang: string;
@@ -9,49 +9,20 @@ interface Props {
   failedMessage: string;
 }
 
-export default function NotificationSendForm({successMessage, failedMessage }: Props) {
+/** Compatibility adapter for older forms that still use the legacy store. */
+export default function NotificationSendForm({ successMessage, failedMessage }: Props) {
+  const isSubmitting = useSubmit((state) => state.isSubmitting);
+  const isSuccess = useSubmit((state) => state.isSuccess);
+  const send = useSubmit((state) => state.send);
+  const showNotification = useSubmit((state) => state.showNotification);
 
-  const {
-    isSubmitting,
-    isSuccess,
-    send,
-    showNotification,
-  } = useSubmit((s) => s)
-
-
-  // const isSubmitting = useLang((s) => s.isSubmitting)
-  // const isSuccess = useLang((s) => s.isSuccess)
-  // const send = useLang((s) => s.send)
-  // const showNotification = useLang((s) => s.showNotification)
-  // const lang = useLang((s) => s.lang)
-
+  const visible = isSubmitting && !send && showNotification;
   return (
-    <div className="mx-auto mt-5 w-64 lg:w-96">
-      {isSuccess && isSubmitting && !send && showNotification && (
-        <div className="alert alert-success">
-          <Check />
-          <span>{successMessage}</span>
-        </div>
-      )}
-
-      {!isSuccess && isSubmitting && !send && showNotification && (
-        <div className="alert alert-error">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="size-6 shrink-0 stroke-current"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-          <span>{failedMessage}</span>
-        </div>
-      )}
+    <div className="mx-auto w-64 lg:w-96">
+      <UnifiedFormStatus
+        status={visible ? (isSuccess ? 'success' : 'error') : null}
+        message={isSuccess ? successMessage : failedMessage}
+      />
     </div>
   );
 }

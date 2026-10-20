@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { en, fa } from './AffiliateApplicationTranslations';
+import { UnifiedFormSubmit, UnifiedFormStatus } from '@/components/common/form/UnifiedFormSubmit';
 
 type Answers = {
   full_name: string;
@@ -220,15 +221,16 @@ export default function AffiliateApplicationForm({ slug, affiliateName, lang = '
       </section>
 
       <div className="pt-1">
-        <button type="submit" disabled={isSubmitting}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-[#D7D3CB] bg-white px-6 py-3 text-sm font-semibold text-[#26324B] transition-colors hover:bg-[#FAF8F5] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:cursor-wait disabled:opacity-60 sm:w-auto sm:min-w-[220px]">
-          {isSubmitting ? t.submitting : t.submit} <span aria-hidden="true">{isFa ? '←' : '→'}</span>
-        </button>
-        {status && (
-          <div role="status" aria-live="polite" className={`mt-5 rounded-xl px-4 py-3 text-sm ${status.kind === 'error' ? 'border border-red-300 bg-red-50 text-red-800' : 'border border-green-300 bg-green-50 text-green-900'}`}>
-            {status.message}
-          </div>
-        )}
+        <UnifiedFormSubmit
+          lang={isFa ? 'fa' : 'en'}
+          label={t.submit}
+          loadingLabel={t.submitting}
+          busy={isSubmitting}
+          variant="outline"
+          className="w-full sm:w-auto sm:min-w-[220px]"
+          trailing={<span aria-hidden="true">{isFa ? '←' : '→'}</span>}
+        />
+        <UnifiedFormStatus status={status?.kind || null} message={status?.message} />
       </div>
     </form>
   );

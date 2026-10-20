@@ -3,9 +3,9 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import TextArea from '@/components/common/TextArea';
+import { UnifiedFormSubmit, UnifiedFormStatus } from '@/components/common/form/UnifiedFormSubmit';
 import FormTitle from '@/components/common/form/FormTitle';
 import Input from '@/components/common/form/Input';
-import ButtonRefactor from '@/components/common/ButtonRefactor';
 
 type Fields = {
   firstName: string;
@@ -37,10 +37,11 @@ type Labels = {
 
 type SubmitResult = { kind: 'success' | 'pending' | 'error'; message: string };
 
-export default function AffiliateContactForm({ affiliateName, affiliateSlug, labels }: {
+export default function AffiliateContactForm({ affiliateName, affiliateSlug, labels, lang = 'en' }: {
   affiliateName: string;
   affiliateSlug: string;
   labels: Labels;
+  lang?: 'fa' | 'en';
 }) {
   const { register, handleSubmit, reset, setError, formState: { errors, isSubmitting } } = useForm<Fields>({
     mode: 'onBlur',
@@ -141,18 +142,16 @@ export default function AffiliateContactForm({ affiliateName, affiliateSlug, lab
         <TextArea title={labels.message} register={register} errors={errors} required={labels.messageRequired}
           nameTextArea="message" patternValue="" patternMessage="" placeholder={labels.message}
           maxLength={1300} maxLengthMessage="1300 characters maximum" validate="" />
-        <div className="mx-auto mt-8 pb-2">
-          <ButtonRefactor type="submit" text={isSubmitting ? labels.sendingButton : labels.sendButton} disabled={isSubmitting} />
+        <div className="mx-auto mt-8 flex justify-center pb-2">
+          <UnifiedFormSubmit
+            lang={lang}
+            label={labels.sendButton}
+            loadingLabel={labels.sendingButton}
+            busy={isSubmitting}
+            className="w-44 md:w-52"
+          />
         </div>
-        {result && (
-          <p role="status" aria-live="polite" className={`mx-auto mt-5 max-w-xl rounded-lg p-4 text-center text-sm ${
-            result.kind === 'error' ? 'border border-red-300 bg-red-50 text-red-800'
-              : result.kind === 'pending' ? 'border border-amber-300 bg-amber-50 text-amber-900'
-                : 'border border-green-300 bg-green-50 text-green-800'
-          }`}>
-            {result.message}
-          </p>
-        )}
+        <UnifiedFormStatus status={result?.kind || null} message={result?.message} className="mx-auto max-w-xl text-center" />
       </form>
     </div>
   );
