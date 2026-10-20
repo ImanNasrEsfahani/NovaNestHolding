@@ -61,7 +61,7 @@ class StartupValidationNotificationTests(TestCase):
         for text in ('Nadia', 'Rostami', '+17785550124', 'Vancouver',
                      'MVP', 'MapleFlow AI', 'Automated, secure workflows',
                      'TRL 5', 'Monthly subscription', 'CAD 250,000',
-                     'Our website', 'Reference'):
+                     'Our website', 'Submission reference'):
             self.assertIn(text, admin.body)
         for message in mail.outbox:
             self.assertEqual(message.alternatives[0][1], 'text/html')
