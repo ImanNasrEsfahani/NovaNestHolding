@@ -158,3 +158,27 @@ class AffiliateInquiry(models.Model):
 
   class Meta:
     ordering = ['-created_at']
+
+
+class ConsultationRequest(models.Model):
+  """A consultation enquiry from a service page, with independently retriable email roles."""
+  SERVICE_CHOICES = [
+    ('investment', 'Investment'),
+    ('acceleration', 'Acceleration'),
+    ('entrepreneur-pnp', 'Entrepreneur PNP'),
+    # The Startup page also uses SmallReservationForm: retain its functionality.
+    ('startup', 'Startup Visa'),
+  ]
+  service = models.CharField(max_length=30, choices=SERVICE_CHOICES, db_index=True)
+  first_name = models.CharField(max_length=150)
+  last_name = models.CharField(max_length=150)
+  email = models.EmailField()
+  phone_number = models.CharField(max_length=50)
+  submission_language = models.CharField(max_length=2, choices=[('en', 'English'), ('fa', 'Persian')], default='en')
+  created_at = models.DateTimeField(auto_now_add=True)
+  visitor_notified = models.BooleanField(default=False)
+  admin_notified = models.BooleanField(default=False)
+  notification_error = models.CharField(max_length=200, blank=True)
+
+  class Meta:
+    ordering = ['-created_at']

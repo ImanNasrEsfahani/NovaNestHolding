@@ -2,6 +2,7 @@ from django.urls import path
 from .views import StartUpsFormView, ContactUsView, PartnerMembershipView, InvestorRegistrationView, CSRFTokenView, EntrepreneurView
 from .affiliate_applications import AffiliateApplicationView
 from .affiliate_inquiries import AffiliateInquiryView
+from .consultation_requests import SmallReservationView
 
 app_name = 'forms'
 urlpatterns = [
@@ -13,4 +14,5 @@ urlpatterns = [
     path('get-csrf-token', CSRFTokenView.as_view(), name='get_csrf_token'),
     path('affiliate-applications/<slug:slug>', AffiliateApplicationView.as_view(), name='affiliate-application'),
     path('affiliate-inquiries/<slug:slug>', AffiliateInquiryView.as_view(), name='affiliate-inquiry'),
+    path('small-reservation', SmallReservationView.as_view(), name='small-reservation'),
 ]

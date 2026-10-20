@@ -1,8 +1,9 @@
 from django.contrib import admin
-from .models import InvestorRegistration, StartUpsForm, PartnerMembership, ContactUs, AffiliateApplication, AffiliateInquiry
+from .models import InvestorRegistration, StartUpsForm, PartnerMembership, ContactUs, AffiliateApplication, AffiliateInquiry, ConsultationRequest
 from .affiliate_applications import notify_application
 from .affiliate_inquiries import notify_inquiry
 from .contact_us_notifications import notify_contact_us
+from .consultation_requests import notify_consultation
 
 admin.site.register(InvestorRegistration)
 admin.site.register(StartUpsForm)
@@ -74,3 +75,21 @@ class AffiliateInquiryAdmin(admin.ModelAdmin):
             request,
             f'Email delivery complete for {complete} of {queryset.count()} selected inquiries.'
         )
+
+
+@admin.register(ConsultationRequest)
+class ConsultationRequestAdmin(admin.ModelAdmin):
+    list_display = ('id', 'created_at', 'service', 'first_name', 'last_name', 'email',
+                    'visitor_notified', 'admin_notified')
+    list_filter = ('service', 'submission_language', 'visitor_notified', 'admin_notified', 'created_at')
+    search_fields = ('first_name', 'last_name', 'email', 'phone_number')
+    readonly_fields = [field.name for field in ConsultationRequest._meta.fields]
+    actions = ['retry_pending_emails']
+
+    def has_add_permission(self, request):
+        return False
+
+    @admin.action(description='Retry only unsent consultation email notifications')
+    def retry_pending_emails(self, request, queryset):
+        complete = sum(1 for item in queryset if notify_consultation(item))
+        self.message_user(request, f'All emails accepted for {complete} of {queryset.count()} selected consultation requests.')
