@@ -31,7 +31,7 @@
     "title": "Contact",
     "text": [
       { "type": "text", "title": "3833 Evergreen PL," },
-      { "type": "text", "title": "Vancouver, British Columbia," },
+      { "type": "text", "title": "Burnaby, British Columbia," },
       { "type": "text", "title": "Canada, V3J 0M2" },
       { "type": "link", "title": "(+1) 778 986-5432", "link": "tel:+17789865432" },
       { "type": "link", "title": "(+1) 604 351-5951", "link": "tel:+16043515951" },
