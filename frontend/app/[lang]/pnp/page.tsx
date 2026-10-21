@@ -9,12 +9,16 @@ import Accordions from '@/components/startup/Accordions';
 import DownloadGuidePanel from '@/components/DownloadGuidePanel';
 import ServicesSection from '@/components/common/ServicesSection';
 import Businesses from '@/components/pnp/Businesses';
+import ProvinceComparison from '@/components/pnp/ProvinceComparison';
 import Image from 'next/image';
 
 export default function pnp({ params: { lang } }: { params: { lang: string } }) {
   const { t } = getServerTranslation(lang, 'pnp');
   const benefits = t('faq', { returnObjects: true }) as Array<{ id: string; title: string; items: string[] }>;
-  const accordionData = benefits.map((b) => ({ header: b.title, content: b.items }));
+  // Replace the outdated 'popular provinces' FAQ with a verified, linked comparison table.
+  const accordionData = benefits
+    .filter((b) => b.title !== 'Which provinces are currently popular for starting a business?')
+    .map((b) => ({ header: b.title, content: b.items }));
 
   return (
     <>
@@ -23,6 +27,7 @@ export default function pnp({ params: { lang } }: { params: { lang: string } }) 
       <Intro title={t('Intro.title', { returnObjects: true })} subtitle={t('Intro.subtitle', { returnObjects: true })} description={t('Intro.description', { returnObjects: true })} />
       <WhyStartBusiness lang={lang} />
       <Requirement lang={lang} />
+      <ProvinceComparison lang={lang} />
       <ServicesSection title={t('services.title')} description={t('services.description')} serviceDetails={t('services.serviceDetails', { returnObjects: true })} image={{ src: t('services.image.src'), alt: t('services.image.alt') }} descriptionIsHtml={true} />
       <Why lang={lang} />
       <section className="w-full max-w-7xl mx-auto py-12 lg:py-24 px-1 lg:px-4">
