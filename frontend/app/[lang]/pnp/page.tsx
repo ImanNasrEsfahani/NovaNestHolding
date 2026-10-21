@@ -10,6 +10,7 @@ import DownloadGuidePanel from '@/components/DownloadGuidePanel';
 import ServicesSection from '@/components/common/ServicesSection';
 import Businesses from '@/components/pnp/Businesses';
 import ProvinceComparison from '@/components/pnp/ProvinceComparison';
+import GovernmentFeeSchedule from '@/components/pnp/GovernmentFeeSchedule';
 import Image from 'next/image';
 
 export default function pnp({ params: { lang } }: { params: { lang: string } }) {
@@ -28,6 +29,7 @@ export default function pnp({ params: { lang } }: { params: { lang: string } }) 
       <WhyStartBusiness lang={lang} />
       <Requirement lang={lang} />
       <ProvinceComparison lang={lang} />
+      <GovernmentFeeSchedule lang={lang} />
       <ServicesSection title={t('services.title')} description={t('services.description')} serviceDetails={t('services.serviceDetails', { returnObjects: true })} image={{ src: t('services.image.src'), alt: t('services.image.alt') }} descriptionIsHtml={true} />
       <Why lang={lang} />
       <section className="w-full max-w-7xl mx-auto py-12 lg:py-24 px-1 lg:px-4">
