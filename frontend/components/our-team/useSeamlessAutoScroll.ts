@@ -71,6 +71,9 @@ export default function useSeamlessAutoScroll(itemCount: number, speed = 22) {
     let pointerHeld = false;
     let isReducedMotion = false;
     let drag: { id: number; x: number; left: number; moved: boolean } | null = null;
+    let touchStart: { x: number; y: number; left: number; time: number } | null = null;
+    let snapAnimation = 0;
+    let snapActive = false;
     let suppressClick = false;
     let suppressTimer: ReturnType<typeof setTimeout> | undefined;
 
@@ -102,9 +105,81 @@ export default function useSeamlessAutoScroll(itemCount: number, speed = 22) {
       }
     };
 
+    const cardStep = () => {
+      const first = middle.firstElementChild as HTMLElement | null;
+      if (!first) return 0;
+      const cardWidth = first.getBoundingClientRect().width;
+      const gap = parseFloat(getComputedStyle(middle).columnGap) || 0;
+      return cardWidth + gap;
+    };
+    const stopSnap = () => {
+      if (snapAnimation) cancelAnimationFrame(snapAnimation);
+      snapAnimation = 0;
+      snapActive = false;
+    };
+    const onTouchStart = (event: TouchEvent) => {
+      if (event.touches.length !== 1) { touchStart = null; return; }
+      stopSnap();
+      wrap();
+      touchStart = {
+        x: event.touches[0].clientX,
+        y: event.touches[0].clientY,
+        left: node.scrollLeft,
+        time: performance.now(),
+      };
+      pointerHeld = true;
+    };
+    const onTouchEnd = (event: TouchEvent) => {
+      const start = touchStart;
+      touchStart = null;
+      pointerHeld = false;
+      if (!start || event.changedTouches.length !== 1) return;
+      const dx = event.changedTouches[0].clientX - start.x;
+      const dy = event.changedTouches[0].clientY - start.y;
+      // Preserve normal page vertical scrolling and taps on profile cards.
+      if (Math.abs(dx) < 25 || Math.abs(dx) <= Math.abs(dy) * 1.15) {
+        pauseUntilRef.current = performance.now() + 250;
+        return;
+      }
+      const step = cardStep();
+      if (step <= 0 || isReducedMotion) {
+        pauseUntilRef.current = performance.now() + 250;
+        return;
+      }
+      // One swipe = exactly one card, irrespective of swipe velocity.
+      // Find the nearest card boundary at the beginning of the gesture.
+      const base = cycleRef.current;
+      const origin = base + Math.round((start.left - base) / step) * step;
+      const target = origin + (dx < 0 ? step : -step);
+      // Force an explicit snap, cancelling browser momentum scrolling.
+      // Start at the current physical scroll position for a smooth landing.
+      let from = node.scrollLeft;
+      const begin = performance.now();
+      const duration = 320;
+      snapActive = true;
+      pauseUntilRef.current = begin + duration + 180;
+      const animate = (now: number) => {
+        const t = Math.min(1, (now - begin) / duration);
+        const eased = 1 - Math.pow(1 - t, 3);
+        node.scrollLeft = from + (target - from) * eased;
+        if (t < 1) snapAnimation = requestAnimationFrame(animate);
+        else {
+          node.scrollLeft = target;
+          wrap();
+          snapActive = false;
+          snapAnimation = 0;
+        }
+      };
+      snapAnimation = requestAnimationFrame(animate);
+    };
+    const onTouchCancel = () => {
+      touchStart = null;
+      pointerHeld = false;
+      pauseUntilRef.current = performance.now() + 250;
+    };
     const onDown = (event: PointerEvent) => {
       pointerHeld = true;
-      pauseUntilRef.current = performance.now() + 2400;
+      if (event.pointerType !== 'touch') pauseUntilRef.current = performance.now() + 2400;
       if (event.pointerType === 'mouse' && event.button === 0)
         drag = { id: event.pointerId, x: event.clientX, left: node.scrollLeft, moved: false };
     };
@@ -118,7 +193,7 @@ export default function useSeamlessAutoScroll(itemCount: number, speed = 22) {
     };
     const onUp = (event: PointerEvent) => {
       pointerHeld = false;
-      pauseUntilRef.current = performance.now() + 2400;
+      if (event.pointerType !== 'touch') pauseUntilRef.current = performance.now() + 2400;
       if (drag?.id === event.pointerId) {
         if (drag.moved) {
           suppressClick = true;
@@ -147,6 +222,9 @@ export default function useSeamlessAutoScroll(itemCount: number, speed = 22) {
     const ro = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(measure);
     ro?.observe(node);
     ro?.observe(middle);
+    node.addEventListener('touchstart', onTouchStart, { passive: true });
+    node.addEventListener('touchend', onTouchEnd, { passive: true });
+    node.addEventListener('touchcancel', onTouchCancel, { passive: true });
     node.addEventListener('pointerdown', onDown);
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
@@ -163,7 +241,7 @@ export default function useSeamlessAutoScroll(itemCount: number, speed = 22) {
       // Keep the same slow pace on all screens; don't pause just because
       // the mouse happens to be hovering over a card.
       if (dt > 0 && intersecting && !document.hidden && !isReducedMotion &&
-          !pointerHeld && !drag && !node.contains(document.activeElement) &&
+          !pointerHeld && !drag && !snapActive && !node.contains(document.activeElement) &&
           now >= pauseUntilRef.current && cycleRef.current > 0) {
         node.scrollLeft += speed * dt / 1000;
         wrap();
@@ -173,8 +251,12 @@ export default function useSeamlessAutoScroll(itemCount: number, speed = 22) {
     raf = requestAnimationFrame(frame);
     return () => {
       cancelAnimationFrame(raf);
+      stopSnap();
       ro?.disconnect(); io?.disconnect();
       mq.removeEventListener?.('change', onMotion);
+      node.removeEventListener('touchstart', onTouchStart);
+      node.removeEventListener('touchend', onTouchEnd);
+      node.removeEventListener('touchcancel', onTouchCancel);
       node.removeEventListener('pointerdown', onDown);
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
