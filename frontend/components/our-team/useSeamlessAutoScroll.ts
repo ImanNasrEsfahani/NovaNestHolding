@@ -2,249 +2,190 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
-// Measure the carousel before its first browser paint, without running a
-// layout effect during server-side rendering.
-const useClientLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
+const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 
 /**
- * Responsive, seamless horizontal carousel behavior for Our Team.
- *
- * Only enable the infinite loop when the ORIGINAL, unique cards do not fit
- * inside the available viewport. Otherwise show each card exactly once and
- * keep the row stationary. The decision follows actual card/viewport sizes,
- * not hard-coded mobile/tablet/desktop breakpoints.
- *
- * While looping, three identical groups are rendered. The middle group is
- * the starting position; crossing a group boundary is visually seamless.
+ * Continuously scrolls at a constant number of CSS pixels per second.
+ * A single original set that fits the viewport stays still (no duplicates).
+ * Three repeated groups allow invisible wrapping in either direction.
+ * Shared by Mentors and Business Affiliates.
  */
-export default function useSeamlessAutoScroll(itemCount: number, speed = 15) {
+export default function useSeamlessAutoScroll(itemCount: number, speed = 22) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const middleGroupRef = useRef<HTMLDivElement>(null);
-  const cycleWidthRef = useRef(0);
+  const cycleRef = useRef(0);
   const pauseUntilRef = useRef(0);
-  const [repeats, setRepeats] = useState(1);
   const [isLooping, setIsLooping] = useState(false);
+  const [repeats, setRepeats] = useState(1);
 
-  const moveBy = useCallback((distance: number) => {
-    const element = scrollerRef.current;
-    if (!element || !isLooping) return;
-    pauseUntilRef.current = performance.now() + 2200;
-    element.scrollBy({
-      left: distance,
-      behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
-    });
-  }, [isLooping]);
+  useIsomorphicLayoutEffect(() => {
+    const viewport = scrollerRef.current;
+    const group = middleGroupRef.current;
+    if (!viewport || !group) return;
 
-  // Determine whether ONE copy of the original cards fits, regardless of
-  // how many extra copies the seamless scrolling mode currently renders.
-  useClientLayoutEffect(() => {
-    const element = scrollerRef.current;
-    const middle = middleGroupRef.current;
-    if (!element || !middle) return;
-
-    const firstCard = middle.firstElementChild as HTMLElement | null;
-    const measureFit = () => {
-      if (itemCount < 2 || !firstCard) {
-        setIsLooping((previous) => previous ? false : previous);
+    const check = () => {
+      const card = group.firstElementChild as HTMLElement | null;
+      if (!card || itemCount < 2) {
+        setIsLooping(false);
         return;
       }
-
-      const cardWidth = firstCard.getBoundingClientRect().width;
-      const gap = parseFloat(window.getComputedStyle(middle).columnGap) || 0;
-      const containerStyle = window.getComputedStyle(element);
-      const paddingLeft = parseFloat(containerStyle.paddingLeft) || 0;
-      const paddingRight = parseFloat(containerStyle.paddingRight) || 0;
-      const viewportWidth = element.clientWidth - paddingLeft - paddingRight;
-      if (cardWidth <= 0 || viewportWidth <= 0) return;
-
-      const uniqueCardsWidth = itemCount * cardWidth + (itemCount - 1) * gap;
-      const shouldLoop = uniqueCardsWidth > viewportWidth + 1;
-      setIsLooping((previous) => previous === shouldLoop ? previous : shouldLoop);
+      const style = getComputedStyle(viewport);
+      const available = viewport.clientWidth - (parseFloat(style.paddingLeft) || 0) - (parseFloat(style.paddingRight) || 0);
+      const cardWidth = card.getBoundingClientRect().width;
+      const gap = parseFloat(getComputedStyle(group).columnGap) || 0;
+      if (cardWidth > 0 && available > 0) {
+        setIsLooping(itemCount * cardWidth + (itemCount - 1) * gap > available + 1);
+      }
     };
-
-    const observer = typeof ResizeObserver !== 'undefined'
-      ? new ResizeObserver(measureFit)
-      : null;
-    observer?.observe(element);
-    if (firstCard) observer?.observe(firstCard);
-    window.addEventListener('resize', measureFit);
-    measureFit();
-
-    return () => {
-      observer?.disconnect();
-      window.removeEventListener('resize', measureFit);
-    };
+    const ro = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(check);
+    ro?.observe(viewport);
+    const first = group.firstElementChild;
+    if (first) ro?.observe(first);
+    window.addEventListener('resize', check);
+    check();
+    return () => { ro?.disconnect(); window.removeEventListener('resize', check); };
   }, [itemCount, isLooping]);
 
-  // When a carousel becomes stationary after resizing, return to the start.
-  useClientLayoutEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     if (isLooping) return;
-    cycleWidthRef.current = 0;
-    const element = scrollerRef.current;
-    if (element) element.scrollLeft = 0;
+    cycleRef.current = 0;
+    if (scrollerRef.current) scrollerRef.current.scrollLeft = 0;
+    setRepeats(1);
+  }, [isLooping]);
+
+  const moveBy = useCallback((distance: number) => {
+    const node = scrollerRef.current;
+    if (!node || !isLooping) return;
+    pauseUntilRef.current = performance.now() + 2400;
+    node.scrollBy({ left: distance, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
   }, [isLooping]);
 
   useEffect(() => {
-    const element = scrollerRef.current;
+    const node = scrollerRef.current;
     const middle = middleGroupRef.current;
-    if (!isLooping || !element || !middle || itemCount < 2) {
-      cycleWidthRef.current = 0;
-      return;
-    }
+    if (!isLooping || itemCount < 2 || !node || !middle) return;
 
-    let frame = 0;
-    let lastFrame: number | null = null;
-    let visible = true;
-    let hovered = false;
-    let pointerDown = false;
-    let reducedMotion = false;
-    let drag: { id: number; x: number; start: number; moved: boolean } | null = null;
-    let suppressNextClick = false;
-    let suppressClickTimer: ReturnType<typeof setTimeout> | undefined;
+    let raf = 0;
+    let last = 0;
+    let intersecting = true;
+    let pointerHeld = false;
+    let isReducedMotion = false;
+    let drag: { id: number; x: number; left: number; moved: boolean } | null = null;
+    let suppressClick = false;
+    let suppressTimer: ReturnType<typeof setTimeout> | undefined;
 
-    // Return the scroll correction so dragging stays continuous at wraps.
     const wrap = () => {
-      const cycle = cycleWidthRef.current;
-      if (cycle <= 0) return 0;
-      const previous = element.scrollLeft;
-      if (previous >= cycle && previous < 2 * cycle) return 0;
-      const normalized = cycle + (((previous - cycle) % cycle + cycle) % cycle);
-      element.scrollLeft = normalized;
-      return normalized - previous;
+      const width = cycleRef.current;
+      if (!width) return 0;
+      const before = node.scrollLeft;
+      if (before >= width && before < 2 * width) return 0;
+      const after = width + (((before - width) % width + width) % width);
+      node.scrollLeft = after;
+      return after - before;
     };
 
     const measure = () => {
-      const cycle = middle.getBoundingClientRect().width;
-      const viewport = element.clientWidth;
-      if (cycle <= 0 || viewport <= 0) return;
-
-      // Make each group wider than the viewport for seamless wraps.
-      const widthPerRepetition = cycle / repeats;
-      const needed = Math.max(1, Math.min(12, Math.ceil((viewport + 24) / widthPerRepetition)));
-      if (needed !== repeats) {
-        setRepeats(needed);
-        return;
-      }
-
-      const oldCycle = cycleWidthRef.current;
-      if (oldCycle === 0) {
-        cycleWidthRef.current = cycle;
-        element.scrollLeft = cycle;
-      } else if (Math.abs(cycle - oldCycle) > 0.5) {
-        // Keep the same relative card position after resizing or font loading.
-        const logicalPosition = (((element.scrollLeft - oldCycle) % oldCycle + oldCycle) % oldCycle);
-        cycleWidthRef.current = cycle;
-        element.scrollLeft = cycle + (logicalPosition / oldCycle) * cycle;
-      } else {
-        cycleWidthRef.current = cycle;
+      const width = middle.getBoundingClientRect().width;
+      if (!width || !node.clientWidth) return;
+      // Each duplicated group must be at least as wide as the visible area.
+      const perRepeat = width / repeats;
+      const required = Math.max(1, Math.min(16, Math.ceil((node.clientWidth + 32) / perRepeat)));
+      if (required !== repeats) { setRepeats(required); return; }
+      const previous = cycleRef.current;
+      if (!previous) {
+        cycleRef.current = width;
+        node.scrollLeft = width;
+      } else if (Math.abs(previous - width) > 0.5) {
+        const fraction = (((node.scrollLeft - previous) % previous + previous) % previous) / previous;
+        cycleRef.current = width;
+        node.scrollLeft = width * (1 + fraction);
       }
     };
 
-    const handleEnter = (event: PointerEvent) => {
-      if (event.pointerType === 'mouse') hovered = true;
+    const onDown = (event: PointerEvent) => {
+      pointerHeld = true;
+      pauseUntilRef.current = performance.now() + 2400;
+      if (event.pointerType === 'mouse' && event.button === 0)
+        drag = { id: event.pointerId, x: event.clientX, left: node.scrollLeft, moved: false };
     };
-    const handleLeave = (event: PointerEvent) => {
-      if (event.pointerType === 'mouse') hovered = false;
-    };
-    const handleDown = (event: PointerEvent) => {
-      pointerDown = true;
-      pauseUntilRef.current = performance.now() + 2200;
-      if (event.pointerType === 'mouse' && event.button === 0) {
-        drag = { id: event.pointerId, x: event.clientX, start: element.scrollLeft, moved: false };
-      }
-    };
-    const handleMove = (event: PointerEvent) => {
+    const onMove = (event: PointerEvent) => {
       if (!drag || drag.id !== event.pointerId) return;
-      const distance = event.clientX - drag.x;
-      if (Math.abs(distance) > 6) drag.moved = true;
+      if (Math.abs(event.clientX - drag.x) > 6) drag.moved = true;
       if (!drag.moved) return;
       event.preventDefault();
-      element.scrollLeft = drag.start - distance;
-      drag.start += wrap();
+      node.scrollLeft = drag.left - (event.clientX - drag.x);
+      drag.left += wrap();
     };
-    const handleUp = (event: PointerEvent) => {
-      pointerDown = false;
-      pauseUntilRef.current = performance.now() + 2200;
+    const onUp = (event: PointerEvent) => {
+      pointerHeld = false;
+      pauseUntilRef.current = performance.now() + 2400;
       if (drag?.id === event.pointerId) {
         if (drag.moved) {
-          // Prevent an accidental profile visit at the end of a drag.
-          suppressNextClick = true;
-          if (suppressClickTimer) clearTimeout(suppressClickTimer);
-          suppressClickTimer = setTimeout(() => { suppressNextClick = false; }, 180);
+          suppressClick = true;
+          if (suppressTimer) clearTimeout(suppressTimer);
+          suppressTimer = setTimeout(() => { suppressClick = false; }, 220);
         }
         drag = null;
       }
     };
-    const handleClick = (event: MouseEvent) => {
-      if (!suppressNextClick) return;
+    const onClick = (event: MouseEvent) => {
+      if (!suppressClick) return;
       event.preventDefault();
       event.stopImmediatePropagation();
-      suppressNextClick = false;
+      suppressClick = false;
     };
-    const handleWheel = () => {
-      pauseUntilRef.current = performance.now() + 2200;
-    };
-
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const updateMotionPreference = () => { reducedMotion = mediaQuery.matches; };
-    updateMotionPreference();
-    if (mediaQuery.addEventListener) mediaQuery.addEventListener('change', updateMotionPreference);
-    else mediaQuery.addListener(updateMotionPreference);
-
-    const intersection = typeof IntersectionObserver !== 'undefined'
-      ? new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; }, { threshold: 0 })
-      : null;
-    intersection?.observe(element);
-
-    const observer = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(measure) : null;
-    observer?.observe(element);
-    observer?.observe(middle);
+    const onWheel = () => { pauseUntilRef.current = performance.now() + 2400; };
+    const mq = matchMedia('(prefers-reduced-motion: reduce)');
+    const onMotion = () => { isReducedMotion = mq.matches; };
+    onMotion();
+    mq.addEventListener?.('change', onMotion);
+    const io = typeof IntersectionObserver === 'undefined' ? null : new IntersectionObserver(([entry]) => {
+      intersecting = entry.isIntersecting;
+      last = 0; // Don't jump after the carousel returns to view.
+    });
+    io?.observe(node);
+    const ro = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(measure);
+    ro?.observe(node);
+    ro?.observe(middle);
+    node.addEventListener('pointerdown', onDown);
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointercancel', onUp);
+    node.addEventListener('wheel', onWheel, { passive: true });
+    node.addEventListener('click', onClick, true);
+    node.addEventListener('scroll', wrap, { passive: true });
     window.addEventListener('resize', measure);
-    element.addEventListener('pointerenter', handleEnter);
-    element.addEventListener('pointerleave', handleLeave);
-    element.addEventListener('pointerdown', handleDown);
-    window.addEventListener('pointermove', handleMove);
-    window.addEventListener('pointerup', handleUp);
-    window.addEventListener('pointercancel', handleUp);
-    element.addEventListener('wheel', handleWheel, { passive: true });
-    element.addEventListener('click', handleClick, true);
-    element.addEventListener('scroll', wrap, { passive: true });
-
     measure();
-    const tick = (now: number) => {
-      const elapsed = lastFrame === null ? 0 : Math.min(64, now - lastFrame);
-      lastFrame = now;
-      if (
-        elapsed > 0 && visible && !document.hidden && !reducedMotion && !hovered &&
-        !pointerDown && !drag && !element.contains(document.activeElement) &&
-        now >= pauseUntilRef.current && cycleWidthRef.current > 0
-      ) {
-        element.scrollLeft += (speed * elapsed) / 1000;
+
+    const frame = (now: number) => {
+      const dt = last ? Math.min(50, now - last) : 0;
+      last = now;
+      // Keep the same slow pace on all screens; don't pause just because
+      // the mouse happens to be hovering over a card.
+      if (dt > 0 && intersecting && !document.hidden && !isReducedMotion &&
+          !pointerHeld && !drag && !node.contains(document.activeElement) &&
+          now >= pauseUntilRef.current && cycleRef.current > 0) {
+        node.scrollLeft += speed * dt / 1000;
         wrap();
       }
-      frame = requestAnimationFrame(tick);
+      raf = requestAnimationFrame(frame);
     };
-    frame = requestAnimationFrame(tick);
-
+    raf = requestAnimationFrame(frame);
     return () => {
-      cancelAnimationFrame(frame);
-      observer?.disconnect();
-      intersection?.disconnect();
+      cancelAnimationFrame(raf);
+      ro?.disconnect(); io?.disconnect();
+      mq.removeEventListener?.('change', onMotion);
+      node.removeEventListener('pointerdown', onDown);
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onUp);
+      node.removeEventListener('wheel', onWheel);
+      node.removeEventListener('click', onClick, true);
+      node.removeEventListener('scroll', wrap);
       window.removeEventListener('resize', measure);
-      element.removeEventListener('pointerenter', handleEnter);
-      element.removeEventListener('pointerleave', handleLeave);
-      element.removeEventListener('pointerdown', handleDown);
-      window.removeEventListener('pointermove', handleMove);
-      window.removeEventListener('pointerup', handleUp);
-      window.removeEventListener('pointercancel', handleUp);
-      element.removeEventListener('wheel', handleWheel);
-      element.removeEventListener('click', handleClick, true);
-      element.removeEventListener('scroll', wrap);
-      if (mediaQuery.removeEventListener) mediaQuery.removeEventListener('change', updateMotionPreference);
-      else mediaQuery.removeListener(updateMotionPreference);
-      if (suppressClickTimer) clearTimeout(suppressClickTimer);
+      if (suppressTimer) clearTimeout(suppressTimer);
     };
-  }, [itemCount, isLooping, repeats, speed]);
+  }, [isLooping, itemCount, repeats, speed]);
 
   return { scrollerRef, middleGroupRef, repeats, isLooping, moveBy };
 }
