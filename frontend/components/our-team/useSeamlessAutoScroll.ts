@@ -153,7 +153,7 @@ export default function useSeamlessAutoScroll(itemCount: number, speed = 22) {
       const target = origin + (dx < 0 ? step : -step);
       // Force an explicit snap, cancelling browser momentum scrolling.
       // Start at the current physical scroll position for a smooth landing.
-      let from = node.scrollLeft;
+      const from = node.scrollLeft;
       const begin = performance.now();
       const duration = 320;
       snapActive = true;
