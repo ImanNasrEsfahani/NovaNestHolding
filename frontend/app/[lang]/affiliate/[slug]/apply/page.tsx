@@ -20,8 +20,7 @@ function findPartner(lang: string, slug: string) {
   const content = t('affiliates', { returnObjects: true }) as unknown as AffiliatesContent;
   // The same registry rules and email recipients apply in both languages.
   const partner = (content.partners || []).find((item: AffiliatePartner) =>
-    item.slug === slug && Boolean(item.primaryEmail) &&
-    (item.emails ?? []).some(email => email.toLowerCase() === item.primaryEmail!.toLowerCase())
+    item.slug === slug && Boolean(item.primaryEmail)
   );
   return { content, partner };
 }

@@ -40,9 +40,8 @@ def resolve_affiliate(slug):
         if partner.get('slug') != slug:
             continue
         primary = partner.get('primaryEmail', '').strip()
-        valid_emails = [e.lower() for e in partner.get('emails', [])]
-        if not primary or primary.lower() not in valid_emails:
-            raise ValueError('Partner primaryEmail must be one of partner.emails')
+        if not primary:
+            raise ValueError('Partner primaryEmail is required')
         validate_email(primary)
         return {'slug': slug, 'name': partner['name'], 'primary_email': primary}
     return None
