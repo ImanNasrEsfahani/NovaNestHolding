@@ -5,6 +5,8 @@ import '../../[lang]/globals.css';
 
 import Intro from '@/components/common/Intro';
 import PeopleCarousel from '@/components/our-team/PeopleCarousel';
+import TeamsSection from '@/components/our-team/TeamsSection';
+import type { TeamsContent } from '@/components/our-team/TeamsSection';
 import AffiliatesSection from '@/components/our-team/AffiliatesSection';
 import type { AffiliatesContent } from '@/components/our-team/AffiliateTypes';
 
@@ -21,7 +23,9 @@ export default function TeamPage({
 }) {
   const { t } = getServerTranslation(lang, 'ourTeam');
   const { t: tAffiliates } = getServerTranslation(lang, 'ourTeamAffiliates');
+  const { t: tTeams } = getServerTranslation(lang, 'ourTeamMembers');
   const affiliates = tAffiliates('affiliates', { returnObjects: true }) as unknown as AffiliatesContent;
+  const teams = tTeams('teams', { returnObjects: true }) as unknown as TeamsContent;
 
   const roles = t('roles', { returnObjects: true });
 
@@ -81,6 +85,8 @@ export default function TeamPage({
             people={trainees.people}
           />
         </div> */}
+
+        <TeamsSection lang={lang} content={teams} />
 
         <AffiliatesSection lang={lang} content={affiliates} />
 

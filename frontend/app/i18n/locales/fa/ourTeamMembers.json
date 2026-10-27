@@ -1,0 +1,14 @@
+{
+  "teams": {
+    "title": "تیم نووانست",
+    "description": "با افرادی که در ساختن و توسعه نووانست هلدینگ نقش دارند آشنا شوید.",
+    "members": [
+      {
+        "slug": "shahryar-delkani",
+        "name": "Shahryar Delkani",
+        "position": "عضو تیم",
+        "photo": "/static/images/our-team/teams/shahryar-delkani.webp"
+      }
+    ]
+  }
+}

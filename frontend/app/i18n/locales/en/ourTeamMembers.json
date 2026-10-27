@@ -1,0 +1,14 @@
+{
+  "teams": {
+    "title": "Teams",
+    "description": "Meet the people helping build and grow NovaNest Holding.",
+    "members": [
+      {
+        "slug": "shahryar-delkani",
+        "name": "Shahryar Delkani",
+        "position": "Team Member",
+        "photo": "/static/images/our-team/teams/shahryar-delkani.webp"
+      }
+    ]
+  }
+}
