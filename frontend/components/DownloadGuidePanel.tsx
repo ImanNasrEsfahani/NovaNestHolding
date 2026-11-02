@@ -11,6 +11,8 @@ type Props = {
   thumbnail: string;
   fileName?: string;
   fileSize?: string;
+  /** Downloads the PDF from the button, while the catalogue thumbnail still opens a preview. */
+  downloadOnButton?: boolean;
   className?: string;
 };
 
@@ -24,6 +26,7 @@ export default function DownloadGuidePanel({
   thumbnail,
   fileName,
   fileSize,
+  downloadOnButton = false,
   className = ''
 }: Props) {
   return (
@@ -36,7 +39,7 @@ export default function DownloadGuidePanel({
           <div className="text-white">
             <div className="inline-flex items-center gap-2 bg-gray-500/30 backdrop-blur-sm rounded-full px-4 py-2 mb-4 text-white">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5" aria-hidden="true">
-                <path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z" />
+                <path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2.4 0 0 1-2 2z" />
                 <path d="M14 2v5a1 1 0 0 0 1 1h5" />
                 <path d="M10 9H8" />
                 <path d="M16 13H8" />
@@ -64,8 +67,9 @@ export default function DownloadGuidePanel({
 
             <a
               href={href}
-              target="_blank"
-              rel="noopener noreferrer"
+              download={downloadOnButton || undefined}
+              target={downloadOnButton ? undefined : '_blank'}
+              rel={downloadOnButton ? undefined : 'noopener noreferrer'}
               className="pl-4 inline-flex items-center gap-2 bg-white text-gray-700 hover:bg-gray-50 shadow-lg hover:shadow-xl transition-all duration-300 rounded-lg px-6 py-4 mb-2"
               aria-label={buttonLabel}
             >

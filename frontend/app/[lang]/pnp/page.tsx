@@ -11,7 +11,7 @@ import ServicesSection from '@/components/common/ServicesSection';
 import Businesses from '@/components/pnp/Businesses';
 import ProvinceComparison from '@/components/pnp/ProvinceComparison';
 import GovernmentFeeSchedule from '@/components/pnp/GovernmentFeeSchedule';
-import Image from 'next/image';
+import PnpEntrepreneurTimeline from '@/components/pnp/PnpEntrepreneurTimeline';
 
 export default function pnp({ params: { lang } }: { params: { lang: string } }) {
   const { t } = getServerTranslation(lang, 'pnp');
@@ -20,6 +20,10 @@ export default function pnp({ params: { lang } }: { params: { lang: string } }) 
   const accordionData = benefits
     .filter((b) => b.title !== 'Which provinces are currently popular for starting a business?')
     .map((b) => ({ header: b.title, content: b.items }));
+
+  const businessesHeading = lang === 'fa'
+    ? 'نمونه کسب‌وکارهایی که مشتریان ما راه‌اندازی کرده‌اند'
+    : 'Examples of businesses our clients have opened';
 
   return (
     <>
@@ -32,19 +36,8 @@ export default function pnp({ params: { lang } }: { params: { lang: string } }) 
       <GovernmentFeeSchedule lang={lang} />
       <ServicesSection title={t('services.title')} description={t('services.description')} serviceDetails={t('services.serviceDetails', { returnObjects: true })} image={{ src: t('services.image.src'), alt: t('services.image.alt') }} descriptionIsHtml={true} />
       <Why lang={lang} />
-      <section className="w-full max-w-7xl mx-auto py-12 lg:py-24 px-1 lg:px-4">
-        <h3 className="text-3xl font-header font-bold text-gray-800 text-center mb-12">{t('roadmap.title')}</h3>
-        <Image
-          src={t('roadmap.image')}
-          alt={lang === 'fa'
-            ? 'نقشه راه برنامه نامزدی استانی کانادا (PNP) برای کارآفرینان، از درخواست تا راه‌اندازی کسب‌وکار'
-            : 'Diagram of the Canadian Provincial Nominee Program (PNP) entrepreneur application pathway and business establishment process'}
-          className="mx-auto w-full max-w-full rounded-lg"
-          width={1800}
-          height={2400}
-        />
-      </section>
-      <Businesses heading={t('businesses.heading', { returnObjects: true })} items={t('businesses.list', { returnObjects: true })} className="pt-12 lg:pt-24" />
+      <PnpEntrepreneurTimeline lang={lang} />
+      <Businesses heading={businessesHeading} items={t('businesses.list', { returnObjects: true })} className="pt-12 lg:pt-24" />
       <section id="pnp-application-form" className="max-w-responsive mx-auto pt-6 pb-12 w-100"><SmallReservationForm lang={lang} subject="entrepreneur-pnp" /></section>
       <section className="w-full max-w-responsive mx-auto pt-12 lg:pt-32">
         <h2 className="text-center text-3xl font-header md:text-4xl font-bold mb-4 text-gray-800">FAQ (Frequently Asked Question)</h2>
@@ -60,6 +53,7 @@ export default function pnp({ params: { lang } }: { params: { lang: string } }) 
         thumbnail={t('download.thumbnail', { returnObjects: true })}
         fileName={t('download.fileName', { returnObjects: true })}
         fileSize={t('download.fileSize', { returnObjects: true })}
+        downloadOnButton
       />
     </>
   );
