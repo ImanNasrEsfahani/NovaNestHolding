@@ -127,14 +127,8 @@ export default function MentorRegistrationFormClient({ lang, translations }: Pro
     defaultValues: initialTraineeRegistrationFormData
   });
 
-  const {
-    // csrfToken,
-    // handleTokenChange,
-    handleSubmitingChange,
-    handleSendChange,
-    handleNotifChange,
-    handleSuccessChange
-  } = useSubmit((s) => s);
+  // Only this form's existing sending-state handler is needed.
+  const handleSendChange = useSubmit((s) => s.handleSendChange);
 
   const { cvFileState, handleCvFileChange } = useFile();
   const onCvFileChange = (file: File | null) => handleCvFileChange({ cvFile: file ?? '' });
