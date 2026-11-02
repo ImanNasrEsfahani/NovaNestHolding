@@ -102,24 +102,23 @@ class PartnerMembershipSerializer(serializers.ModelSerializer):
 
 
 class InvestorRegistrationSerializer(serializers.ModelSerializer):
+    """Preserve ALL submitted investor data before any outbound email."""
+    firstName = serializers.CharField(max_length=500, trim_whitespace=True)
+    lastName = serializers.CharField(max_length=500, trim_whitespace=True)
+    email = serializers.EmailField()
+    phoneNumber = serializers.CharField(max_length=50, trim_whitespace=True)
+    language = serializers.ChoiceField(choices=('en', 'fa'), required=False,
+                                       default='en', write_only=True)
+
     class Meta:
         model = InvestorRegistration
         fields = '__all__'
-        read_only_fields = ['id', 'createdAt']
+        read_only_fields = ['id', 'createdAt', 'updatedAt', 'submission_language',
+                            'applicant_notified', 'admin_notified', 'notification_error']
 
     def create(self, validated_data):
-        instance = super().create(validated_data)
-        send_branded_email(
-            instance.email,
-            subject='Thank you for registering as an investor',
-            title='Investor registration received',
-            intro=f'Hello {instance.firstName}, thank you for registering as an investor with NovaNest Holding.',
-            message='Our team will review your registration and contact you when appropriate.',
-            rows=[('Applicant', f'{instance.firstName} {instance.lastName}'.strip()),
-                  ('Email', instance.email), ('Company', instance.companyName)],
-            note='This message confirms receipt of your registration, not approval.',
-        )
-        return instance
+        language = validated_data.pop('language', 'en')
+        return super().create({**validated_data, 'submission_language': language})
 
 
 class EntrepreneurSerializer(serializers.ModelSerializer):

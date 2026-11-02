@@ -1,8 +1,11 @@
 from django.urls import path
-from .views import StartUpsFormView, ContactUsView, PartnerMembershipView, InvestorRegistrationView, CSRFTokenView, EntrepreneurView
+from .views import (StartUpsFormView, ContactUsView, PartnerMembershipView,
+                    InvestorRegistrationView, CSRFTokenView, EntrepreneurView)
 from .affiliate_applications import AffiliateApplicationView
 from .affiliate_inquiries import AffiliateInquiryView
 from .consultation_requests import SmallReservationView
+from .public_form_views import (JoinOurTeamView, MentorRegistrationView,
+                                TraineeRegistrationView, ProfileContactView, WorkWithUsView)
 
 app_name = 'forms'
 urlpatterns = [
@@ -15,4 +18,9 @@ urlpatterns = [
     path('affiliate-applications/<slug:slug>', AffiliateApplicationView.as_view(), name='affiliate-application'),
     path('affiliate-inquiries/<slug:slug>', AffiliateInquiryView.as_view(), name='affiliate-inquiry'),
     path('small-reservation', SmallReservationView.as_view(), name='small-reservation'),
+    path('join-our-team', JoinOurTeamView.as_view(), name='join-our-team'),
+    path('join-as-mentor', MentorRegistrationView.as_view(), name='join-as-mentor'),
+    path('join-as-a-trainee', TraineeRegistrationView.as_view(), name='join-as-a-trainee'),
+    path('contact-profile', ProfileContactView.as_view(), name='contact-profile'),
+    path('work-with-us', WorkWithUsView.as_view(), name='work-with-us'),
 ]

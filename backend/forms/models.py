@@ -84,16 +84,22 @@ class PartnerMembership(models.Model):
   updatedAt=models.DateTimeField(auto_now=True)
 
 class InvestorRegistration(models.Model):
+  # All public Investor Registration fields, with independently tracked receipts.
   firstName=models.CharField(max_length=500,blank=True)
   lastName=models.CharField(max_length=500,blank=True)
   email=models.EmailField(blank=True)
-  birthDate=models.DateField(blank=True)
+  phoneNumber=models.CharField(max_length=50,blank=True)
+  birthDate=models.DateField(blank=True,null=True)
   countryOfResidence=models.CharField(max_length=500,blank=True)
   provinceOfResidence=models.CharField(max_length=500,blank=True)
   companyName=models.CharField(max_length=500,blank=True)
   investmentCeiling=models.CharField(max_length=500,blank=True)
-  preferredAreas=models.CharField(max_length=500,blank=True)
-  howDidYouKnowUs=models.CharField(max_length=500,blank=True)
+  preferredAreas=models.TextField(blank=True)
+  howDidYouKnowUs=models.TextField(blank=True)
+  submission_language=models.CharField(max_length=2,choices=[('en','English'),('fa','Persian')],default='en')
+  applicant_notified=models.BooleanField(default=False)
+  admin_notified=models.BooleanField(default=False)
+  notification_error=models.CharField(max_length=200,blank=True)
   createdAt=models.DateTimeField(auto_now_add=True)
   updatedAt=models.DateTimeField(auto_now=True)
 
@@ -204,3 +210,101 @@ class ConsultationRequest(models.Model):
 
   class Meta:
     ordering = ['-created_at']
+
+
+class PublicFormNotificationState(models.Model):
+  """Shared persistent state; concrete forms own separate database tables."""
+  created_at = models.DateTimeField(auto_now_add=True)
+  submission_language = models.CharField(max_length=2, choices=[('en', 'English'), ('fa', 'Persian')], default='en')
+  applicant_notified = models.BooleanField(default=False)
+  admin_notified = models.BooleanField(default=False)
+  notification_error = models.CharField(max_length=200, blank=True)
+
+  class Meta:
+    abstract = True
+
+
+class JoinOurTeamApplication(PublicFormNotificationState):
+  firstName = models.CharField(max_length=150)
+  lastName = models.CharField(max_length=150)
+  email = models.EmailField()
+  phoneNumber = models.CharField(max_length=50)
+  countryOfResidence = models.CharField(max_length=300, blank=True)
+  cityOfResidence = models.CharField(max_length=300, blank=True)
+  typeOfCollaboration = models.CharField(max_length=200, blank=True)
+  fieldOfExpert = models.CharField(max_length=300, blank=True)
+  fieldOfExpertOther = models.CharField(max_length=300, blank=True)
+  birthDate = models.DateField(null=True, blank=True)
+  educationLevel = models.CharField(max_length=300, blank=True)
+  educationField = models.CharField(max_length=300, blank=True)
+  workHistorySummary = models.TextField(blank=True)
+  cvFile = models.FileField(upload_to='public-applications/jobs/cv/', null=True, blank=True)
+
+
+class MentorRegistration(PublicFormNotificationState):
+  firstName = models.CharField(max_length=150)
+  lastName = models.CharField(max_length=150)
+  email = models.EmailField()
+  phoneNumber = models.CharField(max_length=50)
+  countryOfResidence = models.CharField(max_length=300, blank=True)
+  cityOfResidence = models.CharField(max_length=300, blank=True)
+  birthDate = models.DateField(null=True, blank=True)
+  website = models.CharField(max_length=500, blank=True)
+  linkedin = models.CharField(max_length=500, blank=True)
+  instagram = models.CharField(max_length=500, blank=True)
+  ExpertiesAreas = models.TextField(blank=True)
+  howDidYouKnowUs = models.TextField(blank=True)
+
+
+class TraineeRegistration(PublicFormNotificationState):
+  firstName = models.CharField(max_length=150)
+  lastName = models.CharField(max_length=150)
+  email = models.EmailField()
+  phoneNumber = models.CharField(max_length=50)
+  countryOfResidence = models.CharField(max_length=300, blank=True)
+  cityOfResidence = models.CharField(max_length=300, blank=True)
+  birthDate = models.DateField(null=True, blank=True)
+  fieldOfExpert = models.CharField(max_length=300, blank=True)
+  fieldOfExpertOther = models.CharField(max_length=300, blank=True)
+  tellUsAboutYourself = models.TextField(blank=True)
+  cvFile = models.FileField(upload_to='public-applications/trainees/cv/', null=True, blank=True)
+
+
+class ProfileContact(PublicFormNotificationState):
+  firstName = models.CharField(max_length=150)
+  lastName = models.CharField(max_length=150)
+  email = models.EmailField()
+  phoneNumber = models.CharField(max_length=50)
+  profileSlug = models.SlugField(max_length=150, blank=True)
+  subject = models.CharField(max_length=300, blank=True)
+  message = models.TextField()
+
+
+class WorkWithUsRegistration(PublicFormNotificationState):
+  """The separate /join-us page (not /join-our-team): preserve both actual
+  form keys and legacy react-hook-form defaults, never silently discard input.
+  """
+  your_position = models.CharField(max_length=200, blank=True)
+  type_of_contract = models.CharField(max_length=200, blank=True)
+  uni = models.CharField(max_length=300, blank=True)
+  your_first_name = models.CharField(max_length=150)
+  your_last_name = models.CharField(max_length=150)
+  email = models.EmailField()
+  phone_number = models.CharField(max_length=50)
+  your_field_of_study = models.CharField(max_length=300, blank=True)
+  your_subfield = models.CharField(max_length=300, blank=True)
+  langLevel = models.CharField(max_length=200, blank=True)
+  cvFile = models.FileField(upload_to='public-applications/work-with-us/cv/', blank=True, null=True)
+  # Legacy defaultValues keys from the shared JoinOurTeamFormDataType.
+  firstName = models.CharField(max_length=150, blank=True)
+  lastName = models.CharField(max_length=150, blank=True)
+  phoneNumber = models.CharField(max_length=50, blank=True)
+  countryOfResidence = models.CharField(max_length=300, blank=True)
+  cityOfResidence = models.CharField(max_length=300, blank=True)
+  typeOfCollaboration = models.CharField(max_length=200, blank=True)
+  fieldOfExpert = models.CharField(max_length=300, blank=True)
+  fieldOfExpertOther = models.CharField(max_length=300, blank=True)
+  birthDate = models.DateField(null=True, blank=True)
+  educationLevel = models.CharField(max_length=300, blank=True)
+  educationField = models.CharField(max_length=300, blank=True)
+  workHistorySummary = models.TextField(blank=True)

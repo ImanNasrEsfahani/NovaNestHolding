@@ -29,6 +29,8 @@ def admin_recipients():
 def registration_rows(entry):
     return [
         ('Reference', f'#{entry.pk}'),
+        ('Birth date', str(entry.birthDate or '')),
+        ('Maximum investment', entry.investmentCeiling),
         ('First name', entry.firstName),
         ('Last name', entry.lastName),
         ('Email', entry.email),
@@ -60,12 +62,7 @@ def build_registration_email(entry, role, addresses):
         title = 'Partner registration received'
         intro = f'Hello {entry.firstName}, thank you for your interest in the NovaNest Holding partner network.'
         message = f'Our partnerships team will review your registration (reference {reference}).'
-        rows = [
-            ('Reference', reference),
-            ('Applicant', f'{entry.firstName} {entry.lastName}'.strip()),
-            ('Email', entry.email),
-            ('Company', entry.companyName),
-        ]
+        rows = registration_rows(entry)
         note = 'This message confirms receipt of your registration, not acceptance.'
         reply_to = ['info@novanestholding.com']
     else:

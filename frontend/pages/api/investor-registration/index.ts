@@ -1,24 +1,18 @@
 import apiClient from '@/utils/api';
 
-export async function submitInvestorRegistrationForm(
-  sendFormData: FormData,
-) {
-  try {
-    // Make sure this endpoint matches your backend
-    const response = await apiClient.post(
-      '/investor-registration', // Note the leading slash
-      sendFormData,
-      {
-        headers: {
-          'content-type': 'multipart/form-data',
-        },
-      }
-    );
+export type InvestorRegistrationResponse = {
+  reference: number;
+  notifications_sent: boolean;
+  message: string;
+};
 
-    console.log('Response:', response);
-    return response;
-  } catch (error) {
-    console.error('Error sending form data:', error);
-    throw error; // Re-throw to handle in the component
-  }
+/** The public Investor Registration form, not an affiliate application. */
+export async function submitInvestorRegistrationForm(sendFormData: FormData) {
+  const language = typeof window !== 'undefined' && window.location.pathname.startsWith('/fa/') ? 'fa' : 'en';
+  sendFormData.set('language', language);
+  // Never swallow 4xx, 5xx, or network failures: the caller must display an error.
+  return apiClient.post<InvestorRegistrationResponse>('/investor-registration', sendFormData, {
+    headers: { 'Content-Type': 'multipart/form-data', Accept: 'application/json' },
+    timeout: 150000,
+  });
 }

@@ -4,10 +4,16 @@ from rest_framework.views import APIView
 from django.middleware.csrf import get_token
 from rest_framework.response import Response
 from rest_framework.parsers import FormParser,MultiPartParser
+from rest_framework.throttling import AnonRateThrottle
 from rest_framework import status
 from .models import StartUpsForm,ContactUs,PartnerMembership,InvestorRegistration, Entrepreneur
 from .serializers import StartupFormSerializer,ContactUsSerializer,PartnerMembershipSerializer,InvestorRegistrationSerializer, EntrepreneurSerializer
 from .partner_membership_notifications import notify_partner_membership
+from .registration_notifications import notify_registration
+# Rate-limit the two older public registration routes just like newer forms.
+class RegistrationThrottle(AnonRateThrottle):
+    rate = '20/hour'
+
 # Create your views here.
 
 class StartUpsFormView(CreateAPIView):
@@ -50,6 +56,7 @@ class ContactUsView(CreateAPIView):
 class PartnerMembershipView(CreateAPIView):
     """The public Affiliate Registration endpoint (not partner-specific Apply)."""
     queryset = PartnerMembership.objects.all()
+    throttle_classes = [RegistrationThrottle]
     serializer_class = PartnerMembershipSerializer
     parser_classes = [FormParser, MultiPartParser]
     http_method_names = ['post']
@@ -69,9 +76,25 @@ class PartnerMembershipView(CreateAPIView):
         }, status=status.HTTP_201_CREATED if delivered else status.HTTP_202_ACCEPTED)
 
 class InvestorRegistrationView(CreateAPIView):
+    """Persist investor data and independently track the two email roles."""
     queryset = InvestorRegistration.objects.all()
+    throttle_classes = [RegistrationThrottle]
     serializer_class = InvestorRegistrationSerializer
+    parser_classes = [FormParser, MultiPartParser]
     http_method_names = ['post']
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        entry = serializer.instance
+        delivered = notify_registration(entry, 'Investor Registration')
+        return Response({
+            'reference': entry.pk,
+            'notifications_sent': delivered,
+            'message': ('Investor registration saved.' if delivered else
+                        'Investor registration saved; some notifications pending. Do not resubmit.'),
+        }, status=status.HTTP_201_CREATED if delivered else status.HTTP_202_ACCEPTED)
 
 class EntrepreneurView(CreateAPIView):
     queryset = Entrepreneur.objects.all()
