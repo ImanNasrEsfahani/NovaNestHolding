@@ -8,6 +8,12 @@
         "name": "Shahryar Delkani",
         "position": "عضو تیم",
         "photo": "/static/images/our-team/teams/shahryar-delkani.webp"
+      },
+      {
+        "slug": "mohadeseh-moradimehr",
+        "name": "محدثه مرادی مهر",
+        "position": "متخصص کسب و کار",
+        "photo": "/static/images/our-team/teams/mohadeseh-moradimehr.webp"
       }
     ]
   }

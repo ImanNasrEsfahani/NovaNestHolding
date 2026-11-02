@@ -8,6 +8,12 @@
         "name": "Shahryar Delkani",
         "position": "Team Member",
         "photo": "/static/images/our-team/teams/shahryar-delkani.webp"
+      },
+      {
+        "slug": "mohadeseh-moradimehr",
+        "name": "Mohadeseh Moradimehr",
+        "position": "Business Development Specialist",
+        "photo": "/static/images/our-team/teams/mohadeseh-moradimehr.webp"
       }
     ]
   }
