@@ -1,5 +1,6 @@
 type FeeRow = {
-  fee: string;
+  province: string;
+  detail?: string;
   amount: string;
   notes: string;
   url: string;
@@ -17,29 +18,29 @@ const sources = {
 };
 
 const en: FeeRow[] = [
-  { fee: 'BC PNP — Entrepreneur registration', amount: '$300', notes: 'Per registration. Check official withdrawal and refund rules.', url: sources.bc },
-  { fee: 'BC PNP — Entrepreneur application', amount: '$3,500', notes: 'May be refunded if withdrawn before the BC PNP begins assessing the application; see official conditions.', url: sources.bc },
-  { fee: 'Ontario OINP — Entrepreneur application', amount: '$3,500 (historical)', notes: 'CLOSED stream. Historical fee only — not an application option for new candidates.', url: sources.on, historical: true },
-  { fee: 'PEI — Work Permit Stream application', amount: '$10,000', notes: 'No EOI fee. Full refund if the file is not accepted; $7,500 refunded if declined or withdrawn before interview; generally non-refundable after interview. See official terms.', url: sources.pei },
-  { fee: 'Newfoundland & Labrador — International Entrepreneur', amount: '$0', notes: 'No provincial application fee. Federal and document-related charges still apply.', url: sources.nl },
-  { fee: 'IRCC — Work permit (per applicant)', amount: '$155', notes: 'Standard work permit processing fee, unless exempt; an additional $100 applies to open work permits where required.', url: sources.work },
-  { fee: 'IRCC — Biometrics', amount: '$85 per person / $170 family maximum', notes: 'Only if required; a qualifying family must apply together. Temporary-resident biometrics are generally valid for 10 years, but PR biometrics rules differ.', url: sources.biometrics },
-  { fee: 'IRCC — PNP permanent residence, principal applicant', amount: '$1,590', notes: '$990 processing + $600 Right of Permanent Residence Fee (RPRF), rates effective April 30, 2026.', url: sources.pr },
-  { fee: 'IRCC — PNP permanent residence, spouse/partner', amount: '$1,590', notes: '$990 processing + $600 RPRF; RPRF may be paid later and may be refundable if an application is refused.', url: sources.pr },
-  { fee: 'IRCC — PNP permanent residence, dependent child', amount: '$270 per child', notes: 'Per accompanying dependent child; no RPRF for dependent children.', url: sources.pr },
+  { province: 'British Columbia', detail: 'Entrepreneur registration', amount: '$300', notes: 'Per registration. Check official withdrawal and refund rules.', url: sources.bc },
+  { province: 'British Columbia', detail: 'Entrepreneur application', amount: '$3,500', notes: 'May be refunded if withdrawn before the BC PNP begins assessing the application; see official conditions.', url: sources.bc },
+  { province: 'Ontario', amount: '$3,500 (historical)', notes: 'CLOSED stream. Historical fee only — not an application option for new candidates.', url: sources.on, historical: true },
+  { province: 'Prince Edward Island', amount: '$10,000', notes: 'No EOI fee. Full refund if the file is not accepted; $7,500 refunded if declined or withdrawn before interview; generally non-refundable after interview. See official terms.', url: sources.pei },
+  { province: 'Newfoundland & Labrador', amount: '$0', notes: 'No provincial application fee. Federal and document-related charges still apply.', url: sources.nl },
+  { province: 'Federal (IRCC)', detail: 'Work permit', amount: '$155', notes: 'Standard work permit processing fee, unless exempt; an additional $100 applies to open work permits where required.', url: sources.work },
+  { province: 'Federal (IRCC)', detail: 'Biometrics', amount: '$85 per person / $170 family maximum', notes: 'Only if required; a qualifying family must apply together. Temporary-resident biometrics are generally valid for 10 years, but PR biometrics rules differ.', url: sources.biometrics },
+  { province: 'Federal (IRCC)', detail: 'Permanent residence · Principal applicant', amount: '$1,590', notes: '$990 processing + $600 Right of Permanent Residence Fee (RPRF), rates effective April 30, 2026.', url: sources.pr },
+  { province: 'Federal (IRCC)', detail: 'Permanent residence · Spouse/partner', amount: '$1,590', notes: '$990 processing + $600 RPRF; RPRF may be paid later and may be refundable if an application is refused.', url: sources.pr },
+  { province: 'Federal (IRCC)', detail: 'Permanent residence · Dependent child', amount: '$270 per child', notes: 'Per accompanying dependent child; no RPRF for dependent children.', url: sources.pr },
 ];
 
 const fa: FeeRow[] = [
-  { fee: 'ثبت اولیه کارآفرینی BC PNP', amount: '۳۰۰ دلار', notes: 'برای هر ثبت‌نام؛ شرایط رسمی انصراف و استرداد را بررسی کنید.', url: sources.bc },
-  { fee: 'درخواست کارآفرینی BC PNP', amount: '۳٬۵۰۰ دلار', notes: 'در صورت انصراف پیش از آغاز ارزیابی پرونده توسط استان، ممکن است مسترد شود؛ طبق شرایط رسمی.', url: sources.bc },
-  { fee: 'درخواست کارآفرینی انتاریو OINP', amount: '۳٬۵۰۰ دلار (تاریخی)', notes: 'این مسیر بسته است؛ مبلغ صرفاً تاریخی بوده و امکان درخواست جدید وجود ندارد.', url: sources.on, historical: true },
-  { fee: 'درخواست مسیر مجوز کار جزیره پرنس ادوارد', amount: '۱۰٬۰۰۰ دلار', notes: 'ثبت EOI رایگان است؛ اگر پرونده پذیرفته نشود کل هزینه و در صورت رد یا انصراف قبل از مصاحبه ۷٬۵۰۰ دلار مسترد می‌شود؛ پس از مصاحبه معمولاً غیرقابل‌استرداد است.', url: sources.pei },
-  { fee: 'کارآفرین بین‌المللی نیوفاندلند و لابرادور', amount: '۰ دلار', notes: 'درخواست استانی رایگان است؛ هزینه‌های فدرال و تهیه مدارک جداگانه‌اند.', url: sources.nl },
-  { fee: 'IRCC — مجوز کار (هر نفر)', amount: '۱۵۵ دلار', notes: 'هزینه استاندارد بررسی مجوز کار، مگر در موارد معافیت؛ مجوز کار باز در صورت لزوم ۱۰۰ دلار اضافه دارد.', url: sources.work },
-  { fee: 'IRCC — بیومتریک', amount: '۸۵ دلار هر نفر / سقف ۱۷۰ دلار خانواده', notes: 'در صورت نیاز؛ سقف خانوادگی برای اعضای واجد شرایط با درخواست هم‌زمان است. اعتبار معمول بیومتریک اقامت موقت ۱۰ سال است ولی مقررات اقامت دائم متفاوت است.', url: sources.biometrics },
-  { fee: 'IRCC — اقامت دائم PNP، متقاضی اصلی', amount: '۱٬۵۹۰ دلار', notes: '۹۹۰ دلار بررسی پرونده + ۶۰۰ دلار حق اقامت دائم (RPRF)، از ۳۰ آوریل ۲۰۲۶.', url: sources.pr },
-  { fee: 'IRCC — اقامت دائم PNP، همسر/شریک زندگی', amount: '۱٬۵۹۰ دلار', notes: '۹۹۰ دلار بررسی پرونده + ۶۰۰ دلار RPRF؛ حق اقامت دائم می‌تواند دیرتر پرداخت شود و در صورت رد پرونده قابل‌استرداد است.', url: sources.pr },
-  { fee: 'IRCC — اقامت دائم PNP، هر فرزند وابسته', amount: '۲۷۰ دلار به‌ازای هر فرزند', notes: 'برای هر فرزند وابسته همراه؛ حق اقامت دائم RPRF به فرزند وابسته تعلق نمی‌گیرد.', url: sources.pr },
+  { province: 'بریتیش کلمبیا', detail: 'ثبت اولیه کارآفرینی', amount: '۳۰۰ دلار', notes: 'برای هر ثبت‌نام؛ شرایط رسمی انصراف و استرداد را بررسی کنید.', url: sources.bc },
+  { province: 'بریتیش کلمبیا', detail: 'درخواست کارآفرینی', amount: '۳٬۵۰۰ دلار', notes: 'در صورت انصراف پیش از آغاز ارزیابی پرونده توسط استان، ممکن است مسترد شود؛ طبق شرایط رسمی.', url: sources.bc },
+  { province: 'انتاریو', amount: '۳٬۵۰۰ دلار (تاریخی)', notes: 'این مسیر بسته است؛ مبلغ صرفاً تاریخی بوده و امکان درخواست جدید وجود ندارد.', url: sources.on, historical: true },
+  { province: 'جزیره پرنس ادوارد', amount: '۱۰٬۰۰۰ دلار', notes: 'ثبت EOI رایگان است؛ اگر پرونده پذیرفته نشود کل هزینه و در صورت رد یا انصراف قبل از مصاحبه ۷٬۵۰۰ دلار مسترد می‌شود؛ پس از مصاحبه معمولاً غیرقابل‌استرداد است.', url: sources.pei },
+  { province: 'نیوفاندلند و لابرادور', amount: '۰ دلار', notes: 'درخواست استانی رایگان است؛ هزینه‌های فدرال و تهیه مدارک جداگانه‌اند.', url: sources.nl },
+  { province: 'فدرال (IRCC)', detail: 'مجوز کار', amount: '۱۵۵ دلار', notes: 'هزینه استاندارد بررسی مجوز کار، مگر در موارد معافیت؛ مجوز کار باز در صورت لزوم ۱۰۰ دلار اضافه دارد.', url: sources.work },
+  { province: 'فدرال (IRCC)', detail: 'بیومتریک', amount: '۸۵ دلار هر نفر / سقف ۱۷۰ دلار خانواده', notes: 'در صورت نیاز؛ سقف خانوادگی برای اعضای واجد شرایط با درخواست هم‌زمان است. اعتبار معمول بیومتریک اقامت موقت ۱۰ سال است ولی مقررات اقامت دائم متفاوت است.', url: sources.biometrics },
+  { province: 'فدرال (IRCC)', detail: 'اقامت دائم · متقاضی اصلی', amount: '۱٬۵۹۰ دلار', notes: '۹۹۰ دلار بررسی پرونده + ۶۰۰ دلار حق اقامت دائم (RPRF)، از ۳۰ آوریل ۲۰۲۶.', url: sources.pr },
+  { province: 'فدرال (IRCC)', detail: 'اقامت دائم · همسر/شریک زندگی', amount: '۱٬۵۹۰ دلار', notes: '۹۹۰ دلار بررسی پرونده + ۶۰۰ دلار RPRF؛ حق اقامت دائم می‌تواند دیرتر پرداخت شود و در صورت رد پرونده قابل‌استرداد است.', url: sources.pr },
+  { province: 'فدرال (IRCC)', detail: 'اقامت دائم · فرزند وابسته', amount: '۲۷۰ دلار به‌ازای هر فرزند', notes: 'برای هر فرزند وابسته همراه؛ حق اقامت دائم RPRF به فرزند وابسته تعلق نمی‌گیرد.', url: sources.pr },
 ];
 
 export default function GovernmentFeeSchedule({ lang }: { lang: string }) {
@@ -59,7 +60,7 @@ export default function GovernmentFeeSchedule({ lang }: { lang: string }) {
         <table className="w-full min-w-[760px] border-collapse text-sm text-gray-700">
           <thead className="bg-gray-800 text-white">
             <tr>
-              {(persian ? ['عنوان هزینه', 'مبلغ (دلار کانادا)', 'توضیحات'] : ['Fee', 'Amount (CAD)', 'Notes']).map((head) => (
+              {(persian ? ['استان / نهاد مسئول', 'مبلغ (دلار کانادا)', 'توضیحات'] : ['Province / Authority', 'Amount (CAD)', 'Notes']).map((head) => (
                 <th key={head} scope="col" className="px-4 py-4 text-start font-semibold">{head}</th>
               ))}
             </tr>
@@ -68,7 +69,10 @@ export default function GovernmentFeeSchedule({ lang }: { lang: string }) {
             {rows.map((row, index) => (
               <tr key={index} className={`${row.historical ? 'bg-amber-50' : index % 2 ? 'bg-gray-50' : 'bg-white'} border-t border-gray-200 align-top`}>
                 <th scope="row" className="w-[34%] px-4 py-4 text-start font-semibold">
-                  <a href={row.url} target="_blank" rel="noopener noreferrer" className="text-blue-700 underline decoration-blue-300 underline-offset-4 hover:text-blue-900">{row.fee} <span aria-hidden="true">↗</span></a>
+                  <a href={row.url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-700 underline decoration-blue-300 underline-offset-4 hover:text-blue-900">
+                    {row.province} <span aria-hidden="true">↗</span>
+                  </a>
+                  {row.detail && <span className="mt-1 block text-xs font-normal leading-5 text-gray-500">{row.detail}</span>}
                   {row.historical && <span className="mt-2 block w-fit rounded bg-amber-100 px-2 py-1 text-xs font-bold text-amber-900">{persian ? 'برنامه بسته' : 'CLOSED STREAM'}</span>}
                 </th>
                 <td className="w-[25%] px-4 py-4 font-semibold">{row.amount}</td>
