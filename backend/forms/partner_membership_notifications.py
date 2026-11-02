@@ -18,58 +18,95 @@ logger = logging.getLogger(__name__)
 
 
 def admin_recipients():
-    # Dedicated public-form recipient; no environment variable change needed.
-    configured = os.getenv('AFFILIATE_MEMBERSHIP_ADMIN_EMAILS', 'info@novanestholding.com')
-    addresses = list(dict.fromkeys(item.strip() for item in configured.split(',') if item.strip()))
-    for address in addresses:
-        validate_email(address)
+    # Company inbox is mandatory even when extra admins are configured.
+    configured = os.getenv('AFFILIATE_MEMBERSHIP_ADMIN_EMAILS', '')
+    extras = [item.strip() for item in configured.split(',') if item.strip()]
+    addresses = ['info@novanestholding.com']
+    for address in extras:
+        try:
+            validate_email(address)
+        except Exception:
+            logger.warning('Ignoring invalid extra affiliate admin recipient')
+            continue
+        if address not in addresses:
+            addresses.append(address)
     return addresses
 
 
-def registration_rows(entry):
-    return [
-        ('Reference', f'#{entry.pk}'),
-        ('Birth date', str(entry.birthDate or '')),
-        ('Maximum investment', entry.investmentCeiling),
-        ('First name', entry.firstName),
-        ('Last name', entry.lastName),
-        ('Email', entry.email),
-        ('Phone number', entry.phoneNumber),
-        ('Country of residence', entry.countryOfResidence),
-        ('Province of residence', entry.provinceOfResidence),
-        ('City of residence', entry.cityOfResidence),
-        ('Company name', entry.companyName),
-        ('Website', entry.website),
-        ('LinkedIn', entry.linkedin),
-        ('Brief introduction', entry.briefIntroduction),
-        ('How did you know us?', entry.howDidYouKnowUs),
-        ('Submitted (UTC)', entry.createdAt.astimezone(datetime_timezone.utc).strftime('%Y-%m-%d %H:%M UTC')),
-    ]
+AFFILIATE_FIELDS = (
+    ('firstName', 'First name', 'نام'),
+    ('lastName', 'Last name', 'نام خانوادگی'),
+    ('email', 'Email', 'ایمیل'),
+    ('phoneNumber', 'Phone number', 'شماره تماس'),
+    ('countryOfResidence', 'Country of residence', 'کشور محل اقامت'),
+    ('provinceOfResidence', 'Province of residence', 'استان محل اقامت'),
+    ('cityOfResidence', 'City of residence', 'شهر محل اقامت'),
+    ('companyName', 'Company name', 'نام شرکت'),
+    ('website', 'Website', 'وب‌سایت'),
+    ('linkedin', 'LinkedIn', 'لینکدین'),
+    ('briefIntroduction', 'Brief introduction', 'معرفی کوتاه'),
+    ('howDidYouKnowUs', 'How did you hear about us?', 'نحوه آشنایی با ما'),
+    # Historical fields are shown when populated, preserving older records.
+    ('birthDate', 'Birth date', 'تاریخ تولد'),
+    ('investmentCeiling', 'Maximum investment', 'سقف سرمایه‌گذاری'),
+)
+
+
+def registration_rows(entry, language=None):
+    """Render all saved nonempty inputs for both recipients; no blank placeholders."""
+    language = language or ('fa' if entry.submission_language == 'fa' else 'en')
+    fa = language == 'fa'
+    rows = [('شماره پیگیری' if fa else 'Reference', f'#{entry.pk}')]
+    for attribute, english, persian in AFFILIATE_FIELDS:
+        value = getattr(entry, attribute, '')
+        if value is None:
+            continue
+        shown = str(value).strip()
+        if shown:
+            rows.append((persian if fa else english, shown))
+    rows.append((
+        'زمان ثبت (UTC)' if fa else 'Submitted at (UTC)',
+        entry.createdAt.astimezone(datetime_timezone.utc).strftime('%Y-%m-%d %H:%M UTC'),
+    ))
+    return rows
 
 
 def build_registration_email(entry, role, addresses):
     reference = f'#{entry.pk}'
+    language = 'fa' if entry.submission_language == 'fa' else 'en'
+    fa = language == 'fa'
+    full_name = f'{entry.firstName} {entry.lastName}'.strip()
+
     if role == 'admin':
-        subject = f'[NovaNest Holding] New Affiliate Registration {reference}'
-        title = 'New affiliate registration'
-        intro = f'A new public affiliate application was received from {entry.firstName} {entry.lastName}.'
-        message = 'The submitted information is shown below for your review.'
-        rows = registration_rows(entry)
-        note = 'Internal review only; keep applicant information confidential.'
+        if fa:
+            subject = f'[NovaNest Holding] درخواست جدید همکاری {reference}'
+            title = 'درخواست جدید همکاری'
+            intro = 'یک درخواست همکاری جدید دریافت شد. اطلاعات ثبت‌شده در ادامه آمده است.'
+            note = 'فقط برای بررسی داخلی.'
+        else:
+            subject = f'[NovaNest Holding] New affiliate registration {reference}'
+            title = 'New affiliate registration'
+            intro = 'A new affiliate registration was received. Submitted details follow.'
+            note = 'For internal review only.'
         reply_to = [entry.email]
     elif role == 'applicant':
-        subject = 'Thanks for joining our partner network'
-        title = 'Partner registration received'
-        intro = f'Hello {entry.firstName}, thank you for your interest in the NovaNest Holding partner network.'
-        message = f'Our partnerships team will review your registration (reference {reference}).'
-        rows = registration_rows(entry)
-        note = 'This message confirms receipt of your registration, not acceptance.'
+        if fa:
+            subject = f'نووانست هلدینگ | تأیید دریافت درخواست همکاری {reference}'
+            title = 'درخواست همکاری دریافت شد'
+            intro = f'{full_name} گرامی، درخواست همکاری شما با شماره پیگیری {reference} ثبت شد و بررسی خواهد شد.'
+            note = 'این پیام صرفاً تأیید دریافت درخواست است و به معنی پذیرش نهایی نیست.'
+        else:
+            subject = f'NovaNest Holding | Affiliate registration received {reference}'
+            title = 'Affiliate registration received'
+            intro = f'Dear {full_name}, we received your affiliate registration ({reference}) and will review it.'
+            note = 'This confirms receipt only, not acceptance.'
         reply_to = ['info@novanestholding.com']
     else:
         raise ValueError('Unknown affiliate registration email role')
+
     plain, html = render_standard_email(
-        title=title, intro=intro, message=message, rows=rows, note=note,
-        language='en', preheader=subject,
+        title=title, intro=intro, rows=registration_rows(entry, language),
+        note=note, language=language, preheader=subject,
     )
     email = EmailMultiAlternatives(
         subject=subject, body=plain, from_email=settings.DEFAULT_FROM_EMAIL,

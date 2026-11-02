@@ -68,6 +68,66 @@ def admin_recipients():
     return list(dict.fromkeys(addresses))
 
 
+
+# Investor emails use the same approved NovaNest HTML template, but their
+# applicant/admin copy is deliberately distinct, short, and locale-aware.
+INVESTOR_FA_LABELS = {
+    'Reference': 'شماره پیگیری',
+    'Submitted at (UTC)': 'زمان ثبت (UTC)',
+    'First name': 'نام',
+    'Last name': 'نام خانوادگی',
+    'Email': 'ایمیل',
+    'Phone': 'شماره تماس',
+    'Birth date': 'تاریخ تولد',
+    'Country of residence': 'کشور محل اقامت',
+    'Province of residence': 'استان محل اقامت',
+    'Company': 'نام شرکت',
+    'Maximum investment': 'سقف سرمایه‌گذاری',
+    'Preferred investment areas': 'حوزه‌های مورد علاقه برای سرمایه‌گذاری',
+    'How applicant heard about us': 'نحوه آشنایی با ما',
+}
+
+
+def investor_email_content(instance, role):
+    """Return concise role-specific wording and every nonempty saved input."""
+    if role not in ('admin', 'applicant'):
+        raise ValueError('Unknown investor registration email role')
+    reference = f'#{instance.pk}'
+    language = 'fa' if instance.submission_language == 'fa' else 'en'
+    fa = language == 'fa'
+    full_name = f'{instance.firstName} {instance.lastName}'.strip()
+    rows = [
+        (INVESTOR_FA_LABELS.get(label, label) if fa else label, value)
+        for label, value in registration_rows(instance)
+        if str(value).strip()
+    ]
+    if role == 'admin':
+        if fa:
+            subject = f'[NovaNest Holding] درخواست جدید ثبت سرمایه‌گذار {reference}'
+            title = 'ثبت‌نام جدید سرمایه‌گذار'
+            intro = 'یک ثبت‌نام سرمایه‌گذار دریافت شد. مشخصات ثبت‌شده در ادامه آمده است.'
+            note = 'فقط برای بررسی داخلی.'
+        else:
+            subject = f'[NovaNest Holding] New investor registration {reference}'
+            title = 'New investor registration'
+            intro = 'A new investor registration was received. Submitted details follow.'
+            note = 'For internal review only.'
+        reply_to = [instance.email]
+    else:
+        if fa:
+            subject = f'نووانست هلدینگ | تأیید دریافت ثبت‌نام سرمایه‌گذار {reference}'
+            title = 'ثبت‌نام سرمایه‌گذار دریافت شد'
+            intro = f'{full_name} گرامی، درخواست شما با شماره پیگیری {reference} ثبت شد و بررسی خواهد شد.'
+            note = 'این پیام صرفاً تأیید دریافت درخواست است و به معنی تأیید نهایی نیست.'
+        else:
+            subject = f'NovaNest Holding | Investor registration received {reference}'
+            title = 'Investor registration received'
+            intro = f'Dear {full_name}, we received your registration ({reference}) and will review it.'
+            note = 'This confirms receipt only, not approval.'
+        reply_to = ['info@novanestholding.com']
+    return subject, title, intro, note, language, reply_to, rows
+
+
 def build_registration_email(instance, kind, role, recipients):
     reference = f'#{instance.pk}'
     first = (getattr(instance, 'your_first_name', '') or getattr(instance, 'firstName', '')).strip()
@@ -92,7 +152,13 @@ def build_registration_email(instance, kind, role, recipients):
         note = 'This confirms receipt only, not acceptance or an appointment booking.'
         language = 'en'
         reply_to = ['info@novanestholding.com']
-    plain, html = render_standard_email(title=title, intro=intro, rows=registration_rows(instance),
+    # Scope this wording change to the Investor Registration form. All other
+    # public forms keep the existing email content and recipient behaviour.
+    if kind == 'Investor Registration':
+        subject, title, intro, note, language, reply_to, rows = investor_email_content(instance, role)
+    else:
+        rows = registration_rows(instance)
+    plain, html = render_standard_email(title=title, intro=intro, rows=rows,
                                        note=note, language=language, preheader=subject)
     mail = EmailMultiAlternatives(subject=subject, body=plain,
                                   from_email=settings.DEFAULT_FROM_EMAIL, to=recipients,
@@ -120,6 +186,10 @@ def notify_registration(instance, kind):
     except Exception:
         log.exception('Invalid REGISTRATION_ADMIN_EMAILS for %s %s', kind, instance.pk)
         administrators = []
+    # Never let an optional recipient override suppress the company's inbox.
+    # This guarantee applies only to Investor Registration.
+    if kind == 'Investor Registration':
+        administrators = list(dict.fromkeys(['info@novanestholding.com', *administrators]))
     failed = []
     for column, role, addresses in [
         ('admin_notified', 'admin', administrators),

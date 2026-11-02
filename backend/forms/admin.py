@@ -5,9 +5,48 @@ from .affiliate_inquiries import notify_inquiry
 from .contact_us_notifications import notify_contact_us
 from .startup_validation_notifications import notify_startup_validation
 from .consultation_requests import notify_consultation
+from .partner_membership_notifications import notify_partner_membership
+from .registration_notifications import notify_registration
 
-admin.site.register(InvestorRegistration)
-admin.site.register(PartnerMembership)
+
+@admin.register(InvestorRegistration)
+class InvestorRegistrationAdmin(admin.ModelAdmin):
+    """Review investor submissions and retry only emails not yet accepted."""
+    list_display = ('id', 'createdAt', 'firstName', 'lastName', 'email',
+                    'applicant_notified', 'admin_notified')
+    list_filter = ('submission_language', 'applicant_notified', 'admin_notified', 'createdAt')
+    search_fields = ('firstName', 'lastName', 'email', 'phoneNumber', 'companyName')
+    readonly_fields = [field.name for field in InvestorRegistration._meta.fields]
+    actions = ['retry_pending_emails']
+
+    def has_add_permission(self, request):
+        return False
+
+    @admin.action(description='Retry only pending Investor Registration emails')
+    def retry_pending_emails(self, request, queryset):
+        complete = sum(1 for entry in queryset if notify_registration(entry, 'Investor Registration'))
+        self.message_user(request,
+            f'Both emails accepted for {complete} of {queryset.count()} selected investor registrations.')
+
+
+@admin.register(PartnerMembership)
+class PartnerMembershipAdmin(admin.ModelAdmin):
+    """Public Affiliate Registration only; not partner-specific Apply forms."""
+    list_display = ('id', 'createdAt', 'firstName', 'lastName', 'email',
+                    'applicant_notified', 'admin_notified')
+    list_filter = ('submission_language', 'applicant_notified', 'admin_notified', 'createdAt')
+    search_fields = ('firstName', 'lastName', 'email', 'phoneNumber', 'companyName')
+    readonly_fields = [field.name for field in PartnerMembership._meta.fields]
+    actions = ['retry_pending_emails']
+
+    def has_add_permission(self, request):
+        return False
+
+    @admin.action(description='Retry only pending public Affiliate Registration emails')
+    def retry_pending_emails(self, request, queryset):
+        complete = sum(1 for entry in queryset if notify_partner_membership(entry))
+        self.message_user(request,
+            f'Both emails accepted for {complete} of {queryset.count()} selected affiliate registrations.')
 
 
 @admin.register(StartUpsForm)
@@ -77,7 +116,7 @@ class AffiliateInquiryAdmin(admin.ModelAdmin):
                     'email', 'admin_notified', 'partner_notified', 'applicant_notified')
     list_filter = ('affiliate_slug', 'admin_notified', 'partner_notified',
                    'applicant_notified', 'created_at')
-    search_fields = ('first_name', 'last_name', 'email', 'affiliate_slug')
+    search_fields = ('full_name', 'email', 'affiliate_slug')
     readonly_fields = [field.name for field in AffiliateInquiry._meta.fields]
     actions = ['retry_failed_inquiry_notifications']
 

@@ -61,7 +61,7 @@ class UnifiedMailTests(SimpleTestCase):
 
 
 @override_settings(MAILGUN_ADMIN_RECIPIENTS=['admin@example.com'])
-class LegacySerializerEmailTests(SimpleTestCase):
+class RegistrationSerializerEmailTests(SimpleTestCase):
     def setUp(self):
         self.example = SimpleNamespace(
             firstName='Amir', lastName='Example', name='Amir Example',
@@ -70,30 +70,26 @@ class LegacySerializerEmailTests(SimpleTestCase):
             companyName='Demo Company', pk=3,
         )
 
-    def test_entrepreneur_serializer_uses_shared_sender(self):
-        # Entrepreneur retains the original single-email serializer behavior.
+    def test_investor_and_affiliate_serializers_save_without_sending(self):
+        """The API views, not the serializers, send independently tracked emails."""
+        for serializer_class in (PartnerMembershipSerializer, InvestorRegistrationSerializer):
+            with self.subTest(serializer=serializer_class.__name__):
+                with patch('rest_framework.serializers.ModelSerializer.create', return_value=self.example) as saved:
+                    with patch('forms.serializers.send_branded_email') as sender:
+                        instance = serializer_class().create({'language': 'fa'})
+                        self.assertIs(instance, self.example)
+                        self.assertEqual(saved.call_count, 1)
+                        self.assertEqual(saved.call_args.args[0]['submission_language'], 'fa')
+                        sender.assert_not_called()
+
+    def test_entrepreneur_still_uses_shared_sender(self):
         with patch('rest_framework.serializers.ModelSerializer.create', return_value=self.example):
             with patch('forms.serializers.send_branded_email', return_value=True) as sender:
                 EntrepreneurSerializer().create({})
                 sender.assert_called_once()
-                _, kwargs = sender.call_args
-                self.assertTrue(kwargs['subject'])
-                self.assertTrue(kwargs['title'])
-                self.assertNotIn('html', kwargs)
-
-    def test_affiliate_and_investor_serializers_only_save_before_notifications(self):
-        # These forms now send two independently retriable notifications in their
-        # API views, after the database record is saved. Calling the old sender
-        # inside the serializer would bypass delivery tracking or duplicate mail.
-        for serializer_class in (PartnerMembershipSerializer, InvestorRegistrationSerializer):
-            with self.subTest(serializer=serializer_class.__name__):
-                with patch('rest_framework.serializers.ModelSerializer.create',
-                           return_value=self.example) as save_record:
-                    with patch('forms.serializers.send_branded_email') as sender:
-                        result = serializer_class().create({'language': 'fa'})
-                        self.assertIs(result, self.example)
-                        save_record.assert_called_once_with({'submission_language': 'fa'})
-                        sender.assert_not_called()
+                self.assertTrue(sender.call_args.kwargs['subject'])
+                self.assertTrue(sender.call_args.kwargs['title'])
+                self.assertNotIn('html', sender.call_args.kwargs)
 
     def test_contact_serializer_uses_dual_recipient_notifier(self):
         with patch('rest_framework.serializers.ModelSerializer.create', return_value=self.example):
