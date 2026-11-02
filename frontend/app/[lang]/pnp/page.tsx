@@ -23,7 +23,7 @@ export default function pnp({ params: { lang } }: { params: { lang: string } }) 
     .map((b) => ({ header: b.title, content: b.items }));
 
   const assessmentLabel = lang === 'fa' ? 'رزرو ارزیابی رایگان شرایط' : 'Book a free eligibility assessment';
-  const contactHref = `/${lang}/about-us#contact`;
+  const contactHref = '#pnp-application-form';
 
   const businessesHeading = lang === 'fa'
     ? 'نمونه کسب‌وکارهایی که مشتریان ما راه‌اندازی کرده‌اند'
