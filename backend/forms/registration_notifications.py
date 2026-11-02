@@ -62,10 +62,20 @@ def registration_rows(instance):
 
 
 def admin_recipients():
-    addresses = [v.strip() for v in os.getenv('REGISTRATION_ADMIN_EMAILS', 'info@novanestholding.com').split(',') if v.strip()]
-    for address in addresses:
-        validate_email(address)
-    return list(dict.fromkeys(addresses))
+    """The current company inbox is mandatory for ALL public registrations."""
+    recipients = ['info@novanestholding.com']
+    for extra in os.getenv('REGISTRATION_ADMIN_EMAILS', '').split(','):
+        address = extra.strip()
+        if not address or address.lower().endswith('@novanestventure.com'):
+            continue
+        try:
+            validate_email(address)
+        except Exception:
+            log.warning('Skipping invalid additional registration admin recipient')
+            continue
+        if address.lower() not in [item.lower() for item in recipients]:
+            recipients.append(address)
+    return recipients
 
 
 
@@ -186,10 +196,6 @@ def notify_registration(instance, kind):
     except Exception:
         log.exception('Invalid REGISTRATION_ADMIN_EMAILS for %s %s', kind, instance.pk)
         administrators = []
-    # Never let an optional recipient override suppress the company's inbox.
-    # This guarantee applies only to Investor Registration.
-    if kind == 'Investor Registration':
-        administrators = list(dict.fromkeys(['info@novanestholding.com', *administrators]))
     failed = []
     for column, role, addresses in [
         ('admin_notified', 'admin', administrators),

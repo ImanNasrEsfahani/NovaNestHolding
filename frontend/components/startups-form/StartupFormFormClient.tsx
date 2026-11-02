@@ -1,11 +1,11 @@
 'use client';
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { StartupsFormDataType } from '@/types/global';
 import { initialStartupsFormData } from '../../initials/initObjects';
 import StartupFormPersonalInformation from '@/components/startups-form/StartupFormPersonalInformation';
 // import StartupFormIdea from '@/components/startups-form/StartupFormIdea';
-import NotificationSendForm from '@/components/common/form/NotificationSendForm';
+import { UnifiedFormStatus } from '@/components/common/form/UnifiedFormSubmit';
 // import GetCsrfToken from '@/utils/get-csrf-token';
 import { submitStartupsForm } from '../../pages/api/startups-form';
 import { useSubmit } from 'stores/dataStore';
@@ -100,62 +100,58 @@ export default function StartupFormFormClient({ lang, translations }: Props) {
   } = useFile((s) => s)
 
   const { send } = useSubmit();
+  const [submissionResult, setSubmissionResult] = useState<{ status: 'success' | 'pending' | 'error'; message: string } | null>(null);
+
 
   const onSubmit = async (formData: StartupsFormDataType) => {
-    // Set loading and sending states.
-    handleSubmitingChange(true);
+    setSubmissionResult(null);
     handleSendChange(true);
-
-
-
-    // Create a FormData object for form data.
     const sendFormData = new FormData();
-
-    // Handle conditional file attachments.
     const filePostMap = {
       businessPlanFile: filePostBussines.businessPlanFile,
       pitchDeckFile: filePostPitch.pitchDeckFile,
-      financialFile: filePostFinancial.financialFile
+      financialFile: filePostFinancial.financialFile,
     };
-
-    // Convert file objects to Blob and append them.
     for (const [fieldName, file] of Object.entries(filePostMap)) {
-      if (file) {
-        sendFormData.append(fieldName, file, file.name);
-      }
+      if (file instanceof File) sendFormData.append(fieldName, file, file.name);
     }
-
-    // Append all non-file form fields.
     Object.entries(formData).forEach(([fieldName, fieldValue]) => {
-      if (typeof fieldValue !== 'object' || fieldValue === null) {
+      if (fieldValue !== null && fieldValue !== undefined &&
+          typeof fieldValue !== 'object') {
         sendFormData.append(fieldName, String(fieldValue));
       }
     });
 
-    // Send the form data to the API.
-    submitStartupsForm(sendFormData)
-      .then(() => {
-        handleSuccessChange(true);
-        handleNotifChange(true);
-        handleSendChange(false);
-        reset(initialStartupsFormData); // Country does not reset
-        setStartUpFormType('');
+    try {
+      const response = await submitStartupsForm(sendFormData);
+      const reference = response.data?.reference;
+      if ((response.status !== 201 && response.status !== 202) ||
+          !Number.isInteger(reference) || reference <= 0) {
+        throw new Error('Server did not confirm the saved submission');
+      }
+      // Only a verified database reference permits clearing the form.
+      reset(initialStartupsFormData);
+      setStartUpFormType('');
+      if (response.status === 202 || response.data.notifications_sent !== true) {
+        setSubmissionResult({
+          status: 'pending',
+          message: lang === 'fa'
+            ? `درخواست شما با شماره پیگیری #${reference} ذخیره شد، اما برخی اعلان‌های ایمیلی در انتظارند. لطفاً دوباره ثبت نکنید.`
+            : `Your submission was saved (#${reference}), but some email notifications are pending. Please do not submit again.`,
+        });
+      } else {
+        setSubmissionResult({ status: 'success', message: `${translations.successMessage} (#${reference})` });
+      }
 
+    } catch (error) {
+      // Network, authentication and validation failures must NEVER erase entries.
+      // Preserve any CV already selected in the upload component/state.
+      setSubmissionResult({ status: 'error', message: translations.failedMessage });
 
-
-        setTimeout(() => {
-          handleNotifChange(false);
-        }, 10000); // 10 seconds in milliseconds
-      })
-      .catch(() => {
-        handleSuccessChange(true);
-        handleNotifChange(false);
-        handleSendChange(false);
-        reset(initialStartupsFormData);
-        setTimeout(() => {
-          handleNotifChange(false);
-        }, 10000); // 10 seconds in milliseconds
-      });
+      console.error('Startup Validation submission failed', error);
+    } finally {
+      handleSendChange(false);
+    }
   };
 
   // register radio field once so validation works and we can reuse handlers
@@ -373,7 +369,7 @@ export default function StartupFormFormClient({ lang, translations }: Props) {
             errorList={Array.isArray(errorsList) && errorsList.length > 0 ? errorsList.map((e) => e.name) : []}
           />
         </div>
-        <NotificationSendForm lang={lang} successMessage={translations.successMessage} failedMessage={translations.failedMessage} />
+        <UnifiedFormStatus status={submissionResult?.status ?? null} message={submissionResult?.message} />
       </form>
     </div >
   );

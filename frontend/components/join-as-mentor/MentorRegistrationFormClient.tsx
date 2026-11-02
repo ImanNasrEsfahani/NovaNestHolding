@@ -1,7 +1,7 @@
 'use client';
 import React, { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import NotificationSendForm from '@/components/common/form/NotificationSendForm';
+import { UnifiedFormStatus } from '@/components/common/form/UnifiedFormSubmit';
 import TextArea from '@/components/common/TextArea';
 import PersonalInfoInput from '@/components/common/form/PersonalInfoInput';
 import { useSubmit } from 'stores/dataStore';
@@ -21,6 +21,8 @@ interface Props {
 
 export default function MentorRegistrationFormClient({ lang, translations }: Props) {
   const { send } = useSubmit();
+  const [submissionResult, setSubmissionResult] = useState<{ status: 'success' | 'pending' | 'error'; message: string } | null>(null);
+
   const [formSubmitted, setFormSubmitted] = useState(false); // State to track form submission
   const [redirectCountdown, setRedirectCountdown] = useState(15); // Countdown for redirection
 
@@ -59,53 +61,56 @@ export default function MentorRegistrationFormClient({ lang, translations }: Pro
   );
 
   const onSubmit = async (formData: MentorRegistrationFormDataType) => {
-    // Set loading and sending states.
-    handleSubmitingChange(true);
+    setSubmissionResult(null);
     handleSendChange(true);
-
-    // Create a FormData object for form data.
     const sendFormData = new FormData();
-
-    // Append all non-file form fields.
     Object.entries(formData).forEach(([fieldName, fieldValue]) => {
-      if (typeof fieldValue !== 'object' || fieldValue === null) {
-        sendFormData.append(fieldName, String(fieldValue));
-      }
+      if (fieldName === 'birthDate' && fieldValue instanceof Date &&
+          !Number.isNaN(fieldValue.getTime())) {
+        const y = fieldValue.getFullYear();
+        const m = String(fieldValue.getMonth() + 1).padStart(2, '0');
+        const d = String(fieldValue.getDate()).padStart(2, '0');
+        sendFormData.append('birthDate', `${y}-${m}-${d}`);
+      } else if (fieldValue !== null && fieldValue !== undefined &&
+          typeof fieldValue !== 'object') sendFormData.append(fieldName, String(fieldValue));
     });
 
-    // Send the form data to the API.
-    submitMentorRegistrationForm(sendFormData)
-      .then(() => {
-        handleSuccessChange(true);
-        handleNotifChange(true);
-        handleSendChange(false);
-        reset(initialMentorRegistrationFormData); // Country does not reset
-        setFormSubmitted(true); // Set form as submitted
-        setTimeout(() => {
-          handleNotifChange(false);
-        }, 10000); // 10 seconds in milliseconds
+    try {
+      const response = await submitMentorRegistrationForm(sendFormData);
+      const reference = response.data?.reference;
+      if ((response.status !== 201 && response.status !== 202) ||
+          !Number.isInteger(reference) || reference <= 0) {
+        throw new Error('Server did not confirm the saved submission');
+      }
+      // Only a verified database reference permits clearing the form.
+      reset(initialMentorRegistrationFormData);
+      setFormSubmitted(true);
+      const interval = setInterval(() => {
+        setRedirectCountdown(prev => {
+          if (prev <= 1) { clearInterval(interval); window.location.href = '/'; return 0; }
+          return prev - 1;
+        });
+      }, 1000);
+      if (response.status === 202 || response.data.notifications_sent !== true) {
+        setSubmissionResult({
+          status: 'pending',
+          message: lang === 'fa'
+            ? `درخواست شما با شماره پیگیری #${reference} ذخیره شد، اما برخی اعلان‌های ایمیلی در انتظارند. لطفاً دوباره ثبت نکنید.`
+            : `Your submission was saved (#${reference}), but some email notifications are pending. Please do not submit again.`,
+        });
+      } else {
+        setSubmissionResult({ status: 'success', message: `${translations.successMessage} (#${reference})` });
+      }
 
-        // Start countdown for redirection
-        const interval = setInterval(() => {
-          setRedirectCountdown((prev) => {
-            if (prev <= 1) {
-              clearInterval(interval);
-              window.location.href = '/'; // Redirect to homepage
-            }
-            return prev - 1;
-          });
-        }, 1000);
-      })
-      .catch(() => {
-        handleSuccessChange(false);
-        handleNotifChange(false);
-        handleSendChange(false);
-        reset(initialMentorRegistrationFormData);
+    } catch (error) {
+      // Network, authentication and validation failures must NEVER erase entries.
+      // Preserve any CV already selected in the upload component/state.
+      setSubmissionResult({ status: 'error', message: translations.failedMessage });
 
-        setTimeout(() => {
-          handleNotifChange(false);
-        }, 10000); // 10 seconds in milliseconds
-      });
+      console.error('Mentor registration submission failed', error);
+    } finally {
+      handleSendChange(false);
+    }
   };
 
   const errorsList = Object.entries(errors).map(([name, value]) => ({
@@ -330,7 +335,7 @@ export default function MentorRegistrationFormClient({ lang, translations }: Pro
             </button>
           </div>
         )}
-        <NotificationSendForm lang={lang} successMessage={translations.successMessage} failedMessage={translations.failedMessage} />
+        <UnifiedFormStatus status={submissionResult?.status ?? null} message={submissionResult?.message} />
       </div>
     </>
   );

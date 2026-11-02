@@ -13,13 +13,17 @@ MS365_CLIENT_SECRET = os.getenv('MS365_CLIENT_SECRET', '').strip()
 MS365_SENDER_EMAIL = os.getenv('MS365_SENDER_EMAIL', '').strip()
 DEFAULT_FROM_EMAIL = MS365_SENDER_EMAIL
 
-# Recipient list name preserved so existing startup notifications are not lost.
-# This setting is NOT a Mailgun mail service configuration.
-MAILGUN_ADMIN_RECIPIENTS = [
-    address.strip() for address in os.getenv('MAILGUN_ADMIN_RECIPIENTS',
-                                             'info@novanestventure.com').split(',')
-    if address.strip()
+# Legacy variable name retained for backwards compatibility. The retired
+# novanestventure.com mailbox is NEVER a recipient, including when a server's
+# .env still contains the obsolete value. Company inbox is mandatory.
+COMPANY_NOTIFICATION_EMAIL = 'info@novanestholding.com'
+_old_admin_recipients = [
+    address.strip() for address in os.getenv('MAILGUN_ADMIN_RECIPIENTS', '').split(',')
+    if address.strip() and address.strip().lower() != 'info@novanestventure.com'
 ]
+MAILGUN_ADMIN_RECIPIENTS = list(dict.fromkeys(
+    [COMPANY_NOTIFICATION_EMAIL, *_old_admin_recipients]
+))
 
 
 def env_list(name, default=''):

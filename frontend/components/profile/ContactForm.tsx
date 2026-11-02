@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useSubmit } from 'stores/dataStore';
 
@@ -10,7 +10,7 @@ import { ContactProfileForm } from '../../pages/api/profile/index';
 import FormTitle from '@/components/common/form/FormTitle';
 import PersonalInfoInput from '@/components/common/form/PersonalInfoInput';
 import ButtonRefactor from '@/components/common/ButtonRefactor';
-import NotificationSendForm from '@/components/common/form/NotificationSendForm';
+import { UnifiedFormStatus } from '@/components/common/form/UnifiedFormSubmit';
 import { ContactProfileFormDataType } from '@/types/global';
 import { initialContactProfileFormData } from '../../initials/initObjects';
 
@@ -109,45 +109,42 @@ export default function ContactForm({ lang, translations }: Props) {
   } = useSubmit((s) => s);
 
   const { send } = useSubmit();
+  const [submissionResult, setSubmissionResult] = useState<{ status: 'success' | 'pending' | 'error'; message: string } | null>(null);
 
   const onSubmit = async (formData: ContactProfileFormDataType) => {
-    // Set loading and sending states.
-    handleSubmitingChange(true);
+    setSubmissionResult(null);
     handleSendChange(true);
-
-    // Create a FormData object for form data.
     const sendFormData = new FormData();
-
-    // Append all non-file form fields.
-    Object.entries(formData).forEach(([fieldName, fieldValue]) => {
-      if (typeof fieldValue !== 'object' || fieldValue === null) {
-        sendFormData.append(fieldName, String(fieldValue));
+    Object.entries(formData).forEach(([key, value]) => {
+      if (value !== null && value !== undefined && typeof value !== 'object') {
+        sendFormData.append(key, String(value));
       }
     });
-
-    // Send the form data to the API.
-    ContactProfileForm(sendFormData)
-      .then((response) => {
-        console.log(response);
-
-        handleSuccessChange(true);
-        handleNotifChange(true);
-        handleSendChange(false);
-        reset(initialContactProfileFormData); // Reset the form after successful submission
-        setTimeout(() => {
-          handleNotifChange(false);
-        }, 10000); // 10 seconds in milliseconds
-      })
-      .catch(() => {
-        handleNotifChange(true);
-        handleSendChange(false);
-        handleSuccessChange(false);
-        reset(initialContactProfileFormData);
-
-        setTimeout(() => {
-          handleNotifChange(false);
-        }, 10000); // 10 seconds in milliseconds
-      });
+    try {
+      const response = await ContactProfileForm(sendFormData);
+      const reference = response.data?.reference;
+      if ((response.status !== 201 && response.status !== 202) ||
+          !Number.isInteger(reference) || reference <= 0) {
+        throw new Error('Server did not confirm the saved profile inquiry');
+      }
+      reset(initialContactProfileFormData);
+      if (response.status === 202 || response.data.notifications_sent !== true) {
+        setSubmissionResult({
+          status: 'pending',
+          message: lang === 'fa'
+            ? `پیام شما با شماره پیگیری #${reference} ثبت شد؛ ارسال بعضی اعلان‌های ایمیلی در انتظار است. لطفاً دوباره ثبت نکنید.`
+            : `Your message was saved (#${reference}), but some notifications are pending. Please do not resubmit.`,
+        });
+      } else {
+        setSubmissionResult({ status: 'success', message: `${translations.successMessage} (#${reference})` });
+      }
+    } catch (error) {
+      // Do not clear anything, or falsely imply success, after network/API errors.
+      setSubmissionResult({ status: 'error', message: translations.failedMessage });
+      console.error('Profile contact request failed', error);
+    } finally {
+      handleSendChange(false);
+    }
   };
 
   const errorsList = Object.entries(errors).map(([name, value]) => ({
@@ -265,7 +262,7 @@ export default function ContactForm({ lang, translations }: Props) {
         </div>
       </form>
 
-      <NotificationSendForm lang={lang} successMessage={translations.successMessage} failedMessage={translations.failedMessage} />
+      <UnifiedFormStatus status={submissionResult?.status ?? null} message={submissionResult?.message} />
     </div >
   );
 }

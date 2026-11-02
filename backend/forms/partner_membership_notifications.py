@@ -23,6 +23,8 @@ def admin_recipients():
     extras = [item.strip() for item in configured.split(',') if item.strip()]
     addresses = ['info@novanestholding.com']
     for address in extras:
+        if address.lower().endswith('@novanestventure.com'):
+            continue
         try:
             validate_email(address)
         except Exception:

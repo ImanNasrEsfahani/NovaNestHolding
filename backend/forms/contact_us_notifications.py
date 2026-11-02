@@ -1,13 +1,14 @@
-"""Reliable two-recipient Contact Us notifications using the shared email layout.
+"""Reliable, independently retriable Contact Us notifications.
 
-A saved ContactUs record is the source of truth. Each recipient has a separate
-accepted-by-provider flag so an admin can safely retry only a failed role.
+The company mailbox is compulsory even if the deployed environment still
+contains the retired novanestventure.com address.
 """
 import logging
 from datetime import timezone as datetime_timezone
 
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
+from django.core.validators import validate_email
 
 from .email_service import render_standard_email
 
@@ -27,7 +28,6 @@ def build_contact_us_email(contact, role, recipients):
             note = 'این پیام به‌صورت خودکار برای تأیید دریافت درخواست شما ارسال شده است.'
             language = 'fa'
         else:
-            # Keep the previous visitor email wording and subject unchanged.
             subject = 'Thanks for contacting NovaNest Holding'
             title = 'We received your message'
             intro = f'Hello {contact.name}, thank you for contacting NovaNest Holding.'
@@ -73,16 +73,36 @@ def build_contact_us_email(contact, role, recipients):
     return email
 
 
-def notify_contact_us(contact):
-    """Deliver both roles independently and remember Microsoft Graph acceptance.
+def contact_admin_recipients():
+    """Always notify the live company mailbox, ignoring the retired domain.
 
-    This function may be used by Django Admin to retry pending roles only.
-    A Graph HTTP 202 indicates accepted, not confirmed final inbox delivery.
+    Extra explicitly configured admin mailboxes are retained. Invalid extras
+    are skipped so one stale configuration cannot suppress the company alert.
     """
-    admin_recipients = getattr(settings, 'MAILGUN_ADMIN_RECIPIENTS', None) or ['info@novanestholding.com']
+    primary = getattr(settings, 'COMPANY_NOTIFICATION_EMAIL', 'info@novanestholding.com')
+    recipients = [primary]
+    for address in getattr(settings, 'MAILGUN_ADMIN_RECIPIENTS', []) or []:
+        address = str(address).strip()
+        if not address or address.lower().endswith('@novanestventure.com'):
+            continue
+        try:
+            validate_email(address)
+        except Exception:
+            logger.warning('Contact Us: invalid additional admin email ignored')
+            continue
+        if address.lower() not in [value.lower() for value in recipients]:
+            recipients.append(address)
+    return recipients
+
+
+def notify_contact_us(contact):
+    """Attempt both roles independently, retrying only unsent messages.
+
+    Provider acceptance is not final mailbox delivery; flags record acceptance.
+    """
     deliveries = (
         ('visitor_notified', 'visitor', [contact.email]),
-        ('admin_notified', 'admin', list(admin_recipients)),
+        ('admin_notified', 'admin', contact_admin_recipients()),
     )
     failed = []
     for field, role, addresses in deliveries:

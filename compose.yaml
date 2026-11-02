@@ -45,8 +45,8 @@ services:
       MS365_CLIENT_ID: ${MS365_CLIENT_ID:-}
       MS365_CLIENT_SECRET: ${MS365_CLIENT_SECRET:-}
       MS365_SENDER_EMAIL: ${MS365_SENDER_EMAIL:-}
-      # Legacy variable name retained only for Startup admin recipient list.
-      MAILGUN_ADMIN_RECIPIENTS: ${MAILGUN_ADMIN_RECIPIENTS:-info@novanestventure.com}
+      # Legacy setting name; the only company mailbox is on novanestholding.com.
+      MAILGUN_ADMIN_RECIPIENTS: ${MAILGUN_ADMIN_RECIPIENTS:-info@novanestholding.com}
       AFFILIATE_APPLICATION_ADMIN_EMAILS: ${AFFILIATE_APPLICATION_ADMIN_EMAILS:-info@novanestholding.com}
       AFFILIATE_REGISTRY_PATH: /app/affiliate-registry/ourTeamAffiliates.json
     depends_on:

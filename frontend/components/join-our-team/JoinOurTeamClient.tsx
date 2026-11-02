@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { JoinOurTeamFormDataType } from '@/types/global';
-import NotificationSendForm from '@/components/common/form/NotificationSendForm';
+import { UnifiedFormStatus } from '@/components/common/form/UnifiedFormSubmit';
 import GetCsrfToken from '@/utils/get-csrf-token';
 import { initialJoinOurTeamFormData } from '../../initials/initObjects';
 import { submitWorkWithUsForm } from 'pages/api/work-with-us';
@@ -91,6 +91,8 @@ export default function JoinOurTeamClient({ translations, lang }: JoinOurTeamCli
 
   const { joinOurTeam, universities, langLevel } = translations;
   const { send } = useSubmit();
+  const [submissionResult, setSubmissionResult] = useState<{ status: 'success' | 'pending' | 'error'; message: string } | null>(null);
+
 
   const Positions = {
     Professor: joinOurTeam.Professor,
@@ -218,51 +220,57 @@ export default function JoinOurTeamClient({ translations, lang }: JoinOurTeamCli
   }, [handleTokenChange]);
 
   const onSubmit = async (formData: JoinOurTeamFormDataType) => {
-    // Set loading and sending states.
-    handleSubmitingChange(true);
+    setSubmissionResult(null);
     handleSendChange(true);
-
-    // Create a FormData object for form data.
     const sendFormData = new FormData();
-
-    const filePostMap = {
-      cvFile: cvFileState.cvFile
-    };
-
-    for (const [fieldName, file] of Object.entries(filePostMap)) {
-      if (file) {
-        sendFormData.append(fieldName, file, file.name);
-      }
+    if (cvFileState.cvFile instanceof File) {
+      sendFormData.append('cvFile', cvFileState.cvFile, cvFileState.cvFile.name);
     }
-
-    // Append all non-file form fields.
     Object.entries(formData).forEach(([fieldName, fieldValue]) => {
-      if (typeof fieldValue !== 'object' || fieldValue === null) {
+      if (fieldName === 'cvFile' || fieldValue === null || fieldValue === undefined) return;
+      if (fieldName === 'birthDate' && fieldValue instanceof Date) {
+        const y = fieldValue.getFullYear();
+        const m = String(fieldValue.getMonth() + 1).padStart(2, '0');
+        const d = String(fieldValue.getDate()).padStart(2, '0');
+        sendFormData.append(fieldName, `${y}-${m}-${d}`);
+      } else if (typeof fieldValue !== 'object') {
         sendFormData.append(fieldName, String(fieldValue));
-      } else sendFormData.append(fieldName, fieldValue[0]);
+      }
     });
 
-    // Send the form data to the API.
-    submitWorkWithUsForm(sendFormData, csrfToken)
-      .then(() => {
-        handleSuccessChange(true);
-        handleNotifChange(true);
-        handleSendChange(false);
-        reset(initialJoinOurTeamFormData); // Country does not reset
-        setTimeout(() => {
-          handleNotifChange(false);
-        }, 10000); // 10 seconds in milliseconds
-      })
-      .catch(() => {
-        handleSuccessChange(true);
-        handleNotifChange(false);
-        handleSendChange(false);
-        reset(initialJoinOurTeamFormData);
+    try {
+      const response = await submitWorkWithUsForm(sendFormData, csrfToken);
+      const reference = response.data?.reference;
+      if ((response.status !== 201 && response.status !== 202) ||
+          !Number.isInteger(reference) || reference <= 0) {
+        throw new Error('Server did not confirm the saved submission');
+      }
+      // Only a verified database reference permits clearing the form.
+      reset(initialJoinOurTeamFormData);
+      handleCvFileChange({ cvFile: null });
+      setSelectPosition('');
+      setSelectStudentContract('');
+      setSelectProfessorContract('');
+      if (response.status === 202 || response.data.notifications_sent !== true) {
+        setSubmissionResult({
+          status: 'pending',
+          message: lang === 'fa'
+            ? `درخواست شما با شماره پیگیری #${reference} ذخیره شد، اما برخی اعلان‌های ایمیلی در انتظارند. لطفاً دوباره ثبت نکنید.`
+            : `Your submission was saved (#${reference}), but some email notifications are pending. Please do not submit again.`,
+        });
+      } else {
+        setSubmissionResult({ status: 'success', message: `${translations.successMessage} (#${reference})` });
+      }
 
-        setTimeout(() => {
-          handleNotifChange(false);
-        }, 10000); // 10 seconds in milliseconds
-      });
+    } catch (error) {
+      // Network, authentication and validation failures must NEVER erase entries.
+      // Preserve any CV already selected in the upload component/state.
+      setSubmissionResult({ status: 'error', message: translations.failedMessage });
+
+      console.error('Work With Us submission failed', error);
+    } finally {
+      handleSendChange(false);
+    }
   };
 
   const errorsList = Object.entries(errors).map(([name, value]) => ({
@@ -330,7 +338,7 @@ export default function JoinOurTeamClient({ translations, lang }: JoinOurTeamCli
             />
           </div>
         </form>
-        <NotificationSendForm lang={lang} successMessage={translations.successMessage} failedMessage={translations.failedMessage} />
+        <UnifiedFormStatus status={submissionResult?.status ?? null} message={submissionResult?.message} />
       </div>
     </>
   );
