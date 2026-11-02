@@ -83,6 +83,12 @@ export default function RootLayout({
         />
         <link
           rel="icon"
+          type="image/x-icon"
+          sizes="any"
+          href="/favicon.ico?v=20261102"
+        />
+        <link
+          rel="icon"
           type="image/png"
           sizes="192x192"
           href="/android-icon-192x192.png"

@@ -2,9 +2,11 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { cookieName } from './app/i18n/setting';
 
 export const config = {
-  // Public SEO resources and static assets must stay at the site root.
+  // Do not run locale redirects on public root-level files. This includes
+  // favicon.ico, favicon PNGs, Apple/Android icons, manifest.json and SEO files.
+  // The actual page routes continue to use the same language rules below.
   matcher: [
-    '/((?!api(?:/|$)|_next/static|_next/image|static(?:/|$)|favicon.ico|sw.js|robots.txt|sitemap.xml).*)',
+    '/((?!api(?:/|$)|_next/static|_next/image|static(?:/|$)|[^/]+\.[^/]+$).*)',
   ],
 };
 
