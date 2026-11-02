@@ -60,15 +60,26 @@ class ContactUs(models.Model):
   notification_error=models.CharField(max_length=200, blank=True)
 
 class PartnerMembership(models.Model):
+  # Public Affiliate Registration; all fields displayed by the form are persisted.
+  # Existing records are preserved by an additive migration (0010).
   firstName=models.CharField(max_length=500,blank=True)
   lastName=models.CharField(max_length=500,blank=True)
-  birthDate=models.DateField(blank=True)
+  birthDate=models.DateField(blank=True,null=True)
   email=models.EmailField(blank=True)
+  phoneNumber=models.CharField(max_length=50,blank=True)
   countryOfResidence=models.CharField(max_length=500,blank=True)
   provinceOfResidence=models.CharField(max_length=500,blank=True)
+  cityOfResidence=models.CharField(max_length=300,blank=True)
   companyName=models.CharField(max_length=500,blank=True)
+  website=models.CharField(max_length=500,blank=True)
+  linkedin=models.CharField(max_length=500,blank=True)
+  briefIntroduction=models.TextField(blank=True)
   investmentCeiling=models.CharField(max_length=500,blank=True)
-  howDidYouKnowUs=models.CharField(max_length=500,blank=True)
+  howDidYouKnowUs=models.TextField(blank=True)
+  submission_language=models.CharField(max_length=2,choices=[('en','English'),('fa','Persian')],default='en')
+  applicant_notified=models.BooleanField(default=False)
+  admin_notified=models.BooleanField(default=False)
+  notification_error=models.CharField(max_length=200,blank=True)
   createdAt=models.DateTimeField(auto_now_add=True)
   updatedAt=models.DateTimeField(auto_now=True)
 

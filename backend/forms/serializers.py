@@ -77,24 +77,28 @@ class ContactUsSerializer(serializers.ModelSerializer):
 
 
 class PartnerMembershipSerializer(serializers.ModelSerializer):
+    """Public Affiliate Registration: persist every displayed input, not only old fields."""
+    firstName = serializers.CharField(max_length=500, trim_whitespace=True)
+    lastName = serializers.CharField(max_length=500, trim_whitespace=True)
+    email = serializers.EmailField()
+    phoneNumber = serializers.CharField(max_length=50, trim_whitespace=True)
+    language = serializers.ChoiceField(
+        choices=('en', 'fa'), required=False, default='en', write_only=True,
+    )
+
     class Meta:
         model = PartnerMembership
         fields = '__all__'
-        read_only_fields = ['id', 'createdAt']
+        read_only_fields = [
+            'id', 'createdAt', 'updatedAt', 'submission_language',
+            'applicant_notified', 'admin_notified', 'notification_error',
+        ]
 
     def create(self, validated_data):
-        instance = super().create(validated_data)
-        send_branded_email(
-            instance.email,
-            subject='Thanks for joining our partner network',
-            title='Partner registration received',
-            intro=f'Hello {instance.firstName}, thank you for your interest in the NovaNest Holding partner network.',
-            message='Our partnerships team will review the information you submitted.',
-            rows=[('Applicant', f'{instance.firstName} {instance.lastName}'.strip()),
-                  ('Email', instance.email), ('Company', instance.companyName)],
-            note='This message confirms receipt of your registration, not acceptance.',
-        )
-        return instance
+        language = validated_data.pop('language', 'en')
+        # No mail during save: an email error must NEVER make an already-saved
+        # registration look like a failed database transaction.
+        return super().create({**validated_data, 'submission_language': language})
 
 
 class InvestorRegistrationSerializer(serializers.ModelSerializer):

@@ -1,206 +1,135 @@
 'use client';
-import React from 'react';
+
+import { useState, type ComponentProps } from 'react';
 import { useForm } from 'react-hook-form';
-import { JoinAsaPartnerFormDataType } from '@/types/global';
-import NotificationSendForm from '@/components/common/form/NotificationSendForm';
+import type { JoinAsaPartnerFormDataType } from '@/types/global';
 import TextArea from '@/components/common/TextArea';
-// import GetCsrfToken from '@/utils/get-csrf-token';
 import { initialJoinAsaPartnerFormData } from '../../initials/initObjects';
 import { submitPartnerMembershipForm } from '../../pages/api/partner-membership';
 import PersonalInfoInput from '@/components/common/form/PersonalInfoInput';
-import { useSubmit } from 'stores/dataStore';
-import ButtonRefactor from '@/components/common/ButtonRefactor';
 import FormTitle from '@/components/common/form/FormTitle';
-import Input from '../common/form/Input';
+import Input from '@/components/common/form/Input';
+import {
+  UnifiedFormSubmit,
+  UnifiedFormStatus,
+  type SubmissionStatus,
+} from '@/components/common/form/UnifiedFormSubmit';
 
-interface Translations {
+type Translations = ComponentProps<typeof PersonalInfoInput>['translations'] & {
   formTitle: string;
   formSubtitle: string;
-  birthDate: string;
-  birthDateErrorMessage: string;
-  birthDatePlaceholder: string;
   companyName: string;
-  companyNameRequired: string;
   companyNamePlaceholder: string;
-  investmentCeiling: string;
-  investmentCeilingRequired: string;
-  investmentCeilingPlaceholder: string;
+  website: string;
+  websitePlaceholder: string;
+  websiteErrorMessage: string;
+  linkedin: string;
+  linkedinPlaceholder: string;
+  linkedinErrorMessage: string;
+  briefIntroduction: string;
+  briefIntroductionPlaceholder: string;
+  briefIntroductionErrorMessage: string;
   howDidYouKnowUs: string;
   howDidYouKnowUsPlaceholder: string;
-  howDidYouKnowUsRequired: string;
   howDidYouKnowUsErrorMessage: string;
   sendButton: string;
   sendingButton: string;
-
   successMessage: string;
   failedMessage: string;
+};
 
-  countries: string[];
-  countryName: string;
-  countryNameRequired: string;
-  countryNamePlaceholder: string;
+type Props = { lang: string; translations: Translations };
+type Result = { status: SubmissionStatus; message: string } | null;
 
-  provinceOfResidence: string;
-  provinceOfResidenceRequired: string;
-  provinceOfResidencePlaceholder: string;
-
-  cityOfResidence: string;
-  cityOfResidenceRequired: string;
-  cityOfResidencePlaceholder: string;
-
-  website: string;
-  websiteRequired: string;
-  websitePlaceholder: string;
-  websiteErrorMessage: string;
-
-  linkedin: string;
-  linkedinRequired: string;
-  linkedinPlaceholder: string;
-  linkedinErrorMessage: string;
-
-  briefIntroduction: string;
-  briefIntroductionRequired: string;
-  briefIntroductionPlaceholder: string;
-  briefIntroductionErrorMessage: string;
-
-  firstName: string;
-  firstNameRequired: string;
-  firstNamePlaceholder: string;
-
-  lastName: string;
-  lastNameRequired: string;
-  lastNamePlaceholder: string;
-
-  email: string;
-  emailRequired: string;
-  emailErrorMessage: string;
-  emailPlaceholder: string;
-
-  phoneNumber: string;
-  phoneNumberRequired: string;
-  phoneNumberErrorMessage: string;
-  phoneNumberPlaceholder: string;
-
-  TypeOfCollaboration: string;
-  TypeOfCollaborationRequired: string;
-  TypeOfCollaborationPlaceholder: string;
-  TypeOfCollaborationData: { value: string; label: string }[];
-
-  FieldOfExpert: string;
-  FieldOfExpertRequired: string;
-  FieldOfExpertPlaceholder: string;
-  FieldOfExpertData: { value: string; label: string }[];
-
-  FieldOfExpertOther: string;
-  FieldOfExpertOtherRequired: string;
-  FieldOfExpertOtherPlaceholder: string;
-
-  FieldOfInterest: string;
-  FieldOfInterestRequired: string;
-  FieldOfInterestPlaceholder: string;
-  FieldOfInterestData: { value: string; label: string }[];
-
-  FieldOfInterestOther: string;
-  FieldOfInterestOtherRequired: string;
-  FieldOfInterestOtherPlaceholder: string;
-}
-
-interface Props {
-  lang: string;
-  translations: Translations;
-}
-
+/**
+ * Public Affiliate Registration only. Keep the user's form fields on all
+ * failures; reset solely after the server returns a valid saved reference.
+ */
 export default function JoinAsaPartnerFormClient({ lang, translations }: Props) {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset
-  } = useForm<JoinAsaPartnerFormDataType>({
-    mode: 'onBlur',
-    defaultValues: initialJoinAsaPartnerFormData
-  });
-
-  const { send } = useSubmit();
-
-  const {
-    // csrfToken,
-    // handleTokenChange,
-    handleSubmitingChange,
-    handleSendChange,
-    handleNotifChange,
-    handleSuccessChange
-  } = useSubmit((s) => s);
-
-  // useEffect(() => {
-  //   async function fetchCsrfToken() {
-  //     const token = await GetCsrfToken(
-  //       `${process.env.NEXT_PUBLIC_DJANGO_HOST_URL}/get-csrf-token`
-  //     );
-  //     handleTokenChange(token);
-  //   }
-
-  //   fetchCsrfToken();
-  // }, []);
-
-  const onSubmit = async (formData: JoinAsaPartnerFormDataType) => {
-    // Set loading and sending states.
-    handleSubmitingChange(true);
-    handleSendChange(true);
-
-    // Create a FormData object for form data.
-    const sendFormData = new FormData();
-
-    // Append all non-file form fields.
-    Object.entries(formData).forEach(([fieldName, fieldValue]) => {
-      if (typeof fieldValue !== 'object' || fieldValue === null) {
-        sendFormData.append(fieldName, String(fieldValue));
-      }
+  const language: 'fa' | 'en' = lang === 'fa' ? 'fa' : 'en';
+  const { register, handleSubmit, reset, setError, formState: { errors, isSubmitting } } =
+    useForm<JoinAsaPartnerFormDataType>({
+      mode: 'onBlur',
+      reValidateMode: 'onChange',
+      defaultValues: initialJoinAsaPartnerFormData,
     });
+  const [result, setResult] = useState<Result>(null);
+  const [formVersion, setFormVersion] = useState(0);
 
-    // Send the form data to the API.
-    let notifTimeout: NodeJS.Timeout;
+  const submit = async (values: JoinAsaPartnerFormDataType) => {
+    setResult(null);
+    const payload = new FormData();
+    for (const [key, value] of Object.entries(values)) {
+      if (value !== null && value !== undefined && typeof value !== 'object') {
+        payload.append(key, String(value));
+      }
+    }
+    payload.append('language', language);
 
-    submitPartnerMembershipForm(sendFormData)
-      .then((response) => {
-        handleSuccessChange(true);
-        handleNotifChange(true);
-        handleSendChange(false);
-        reset(initialJoinAsaPartnerFormData); // Country does not reset
+    try {
+      const response = await submitPartnerMembershipForm(payload);
+      const reference = response.data?.reference;
+      // A 2xx alone is not sufficient proof that the database saved the form.
+      if ((response.status !== 201 && response.status !== 202) ||
+          !Number.isInteger(reference) || reference <= 0) {
+        throw new Error('Missing saved registration reference');
+      }
 
-        console.log(response);
-
-        notifTimeout = setTimeout(() => {
-          handleNotifChange(false);
-        }, 10000); // 10 seconds in milliseconds
-      })
-      .catch(() => {
-        handleSuccessChange(true);
-        handleNotifChange(false);
-        handleSendChange(false);
-        reset(initialJoinAsaPartnerFormData);
-        notifTimeout = setTimeout(() => {
-          handleNotifChange(false);
-        }, 10000); // 10 seconds in milliseconds
+      // Only a confirmed database write can clear the user's entered values.
+      reset(initialJoinAsaPartnerFormData);
+      setFormVersion(version => version + 1); // Also resets CountryInput internal UI state.
+      if (response.status === 202 || response.data.notifications_sent !== true) {
+        setResult({
+          status: 'pending',
+          message: language === 'fa'
+            ? `درخواست همکاری شما با شماره پیگیری #${reference} ذخیره شد، اما ارسال بعضی ایمیل‌ها در انتظار بررسی است. لطفاً دوباره ثبت نکنید.`
+            : `Your affiliate registration was saved (reference #${reference}), but some email notifications are pending. Please do not submit again.`,
+        });
+      } else {
+        setResult({
+          status: 'success',
+          message: `${translations.successMessage} (#${reference})`,
+        });
+      }
+    } catch (error) {
+      // Surface any field-level server validation failures without clearing form.
+      const api = error as {
+        response?: { status?: number; data?: Record<string, unknown> };
+      };
+      if (api.response?.status === 400 && api.response.data) {
+        const fieldNames: Array<keyof JoinAsaPartnerFormDataType> = [
+          'firstName', 'lastName', 'email', 'phoneNumber', 'countryOfResidence',
+          'cityOfResidence', 'companyName', 'website', 'linkedin',
+          'briefIntroduction', 'howDidYouKnowUs',
+        ];
+        for (const field of fieldNames) {
+          const fieldError = api.response.data[field];
+          if (fieldError) {
+            setError(field, {
+              type: 'server',
+              message: Array.isArray(fieldError) ? String(fieldError[0]) : String(fieldError),
+            });
+          }
+        }
+      }
+      setResult({
+        status: 'error',
+        message: language === 'fa'
+          ? `${translations.failedMessage} اطلاعات واردشده حفظ شده است. اگر وضعیت ارسال نامشخص است، پیش از ثبت مجدد با ما تماس بگیرید.`
+          : `${translations.failedMessage} Your entries have been kept. If the request may have reached the server, contact us before submitting again.`,
       });
+    }
   };
 
-  const errorsList = Object.entries(errors).map(([name, value]) => ({
-    name: name,
-    value: value
-  }));
-
   return (
-    <div className="max-w-responsive mx-auto pt-12 pb-20">
+    <div className="max-w-responsive mx-auto pt-12 pb-20" dir={language === 'fa' ? 'rtl' : 'ltr'}>
       <div className="h-[75px] md:h-[125px]">
-        <FormTitle
-          formTitle={translations.formTitle}
-          formSubtitle={translations.formSubtitle}
-        />
+        <FormTitle formTitle={translations.formTitle} formSubtitle={translations.formSubtitle} />
       </div>
-      <form onSubmit={handleSubmit(onSubmit)} className="w-full">
-        <div className="grid grid-cols-1 gap-6 mt-9  md:grid-cols-2 xl:grid-cols-3">
+      <form onSubmit={handleSubmit(submit, () => setResult(null))} className="w-full" noValidate>
+        <div className="grid grid-cols-1 gap-6 mt-9 md:grid-cols-2 xl:grid-cols-3">
           <PersonalInfoInput
+            key={formVersion}
             register={register}
             errors={errors}
             nameInputs={{
@@ -213,154 +142,59 @@ export default function JoinAsaPartnerFormClient({ lang, translations }: Props) 
               cityOfResidence: 'cityOfResidence',
               TypeOfCollaboration: '',
               FieldOfExpert: '',
-              FieldOfInterest: ''
+              FieldOfInterest: '',
             }}
             noLabel={false}
-            translations={{
-
-              firstName: translations.firstName,
-              firstNameRequired: translations.firstNameRequired,
-              firstNamePlaceholder: translations.firstNamePlaceholder,
-
-              lastName: translations.lastName,
-              lastNameRequired: translations.lastNameRequired,
-              lastNamePlaceholder: translations.lastNamePlaceholder,
-
-              email: translations.email,
-              emailRequired: translations.emailRequired,
-              emailErrorMessage: translations.emailErrorMessage,
-              emailPlaceholder: translations.emailPlaceholder,
-
-              phoneNumber: translations.phoneNumber,
-              phoneNumberRequired: translations.phoneNumberRequired,
-              phoneNumberErrorMessage: translations.phoneNumberErrorMessage,
-              phoneNumberPlaceholder: translations.phoneNumberPlaceholder,
-
-              countries: translations.countries,
-              countryName: translations.countryName,
-              countryNameRequired: translations.countryNameRequired,
-              countryNamePlaceholder: translations.countryNamePlaceholder,
-
-              provinceOfResidence: translations.provinceOfResidence,
-              provinceOfResidenceRequired: translations.provinceOfResidenceRequired,
-              provinceOfResidencePlaceholder: translations.provinceOfResidencePlaceholder,
-
-              cityOfResidence: translations.cityOfResidence,
-              cityOfResidenceRequired: translations.cityOfResidenceRequired,
-              cityOfResidencePlaceholder: translations.cityOfResidencePlaceholder,
-
-              TypeOfCollaboration: translations.TypeOfCollaboration,
-              TypeOfCollaborationRequired: translations.TypeOfCollaborationRequired,
-              TypeOfCollaborationPlaceholder: translations.TypeOfCollaborationPlaceholder,
-              TypeOfCollaborationData: translations.TypeOfCollaborationData,
-
-              FieldOfExpert: translations.FieldOfExpert,
-              FieldOfExpertRequired: translations.FieldOfExpertRequired,
-              FieldOfExpertPlaceholder: translations.FieldOfExpertPlaceholder,
-              FieldOfExpertData: translations.FieldOfExpertData,
-
-              FieldOfExpertOther: translations.FieldOfExpertOther,
-              FieldOfExpertOtherRequired: translations.FieldOfExpertOtherRequired,
-              FieldOfExpertOtherPlaceholder: translations.FieldOfExpertOtherPlaceholder,
-
-              FieldOfInterest: translations.FieldOfInterest,
-              FieldOfInterestRequired: translations.FieldOfInterestRequired,
-              FieldOfInterestPlaceholder: translations.FieldOfInterestPlaceholder,
-              FieldOfInterestData: translations.FieldOfInterestData,
-
-              FieldOfInterestOther: translations.FieldOfInterestOther,
-              FieldOfInterestOtherRequired: translations.FieldOfInterestOtherRequired,
-              FieldOfInterestOtherPlaceholder: translations.FieldOfInterestOtherPlaceholder
-            }}
+            translations={translations}
           />
-
           <Input
-            id="companyName"
-            register={register}
-            errors={errors}
-            nameInput="companyName"
-            type="text"
-            label={translations.companyName}
-            required=""
-            placeholder={translations.companyNamePlaceholder}
-            className="input"
-            labelClass=""
-            patternValue=""
-            patternMessage=""
+            id="companyName" register={register} errors={errors} nameInput="companyName"
+            type="text" label={translations.companyName} required=""
+            placeholder={translations.companyNamePlaceholder} className="input"
+            labelClass="" patternValue="" patternMessage=""
           />
-
           <Input
-            id="website"
-            register={register}
-            errors={errors}
-            nameInput="website"
-            type="url"
-            label={translations.website}
-            required=""
-            placeholder={translations.websitePlaceholder}
-            className="input"
-            labelClass=""
-            patternValue="^(https?:\/\/)?([\w-]+\.)+[\w-]{2,}(\/.*)?$"
+            id="website" register={register} errors={errors} nameInput="website"
+            type="url" label={translations.website} required=""
+            placeholder={translations.websitePlaceholder} className="input"
+            labelClass="" patternValue="^(https?:\/\/)?([\w-]+\.)+[\w-]{2,}(\/.*)?$"
             patternMessage={translations.websiteErrorMessage}
           />
-
           <Input
-            id="linkedin"
-            register={register}
-            errors={errors}
-            nameInput="linkedin"
-            type="url"
-            label={translations.linkedin}
-            required=""
-            placeholder={translations.linkedinPlaceholder}
-            className="input"
-            labelClass=""
-            patternValue="^(https?:\/\/)?([\w-]+\.)+[\w-]{2,}(\/.*)?$"
+            id="linkedin" register={register} errors={errors} nameInput="linkedin"
+            type="url" label={translations.linkedin} required=""
+            placeholder={translations.linkedinPlaceholder} className="input"
+            labelClass="" patternValue="^(https?:\/\/)?([\w-]+\.)+[\w-]{2,}(\/.*)?$"
             patternMessage={translations.linkedinErrorMessage}
           />
-
         </div>
-        <div className="flex flex-col w-full">
+        <div className="flex w-full flex-col">
           <TextArea
-            title={translations.briefIntroduction}
-            register={register}
-            errors={errors}
+            title={translations.briefIntroduction} register={register} errors={errors}
             placeholder={translations.briefIntroductionPlaceholder}
-            nameTextArea="briefIntroduction"
-            patternMessage=""
-            patternValue=""
-            required=""
-            rows={5}
-            maxLength={1450}
-            maxLengthMessage={translations.briefIntroductionErrorMessage}
-            validate=""
+            nameTextArea="briefIntroduction" patternMessage="" patternValue=""
+            required="" rows={5} maxLength={1450}
+            maxLengthMessage={translations.briefIntroductionErrorMessage} validate=""
           />
-
           <TextArea
-            title={translations.howDidYouKnowUs}
-            register={register}
-            errors={errors}
+            title={translations.howDidYouKnowUs} register={register} errors={errors}
             placeholder={translations.howDidYouKnowUsPlaceholder}
-            nameTextArea="howDidYouKnowUs"
-            patternMessage=""
-            patternValue=""
-            // required={translations.howDidYouKnowUsRequired}
-            required=""
-            rows={3}
-            maxLength={1450}
-            maxLengthMessage={translations.howDidYouKnowUsErrorMessage}
-            validate=""
+            nameTextArea="howDidYouKnowUs" patternMessage="" patternValue=""
+            required="" rows={3} maxLength={1450}
+            maxLengthMessage={translations.howDidYouKnowUsErrorMessage} validate=""
           />
         </div>
-        <div className="mx-auto pb-4 mt-20">
-          <ButtonRefactor
-            type="submit"
-            text={send ? translations.sendingButton : translations.sendButton}
-            disabled={errorsList[0] ? true : false}
+        <div className="mx-auto pb-4 mt-20 flex justify-center">
+          <UnifiedFormSubmit
+            lang={language} label={translations.sendButton}
+            loadingLabel={translations.sendingButton} busy={isSubmitting}
+            className="w-44 md:w-52"
           />
         </div>
       </form>
-      <NotificationSendForm lang={lang} successMessage={translations.successMessage} failedMessage={translations.failedMessage} />
+      <div className="mx-auto max-w-xl">
+        <UnifiedFormStatus status={result?.status ?? null} message={result?.message} />
+      </div>
     </div>
   );
 }

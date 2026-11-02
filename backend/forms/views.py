@@ -7,6 +7,7 @@ from rest_framework.parsers import FormParser,MultiPartParser
 from rest_framework import status
 from .models import StartUpsForm,ContactUs,PartnerMembership,InvestorRegistration, Entrepreneur
 from .serializers import StartupFormSerializer,ContactUsSerializer,PartnerMembershipSerializer,InvestorRegistrationSerializer, EntrepreneurSerializer
+from .partner_membership_notifications import notify_partner_membership
 # Create your views here.
 
 class StartUpsFormView(CreateAPIView):
@@ -47,9 +48,25 @@ class ContactUsView(CreateAPIView):
         }, status=status.HTTP_201_CREATED if delivered else status.HTTP_202_ACCEPTED)
 
 class PartnerMembershipView(CreateAPIView):
+    """The public Affiliate Registration endpoint (not partner-specific Apply)."""
     queryset = PartnerMembership.objects.all()
     serializer_class = PartnerMembershipSerializer
+    parser_classes = [FormParser, MultiPartParser]
     http_method_names = ['post']
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        entry = serializer.instance  # Saved BEFORE either email is attempted.
+        delivered = notify_partner_membership(entry)
+        return Response({
+            'reference': entry.pk,
+            'notifications_sent': delivered,
+            'message': ('Affiliate registration saved and notifications accepted.'
+                        if delivered else
+                        'Affiliate registration saved; email notifications pending. Do not resubmit.'),
+        }, status=status.HTTP_201_CREATED if delivered else status.HTTP_202_ACCEPTED)
 
 class InvestorRegistrationView(CreateAPIView):
     queryset = InvestorRegistration.objects.all()
