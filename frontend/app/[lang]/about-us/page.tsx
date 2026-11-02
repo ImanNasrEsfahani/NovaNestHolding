@@ -40,9 +40,8 @@ export default function Page({
       </div>
 
       <div className='w-full max-w-responsive mx-auto'>
-        
         <AboutUs
-          lang={lang} 
+          lang={lang}
           translations={{
               AboutUs: t('AboutUsNovaNest.title'),
               AboutUsContent: t('AboutUsNovaNest.text', { returnObjects: true })
@@ -57,7 +56,7 @@ export default function Page({
 
         <Founder lang={lang} />
 
-        <div className='w-full max-w-responsive mx-auto grid grid-cols-1 gap-12 px-5 py-8 md:flex items-center md:flex-row md:justify-between'>        
+        <div id="contact" className='w-full max-w-responsive mx-auto grid grid-cols-1 gap-12 px-5 py-8 md:flex items-center md:flex-row md:justify-between scroll-mt-20'>
           <ContactUsDescription lang={lang} />
           <ContactUsForm lang={lang} />
         </div>

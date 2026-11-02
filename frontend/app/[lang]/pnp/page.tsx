@@ -12,6 +12,7 @@ import Businesses from '@/components/pnp/Businesses';
 import ProvinceComparison from '@/components/pnp/ProvinceComparison';
 import GovernmentFeeSchedule from '@/components/pnp/GovernmentFeeSchedule';
 import PnpEntrepreneurTimeline from '@/components/pnp/PnpEntrepreneurTimeline';
+import Link from 'next/link';
 
 export default function pnp({ params: { lang } }: { params: { lang: string } }) {
   const { t } = getServerTranslation(lang, 'pnp');
@@ -20,6 +21,9 @@ export default function pnp({ params: { lang } }: { params: { lang: string } }) 
   const accordionData = benefits
     .filter((b) => b.title !== 'Which provinces are currently popular for starting a business?')
     .map((b) => ({ header: b.title, content: b.items }));
+
+  const assessmentLabel = lang === 'fa' ? 'رزرو ارزیابی رایگان شرایط' : 'Book a free eligibility assessment';
+  const contactHref = `/${lang}/about-us#contact`;
 
   const businessesHeading = lang === 'fa'
     ? 'نمونه کسب‌وکارهایی که مشتریان ما راه‌اندازی کرده‌اند'
@@ -33,6 +37,14 @@ export default function pnp({ params: { lang } }: { params: { lang: string } }) 
       <WhyStartBusiness lang={lang} />
       <Requirement lang={lang} />
       <ProvinceComparison lang={lang} />
+      <div className="mx-auto -mt-5 mb-8 flex max-w-7xl justify-center px-4">
+        <Link
+          href={contactHref}
+          className="inline-flex items-center justify-center rounded-lg bg-gray-800 px-6 py-3.5 text-center text-sm font-semibold text-white transition-colors hover:bg-gray-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-800"
+        >
+          {assessmentLabel}
+        </Link>
+      </div>
       <GovernmentFeeSchedule lang={lang} />
       <ServicesSection title={t('services.title')} description={t('services.description')} serviceDetails={t('services.serviceDetails', { returnObjects: true })} image={{ src: t('services.image.src'), alt: t('services.image.alt') }} descriptionIsHtml={true} />
       <Why lang={lang} />
@@ -55,6 +67,14 @@ export default function pnp({ params: { lang } }: { params: { lang: string } }) 
         fileSize={t('download.fileSize', { returnObjects: true })}
         downloadOnButton
       />
+      <div className="mx-auto mb-16 flex max-w-7xl justify-center px-4">
+        <Link
+          href={contactHref}
+          className="inline-flex items-center justify-center rounded-lg bg-gray-800 px-6 py-3.5 text-center text-sm font-semibold text-white transition-colors hover:bg-gray-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-800"
+        >
+          {assessmentLabel}
+        </Link>
+      </div>
     </>
   );
 }

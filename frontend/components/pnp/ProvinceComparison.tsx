@@ -78,7 +78,16 @@ export default function ProvinceComparison({ lang }: { lang: string }) {
                 <td className="px-4 py-4" dir="ltr">{r.netWorth}</td>
                 <td className="px-4 py-4 whitespace-nowrap" dir="ltr">{r.language}</td>
                 <td className="px-4 py-4">{r.jobs}</td>
-                <td className="min-w-[310px] px-4 py-4 leading-6">{r.notes}</td>
+                <td className="min-w-[310px] px-4 py-4 leading-6">
+                  {r.notes}
+                  {r.url === official.bc && (
+                    <p className="mt-2 text-xs font-medium leading-5 text-amber-900">
+                      {persian
+                        ? 'داشتن حداقل شرایط مالی، دعوت به ارسال درخواست را تضمین نمی‌کند؛ ثبت‌نام‌ها امتیازبندی می‌شوند و داوطلبان دارای بالاترین امتیاز برای ارائه درخواست دعوت می‌شوند.'
+                        : 'Meeting the minimum financial requirements does not guarantee an invitation to apply — registrations are ranked, and only the highest-scoring candidates are invited.'}
+                    </p>
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>
