@@ -1,18 +1,14 @@
-"""Form serializers using one shared NovaNest HTML email layout.
-
-Delivery uses the same Microsoft 365 Graph configuration as before; only presentation
-is centralized. Each email has its own wording, but the shared template
-provides a consistent header, footer, responsive styling, and plaintext copy.
-"""
+"""Public form serializers with per-recipient Microsoft 365 notifications."""
 import logging
 
-from django.conf import settings
+from django.db import transaction
 from rest_framework import serializers
 
 from .email_service import send_branded_email
 from .contact_us_notifications import notify_contact_us
 from .startup_validation_notifications import notify_startup_validation
 from .models import ContactUs, Entrepreneur, InvestorRegistration, PartnerMembership, StartUpsForm
+from submission_audit.models import ContactUsIdentity
 
 logger = logging.getLogger(__name__)
 
@@ -42,16 +38,17 @@ class StartupFormSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         language = validated_data.pop('language', 'en')
         instance = super().create({**validated_data, 'submission_language': language})
-        # Save before attempting email. One failed recipient does not prevent
-        # delivery to the other, and a retry never duplicates accepted emails.
         notify_startup_validation(instance)
         return instance
 
 
 class ContactUsSerializer(serializers.ModelSerializer):
-    # The About Us page sends the historical model keys: name, number, etc.
-    # Enforce the fields actually required by the public Contact Us form.
+    """Also preserve each submitted name component, without losing legacy name."""
     name = serializers.CharField(max_length=250, trim_whitespace=True)
+    firstName = serializers.CharField(max_length=250, trim_whitespace=True,
+                                      required=False, write_only=True)
+    lastName = serializers.CharField(max_length=250, trim_whitespace=True,
+                                     required=False, write_only=True)
     email = serializers.EmailField()
     number = serializers.CharField(max_length=250, trim_whitespace=True)
     message = serializers.CharField(trim_whitespace=True)
@@ -67,17 +64,23 @@ class ContactUsSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         language = validated_data.pop('language', 'en')
+        first_name = validated_data.pop('firstName', '')
+        last_name = validated_data.pop('lastName', '')
         if not validated_data.get('subject', '').strip():
             validated_data['subject'] = 'Contact Us'
-        instance = super().create({**validated_data, 'submission_language': language})
-        # Each message is independent. A failed delivery never discards a
-        # successfully saved contact or silently skips the other recipient.
+        with transaction.atomic():
+            instance = super().create({**validated_data, 'submission_language': language})
+            # Older API clients can still POST only the historic `name` field.
+            if first_name or last_name:
+                ContactUsIdentity.objects.create(
+                    contact=instance, first_name=first_name, last_name=last_name,
+                )
         notify_contact_us(instance)
         return instance
 
 
 class PartnerMembershipSerializer(serializers.ModelSerializer):
-    """Public Affiliate Registration: persist every displayed input, not only old fields."""
+    """Public Affiliate Registration: persist every displayed input."""
     firstName = serializers.CharField(max_length=500, trim_whitespace=True)
     lastName = serializers.CharField(max_length=500, trim_whitespace=True)
     email = serializers.EmailField()
@@ -96,13 +99,11 @@ class PartnerMembershipSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         language = validated_data.pop('language', 'en')
-        # No mail during save: an email error must NEVER make an already-saved
-        # registration look like a failed database transaction.
         return super().create({**validated_data, 'submission_language': language})
 
 
 class InvestorRegistrationSerializer(serializers.ModelSerializer):
-    """Preserve ALL submitted investor data before any outbound email."""
+    """Persist all investor data before sending notifications."""
     firstName = serializers.CharField(max_length=500, trim_whitespace=True)
     lastName = serializers.CharField(max_length=500, trim_whitespace=True)
     email = serializers.EmailField()

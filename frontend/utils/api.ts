@@ -1,44 +1,43 @@
-import axios from "axios";
+import axios from 'axios';
+import { submissionContextHeader } from '@/utils/formContext';
 
-// Create an Axios instance with a base URL
+// Keep the existing API origin, timeouts and rejection behavior.
 const baseURL = process.env.NEXT_PUBLIC_DJANGO_HOST_URL || 'https://back.novanestholding.com';
-
 const apiClient = axios.create({
-  baseURL: baseURL,
-  timeout: 30000, // 30 seconds timeout
+  baseURL,
+  timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
-    'Accept': 'application/json',
+    Accept: 'application/json',
   },
   withCredentials: false,
   maxRedirects: 3,
 });
 
-// console.log("API Base URL:", baseURL);
-
-// Add this line for debugging
-// console.log('🐳 Docker Environment Check:', {
-//   NEXT_PUBLIC_DJANGO_HOST_URL: process.env.NEXT_PUBLIC_DJANGO_HOST_URL,
-//   NODE_ENV: process.env.NODE_ENV
-// });
-
-// Add request interceptor for debugging
+// Add optional marketing context only to public form submissions, NOT to
+// unrelated account/login requests using the same Axios instance.
+const publicFormPaths = new Set([
+  'contactUs-form', 'small-reservation', 'investor-registration',
+  'partner-membership', 'startups-form', 'join-as-mentor',
+  'join-as-a-trainee', 'join-our-team', 'work-with-us', 'contact-profile',
+]);
 apiClient.interceptors.request.use(
   (config) => {
-    const fullUrl = (config.baseURL || '') + (config.url || '');
+    const path = (config.url || '').replace(/^\/+/, '').split('?')[0].replace(/\/+$/, '');
+    if (config.method?.toLowerCase() === 'post' && publicFormPaths.has(path)) {
+      const context = submissionContextHeader();
+      if (context) config.headers.set('X-Submission-Context', context);
+    }
     return config;
   },
   (error) => {
     console.error('Request interceptor error:', error);
     return Promise.reject(error);
-  }
+  },
 );
 
-// Add response interceptor for debugging
 apiClient.interceptors.response.use(
-  (response) => {
-    return response;
-  },
+  (response) => response,
   (error) => {
     console.error('Response error:', {
       message: error.message,
@@ -47,14 +46,9 @@ apiClient.interceptors.response.use(
       url: error.config?.url,
       data: error.response?.data,
     });
-
-    // Check for CORS or network issues
-    if (!error.response) {
-      console.error('Network error or CORS issue detected');
-    }
-
+    if (!error.response) console.error('Network error or CORS issue detected');
     return Promise.reject(error);
-  }
+  },
 );
 
 export default apiClient;

@@ -1,14 +1,28 @@
 import apiClient from '@/utils/api';
 
-/** A single transport for the EN/FA Startup Validation forms. */
+/** Keep the newest Startup Validation page intact. Resolve attachments from
+ * currently active file inputs, never from stale cross-form Zustand state.
+ * The financial-model field is included automatically if the form shows it. */
 export async function submitStartupsForm(sendFormData: FormData) {
-  // Do not trust a user-editable email address for the admin recipient.
-  // The backend uses its own fixed NovaNest recipient address.
   const language = typeof window !== 'undefined' && window.location.pathname.startsWith('/fa/') ? 'fa' : 'en';
   sendFormData.set('language', language);
-  // Axios rejects non-2xx responses. Propagate the error; never pretend an
-  // unsuccessful request was saved and never clear the original form on failure.
+
+  if (typeof document !== 'undefined') {
+    const attachments = [
+      'pitchDeckFile', 'businessPlanFile', 'financialFile', 'financialModelFile',
+    ];
+    for (const name of attachments) {
+      const input = Array.from(document.querySelectorAll<HTMLInputElement>('input[type="file"]'))
+        .find(candidate => candidate.name === name && !candidate.disabled &&
+          !candidate.closest('[aria-hidden="true"]'));
+      const file = input?.files?.[0];
+      if (file instanceof File) sendFormData.set(name, file, file.name);
+      else sendFormData.delete(name);
+    }
+  }
+
   return apiClient.post('startups-form', sendFormData, {
     headers: { 'Content-Type': 'multipart/form-data' },
+    timeout: 150000,
   });
 }
