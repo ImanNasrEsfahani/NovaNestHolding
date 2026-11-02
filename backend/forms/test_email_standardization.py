@@ -2,7 +2,7 @@
 from types import SimpleNamespace
 from unittest.mock import patch
 
-from django.test import SimpleTestCase, override_settings
+from django.test import SimpleTestCase, TestCase, override_settings
 
 from .email_service import render_standard_email, send_branded_email
 from .serializers import (
@@ -61,7 +61,9 @@ class UnifiedMailTests(SimpleTestCase):
 
 
 @override_settings(MAILGUN_ADMIN_RECIPIENTS=['admin@example.com'])
-class RegistrationSerializerEmailTests(SimpleTestCase):
+class RegistrationSerializerEmailTests(TestCase):
+    """Serializer tests use DB transactions; TestCase permits their atomic blocks."""
+
     def setUp(self):
         self.example = SimpleNamespace(
             firstName='Amir', lastName='Example', name='Amir Example',
