@@ -21,6 +21,11 @@ export type TeamsContent = {
 
 function TeamCard({ member, lang, duplicate = false }: { member: TeamMember; lang: string; duplicate?: boolean }) {
   const photo = safeLocalImage(member.photo);
+  // Render the given name and remaining surname(s) on separate lines on every card,
+  // regardless of the width of the display. Keep the complete name accessible.
+  const [givenName, ...surnameParts] = member.name.trim().split(/\s+/);
+  const surname = surnameParts.join(' ');
+
   return (
     <article className="group/card flex h-full w-full flex-col overflow-hidden rounded-2xl border border-[#E9DED1] bg-white shadow-md transition-all duration-500 hover:-translate-y-2 hover:scale-[1.01] hover:shadow-xl">
       <div className="relative aspect-[0.75/1] shrink-0 overflow-hidden bg-gradient-to-br from-primary/10 to-primary/5">
@@ -41,7 +46,10 @@ function TeamCard({ member, lang, duplicate = false }: { member: TeamMember; lan
       </div>
       <div className="flex flex-1 flex-col justify-between p-6" dir={lang === 'fa' ? 'rtl' : 'ltr'}>
         <div>
-          <h3 className="mb-3 font-header text-2xl font-bold leading-snug text-blue">{member.name}</h3>
+          <h3 aria-label={member.name} className="mb-3 font-header text-2xl font-bold leading-snug text-blue">
+            <span aria-hidden="true" className="block whitespace-nowrap">{givenName}</span>
+            <span aria-hidden="true" className="block whitespace-nowrap">{surname || '\u00a0'}</span>
+          </h3>
           {member.position && (
             <span className="mb-3 inline-block rounded-full bg-primary/10 px-3 py-1 text-sm font-semibold text-primary">
               {member.position}
