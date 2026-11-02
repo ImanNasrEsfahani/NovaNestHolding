@@ -113,6 +113,9 @@ def _send_one(message):
         raise Microsoft365MailError('Invalid recipient address') from exc
 
     mime = message.message()
+    # Website emails already have the branded footer. Identify them for
+    # Exchange Online's organization-signature exclusion rule.
+    mime['X-NovaNest-Origin'] = 'website-backend'
     # Django's SMTP backend passes Bcc in the envelope, not MIME. Graph's
     # MIME-only endpoint needs Bcc in the RFC 5322 message for routing.
     if message.bcc:
