@@ -18,7 +18,7 @@ const FileUpload = forwardRef<FileUploadRef, FileUploadProps>(({ nameInput, labe
   const [fileName, setFileName] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  // keep internal UI in sync with external file value (clear when parent resets)
+  // Keep the widget in sync with the file currently owned by its parent.
   useEffect(() => {
     if (!file) {
       setFileName(null);
@@ -27,10 +27,19 @@ const FileUpload = forwardRef<FileUploadRef, FileUploadProps>(({ nameInput, labe
       setFileName(file instanceof File ? file.name : String(file));
     }
   }, [file]);
-  
-  const handleChange = (file: File | null) => {
-    setFileName(file ? file.name : null);
-    onChange(file);
+
+  // "No CV" must really deselect the previous file. In particular, trainee
+  // and jobs keep the input mounted while disabling the upload panel.
+  useEffect(() => {
+    if (!disabled) return;
+    if (inputRef.current) inputRef.current.value = '';
+    setFileName(null);
+    if (file instanceof File) onChange(null);
+  }, [disabled, file, onChange]);
+
+  const handleChange = (selected: File | null) => {
+    setFileName(selected ? selected.name : null);
+    onChange(selected);
   };
 
   const clearFile = () => {
@@ -39,12 +48,8 @@ const FileUpload = forwardRef<FileUploadRef, FileUploadProps>(({ nameInput, labe
     onChange(null);
   };
 
-  useImperativeHandle(ref, () => ({
-    clearFile,
-  }));
+  useImperativeHandle(ref, () => ({ clearFile }));
 
-  // show invalid state if RHF reports an error for this field
-  // or when the field is required but no file selected and the form has validation errors (submit attempted)
   const hasAnyErrors = errors && Object.keys(errors).length > 0;
   const showInvalid = !!errors?.[nameInput] || (required && !fileName && hasAnyErrors);
 
@@ -67,7 +72,6 @@ const FileUpload = forwardRef<FileUploadRef, FileUploadProps>(({ nameInput, labe
           onChange={(e) => handleChange(e.target.files?.[0] || null)}
           disabled={disabled}
         />
-        {/* show filename if a file is selected */}
         {fileName?.trim() ? (
           <div className="mt-3 flex items-center gap-3 w-full justify-center">
             <span className="text-sm text-ellipsis overflow-hidden whitespace-nowrap max-w-[70%]">{fileName}</span>
