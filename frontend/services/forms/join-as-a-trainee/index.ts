@@ -6,14 +6,19 @@ export async function submitTraineeRegistrationForm(sendFormData: FormData) {
   const language = typeof window !== 'undefined' && window.location.pathname.startsWith('/fa/') ? 'fa' : 'en';
   sendFormData.set('language', language);
 
-  // Replace any stale shared-store CV with the file actually selected now.
-  // In the "No CV" mode the input is disabled, so the upload is discarded.
-  syncCvFileWithVisibleInput(sendFormData);
-
-  if (!sendFormData.has('birthDate') && typeof document !== 'undefined') {
+  // The current visible input takes precedence over any earlier CV in store.
+  const { file } = syncCvFileWithVisibleInput(sendFormData);
+  // FieldOfExpertOther is only applicable to the visible Other selection.
+  if (String(sendFormData.get('fieldOfExpert') ?? '').trim().toLowerCase() !== 'other') {
+    sendFormData.delete('fieldOfExpertOther');
+  }
+  if (file) {
+    // Hidden alternative details must not persist, including default "today".
+    sendFormData.delete('birthDate');
+    sendFormData.delete('tellUsAboutYourself');
+  } else if (!sendFormData.has('birthDate') && typeof document !== 'undefined') {
     const form = document.activeElement instanceof HTMLElement ? document.activeElement.closest('form') : null;
     const input = form?.querySelector<HTMLInputElement>('input[name="birthDate"]');
-    // Hidden/disabled alternate inputs must not resurrect a discarded birth date.
     if (input && !input.disabled && !input.closest('[aria-hidden="true"]') && input.value) {
       sendFormData.set('birthDate', input.value);
     }

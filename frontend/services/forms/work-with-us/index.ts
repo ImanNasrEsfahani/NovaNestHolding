@@ -2,24 +2,35 @@ import apiClient from '@/utils/api';
 import type { PublicFormResponse } from '../jobs';
 import { clearVisibleCvInput, syncCvFileWithVisibleInput } from '@/utils/activeCvUpload';
 
-/** /join-us is a different form from /join-our-team: preserve its own field names. */
+// Values match the selected options in en/fa/formComponent.json.
+const professorPositions = new Set(['Professor', 'استاد دانشگاه']);
+const studentPositions = new Set(['student', 'Student', 'دانشجو']);
+const professorContracts = new Set(['professional Consultation', 'مشاوره تخصصی']);
+const studentContracts = new Set(['hiring', 'استخدام', 'Internship', 'UniversityInternship']);
+
+/** /join-us is different from /join-our-team; preserve its snake_case fields. */
 export async function submitWorkWithUsForm(sendFormData: FormData, csrfToken?: string) {
   const language = typeof window !== 'undefined' && window.location.pathname.startsWith('/fa/') ? 'fa' : 'en';
   sendFormData.set('language', language);
 
-  // Use only the actual file chosen in the currently visible Work With Us form.
-  // The old shared Zustand slot may still contain a CV from another page.
   const { file } = syncCvFileWithVisibleInput(sendFormData);
   const position = String(sendFormData.get('your_position') ?? '').trim();
-  // Also guard the translated Professor option if native validation is bypassed.
-  if ((position === 'Professor' || position === 'استاد دانشگاه') && !file &&
-      typeof document !== 'undefined') {
+  if (professorPositions.has(position) && !file && typeof document !== 'undefined') {
     throw new Error(language === 'fa' ? 'لطفاً فایل رزومه را انتخاب کنید.' : 'Please select a CV file.');
   }
 
-  // No birth-date input exists on this page. Ignore old shared form defaults.
-  const date = String(sendFormData.get('birthDate') ?? '').trim();
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) sendFormData.delete('birthDate');
+  // The contract select is conditional: the old React Hook Form value may
+  // survive a switch from Professor to Student (or vice versa). Never send it.
+  const contract = String(sendFormData.get('type_of_contract') ?? '').trim();
+  if (contract && (
+    (professorPositions.has(position) && !professorContracts.has(contract)) ||
+    (studentPositions.has(position) && !studentContracts.has(contract))
+  )) {
+    sendFormData.delete('type_of_contract');
+  }
+
+  // There is no birthDate input on this page. Don't reuse old form defaults.
+  sendFormData.delete('birthDate');
 
   const response = await apiClient.post<PublicFormResponse>('/work-with-us', sendFormData, {
     headers: {
@@ -32,7 +43,6 @@ export async function submitWorkWithUsForm(sendFormData: FormData, csrfToken?: s
   const reference = response.data?.reference;
   if ((response.status === 201 || response.status === 202) &&
       Number.isInteger(reference) && reference > 0) {
-    // The form is reset by its React component; reset the raw file input too.
     clearVisibleCvInput();
   }
   return response;

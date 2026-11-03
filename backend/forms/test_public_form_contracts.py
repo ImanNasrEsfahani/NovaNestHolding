@@ -70,9 +70,11 @@ class FormContractTests(TestCase):
     def test_trainee_all_fields_saved(self):
         data = {**self.basics, 'countryOfResidence': 'Canada', 'cityOfResidence': 'Burnaby',
                 'fieldOfExpert': 'Marketing', 'fieldOfExpertOther': '',
-                'tellUsAboutYourself': 'I enjoy learning.'}
+                'birthDate': '1990-02-15', 'tellUsAboutYourself': 'I enjoy learning.'}
         response = self.client.post(reverse('forms:join-as-a-trainee'), data)
-        self.assert_record_saved(response, TraineeRegistration, data)
+        expected = {k: v for k, v in data.items() if k != 'birthDate'}
+        saved = self.assert_record_saved(response, TraineeRegistration, expected)
+        self.assertEqual(saved.birthDate.isoformat(), data['birthDate'])
 
     def test_profile_contact_identifies_profile(self):
         data = {**self.basics, 'profileSlug': 'test-person', 'subject': 'Partnership',

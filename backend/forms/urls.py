@@ -4,9 +4,9 @@ from .views import (StartUpsFormView, ContactUsView, PartnerMembershipView,
 from .affiliate_applications import AffiliateApplicationView
 from .affiliate_inquiries import AffiliateInquiryView
 from .consultation_requests import SmallReservationView
-from .public_form_views import (JoinOurTeamView, MentorRegistrationView,
-                                TraineeRegistrationView, ProfileContactView)
-from .work_with_us_cv import WorkWithUsCVView
+from .public_form_views import ProfileContactView
+from .form_contract_validation import (JoinOurTeamView, MentorRegistrationView,
+                                       TraineeRegistrationView, WorkWithUsCVView)
 
 app_name = 'forms'
 urlpatterns = [

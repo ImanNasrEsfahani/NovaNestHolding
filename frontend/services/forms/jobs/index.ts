@@ -11,9 +11,16 @@ export async function submitJoinOurTeamForm(sendFormData: FormData, csrfToken?: 
   const language = typeof window !== 'undefined' && window.location.pathname.startsWith('/fa/') ? 'fa' : 'en';
   sendFormData.set('language', language);
 
-  // A disabled CV input means the applicant switched to the non-CV route.
-  // Trust the current input, not a previously selected file in shared Zustand.
-  syncCvFileWithVisibleInput(sendFormData);
+  const { file } = syncCvFileWithVisibleInput(sendFormData);
+  if (String(sendFormData.get('fieldOfExpert') ?? '').trim().toLowerCase() !== 'other') {
+    sendFormData.delete('fieldOfExpertOther');
+  }
+  if (file) {
+    // In CV mode do not submit hidden fallback fields or default birth date.
+    for (const name of ['birthDate', 'educationLevel', 'educationField', 'workHistorySummary']) {
+      sendFormData.delete(name);
+    }
+  }
 
   return apiClient.post<PublicFormResponse>('/join-our-team', sendFormData, {
     headers: {
