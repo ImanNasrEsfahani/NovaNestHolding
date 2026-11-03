@@ -23,9 +23,6 @@ export default function PanelsRenderer({ panels, openPanel, togglePanel, errors 
     <div className="space-y-4">
       {panels.filter((p) => p.show).map((p) => {
         const hasError = p.fields?.some((field) => !!errors[field as keyof StartupsFormDataType]);
-        console.log(`panel=${p.id} hasError=${hasError}`);
-        console.log(`openPanel=${openPanel}`);
-
         return (
           <div key={p.id} className={`bg-darkGold rounded-xl overflow-hidden shadow-sm ${hasError ? 'ring-1 ring-red-500' : ''}`}>
             <CollapsibleHeader

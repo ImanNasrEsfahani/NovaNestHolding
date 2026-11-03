@@ -1,8 +1,8 @@
-// Static homepage content: keep translations on the server instead of sending
-// i18next and its resource loader to the browser for this section.
+// Static content stays on the server, including translated card copy.
 import UlList from '@/components/List/UlList';
 import { getServerTranslation } from 'app/i18n';
 import ButtonRefactor from '@/components/common/ButtonRefactor';
+import { localizedHref } from '@/utils/site';
 
 type SpecialFeatureCard = {
   id: string | number;
@@ -16,8 +16,6 @@ type SpecialFeatureCard = {
 export default function HalvesCards({ lang }: { lang: string }) {
   const { t } = getServerTranslation(lang, 'mainPage');
   const cards = t('specialFeatureCards', { returnObjects: true }) as SpecialFeatureCard[];
-  const base = process.env.NEXT_PUBLIC_BASE_URL || '';
-
   return (
     <div className="relative flex flex-col md:flex-row justify-evenly items-stretch md:gap-10 md:pt-10">
       {(Array.isArray(cards) ? cards : []).map((card) => (
@@ -34,7 +32,7 @@ export default function HalvesCards({ lang }: { lang: string }) {
             <ButtonRefactor
               text={card.buttonText}
               type="link"
-              href={`${base}${card.href}`}
+              href={localizedHref(card.href, lang)}
               bgColor="black"
             />
           </div>

@@ -229,7 +229,6 @@ export default function MentorRegistrationFormClient({ lang, translations }: Pro
     name: name,
     value: value
   }));
-  console.log('TraineeRegistrationFormClient error list render', { errorsList });
 
   return (
     <>

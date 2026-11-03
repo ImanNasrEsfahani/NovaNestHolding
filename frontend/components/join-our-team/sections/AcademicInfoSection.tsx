@@ -30,29 +30,30 @@ export default function AcademicInfoSection({
   const sectionRef = useRef<HTMLDivElement>(null);
   const [professorSelected, setProfessorSelected] = useState(false);
 
-  // The parent uses the literal English string "Professor" when setting its
-  // CV-required flag. The <select> stores localized labels, so the old rule
-  // failed for «استاد دانشگاه». Observe this form's own position select and
-  // compare against the current translation, without changing submitted data.
+  // Use the actual localized option value, not the English word 'Professor'.
+  // Subscribe once to user changes and native resets. There is no effect with
+  // missing dependencies and no state update during every React render.
   useEffect(() => {
-    const select = sectionRef.current?.closest('form')
-      ?.querySelector<HTMLSelectElement>('select[name="your_position"]');
+    const form = sectionRef.current?.closest('form');
+    const select = form?.querySelector<HTMLSelectElement>('select[name="your_position"]');
     if (!select) return;
     const update = () => setProfessorSelected(select.value === workWithUS.Professor);
+    let resetTimer: number | undefined;
+    const onReset = () => {
+      // Browser reset applies the new select value after the reset event.
+      if (resetTimer !== undefined) window.clearTimeout(resetTimer);
+      resetTimer = window.setTimeout(update, 0);
+    };
     update();
     select.addEventListener('change', update);
-    return () => select.removeEventListener('change', update);
+    form?.addEventListener('reset', onReset);
+    return () => {
+      select.removeEventListener('change', update);
+      form?.removeEventListener('reset', onReset);
+      if (resetTimer !== undefined) window.clearTimeout(resetTimer);
+    };
   }, [workWithUS.Professor]);
 
-  // A successful submission resets react-hook-form without necessarily firing a
-  // native change event. Keep the requirement synced with that reset as well.
-  useEffect(() => {
-    const select = sectionRef.current?.closest('form')
-      ?.querySelector<HTMLSelectElement>('select[name="your_position"]');
-    if (select) setProfessorSelected(select.value === workWithUS.Professor);
-  });
-
-  // Clear the parent's stale English-only required flag when Student is chosen.
   const cvRequired = professorSelected ? (cvFileRequired || workWithUS.cvFileRequired || true) : false;
 
   return (

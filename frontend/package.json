@@ -19,11 +19,9 @@
     "@heroicons/react": "^2.0.18",
     "axios": "^1.4.0",
     "cookies-next": "^4.1.0",
-    "framer-motion": "^12.23.12",
     "i18next": "^23.7.11",
     "i18next-browser-languagedetector": "^7.2.0",
     "i18next-resources-to-backend": "^1.1.4",
-    "immer": "^10.1.1",
     "jalali-moment": "^3.3.11",
     "jwt-decode": "^3.1.2",
     "next": "^13.5.11",
@@ -64,9 +62,6 @@
     }
   },
   "lint-staged": {
-    "*.{js,jsx,ts,tsx}": [
-      "eslint --fix",
-      "git add"
-    ]
+    "*.{js,jsx,ts,tsx}": ["eslint --fix", "git add"]
   }
 }

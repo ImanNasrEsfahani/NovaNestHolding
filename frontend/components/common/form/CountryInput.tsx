@@ -11,62 +11,30 @@ type Props = {
     provinceOfResidence: string;
     cityOfResidence: string;
   };
-
   countries: string[];
-
   countryName: string;
   countryNameRequired: string;
   countryNamePlaceholder: string;
-
   provinceOfResidence: string;
   provinceOfResidenceRequired: string;
   provinceOfResidencePlaceholder: string;
-
   cityOfResidence: string;
   cityOfResidenceRequired: string;
   cityOfResidencePlaceholder: string;
 };
 
 export default function CountryInput({
-  register,
-  errors,
-  nameInputs,
-
-  countries,
-  countryName,
-  countryNameRequired,
-  countryNamePlaceholder,
-
-  provinceOfResidence,
-  provinceOfResidenceRequired,
-  provinceOfResidencePlaceholder,
-
-  cityOfResidence,
-  cityOfResidenceRequired,
-  cityOfResidencePlaceholder,
+  register, errors, nameInputs, countries, countryName,
+  countryNameRequired, countryNamePlaceholder, provinceOfResidence,
+  provinceOfResidenceRequired, provinceOfResidencePlaceholder,
+  cityOfResidence, cityOfResidenceRequired, cityOfResidencePlaceholder,
 }: Props) {
-  // Fix: Ensure countries is always an array
-  // Add error logging when countries is not an array
-  if (!Array.isArray(countries)) {
-    console.error('CountryInput Error: Expected countries to be an array, but received:', {
-      type: typeof countries,
-      value: countries,
-      isArray: Array.isArray(countries),
-    });
-    console.error('CountryInput: Using empty array as fallback. Please check the parent component.');
-    console.error('Called from:', new Error().stack);
-  }
-
-  const safeCountries = Array.isArray(countries) ? countries : [];
-  const countriesData = safeCountries.map((country: string) => ({
-    value: country,
-    label: country,
-  }));
-
+  // No debug logs or stack traces in production; malformed lists gracefully
+  // degrade to an empty list without affecting other fields.
+  const countriesData = (Array.isArray(countries) ? countries : [])
+    .map((country: string) => ({ value: country, label: country }));
   const [selectedCountry, setSelectedCountry] = useState('');
-
   const handleCountryChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    console.log(event.target.value);
     setSelectedCountry(event.target.value);
   };
 
@@ -89,7 +57,6 @@ export default function CountryInput({
           />
         </div>
       )}
-
       {nameInputs?.provinceOfResidence && (
         <div className="col-span-1 w-full">
           <Input
@@ -108,7 +75,6 @@ export default function CountryInput({
           />
         </div>
       )}
-
       {nameInputs?.cityOfResidence && (
         <div className="col-span-1 w-full">
           <Input

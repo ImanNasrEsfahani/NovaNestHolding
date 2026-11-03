@@ -41,3 +41,22 @@ class ContactUsIdentity(models.Model):
 
     def __str__(self):
         return f'{self.first_name} {self.last_name}'.strip()
+
+
+class ConsultationIdempotencyRecord(models.Model):
+    """Stable response for retries of an accepted consultation form request.
+
+    A unique UUID key is reserved atomically with the ConsultationRequest row.
+    No applicant names, email or phone numbers are duplicated into this table.
+    The digest only prevents accidental reuse of a key with different data.
+    """
+    key = models.UUIDField(unique=True, editable=False)
+    payload_digest = models.CharField(max_length=64, editable=False)
+    consultation = models.OneToOneField(
+        'forms.ConsultationRequest', on_delete=models.CASCADE,
+        related_name='idempotency_record', null=True, blank=True,
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'Consultation request #{self.consultation_id}'

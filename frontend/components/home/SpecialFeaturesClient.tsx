@@ -1,5 +1,7 @@
 // These are ordinary links and static content. Rendering them on the server
 // avoids shipping the framer-motion animation runtime to the homepage.
+import { localizedHref } from '@/utils/site';
+
 interface Feature {
   id: string;
   title: string;
@@ -20,7 +22,7 @@ export default function SpecialFeaturesClient({ lang, features, learnMore }: Pro
       {features.map((feature) => (
         <a
           key={feature.id}
-          href={feature.link}
+          href={localizedHref(feature.link, lang)}
           aria-label={`${learnMore}: ${feature.title}`}
           className={`max-w-2xl group h-full rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 flex flex-col ${lang === 'fa' ? 'rtl' : 'ltr'}`}
         >

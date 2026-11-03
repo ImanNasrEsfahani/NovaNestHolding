@@ -169,8 +169,6 @@ export default function StartupFormFormClient({ lang, translations }: Props) {
     value: value
   }));
 
-  console.log("iman : ", errorsList);
-  console.log("iman : ", FormData);
 
   return (
     <div className="max-w-responsive mx-auto pt-12 pb-20">

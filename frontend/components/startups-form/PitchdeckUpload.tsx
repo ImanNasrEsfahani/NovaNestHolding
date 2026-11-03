@@ -166,26 +166,16 @@ export default function PitchdeckUpload(props: PitchdeckUploadProps) {
     submitCount,
   } = props;
 
-  const panels = getPanels({
-    problem,
-    solution,
-    businessModel,
-    targetMarket,
-    property,
-    register,
-    errors,
-    handleSolutionsLevelChange,
-    solutionsLevel,
-    setValue,
-    translations,
-    prefix
-  });
+  const panels = React.useMemo(() => getPanels({
+    problem, solution, businessModel, targetMarket, property, register, errors,
+    handleSolutionsLevelChange, solutionsLevel, setValue, translations, prefix,
+  }), [
+    problem, solution, businessModel, targetMarket, property, register, errors,
+    handleSolutionsLevelChange, solutionsLevel, setValue, translations, prefix,
+  ]);
 
   // helper: find first panel id that has a validation error
   const findFirstErrorPanelId = () => {
-    const errored = panels
-      .map(p => ({ id: p.id, fields: p.fields ?? [], hasError: p.fields?.some(f => Boolean(errors?.[f as keyof StartupsFormDataType])) ?? false }))
-      .filter(p => p.hasError);
     const id =
       panels.find(p => p.fields?.some(f => Boolean(errors?.[f as keyof StartupsFormDataType])))?.id
       // if none with errors, prefer the first visible panel, else fallback to first panel
@@ -204,61 +194,38 @@ export default function PitchdeckUpload(props: PitchdeckUploadProps) {
   // track mount so first render where there are no errors doesn't auto-advance panels
   const mountedRef = useRef(false);
 
-  // when errors change, open the first panel that contains an error.
-  // If the currently open panel has no error but there are errored panels,
-  // advance to the next errored panel (searching forward and wrapping).
-  // derive a stable key for errors so effect fires when content changes
-  const errorKeys = React.useMemo(() => Object.keys(errors || {}).sort().join(','), [errors]);
-
-  // extract logic that inspects panels/errors and decides which panel to open
-  const updateOpenPanelOnErrors = () => {
+  // Keep the active panel in sync with changing validation errors and stage.
+  // The dependencies now contain all data read by this effect; a panel with an
+  // error is opened only when the current panel cannot show that error.
+  useEffect(() => {
     const visiblePanels = panels.filter(p => p.show);
+    const visibleIds = visiblePanels.map(p => p.id);
     const erroredIds = visiblePanels
       .filter(p => (p.fields ?? []).some(f => Boolean(errors?.[f as keyof StartupsFormDataType])))
       .map(p => p.id);
 
-    // initial mount: open first errored (if any) and mark mounted
     if (!mountedRef.current) {
       mountedRef.current = true;
-      if (erroredIds.length > 0) {
+      if (erroredIds.length && !erroredIds.includes(openPanel ?? '')) {
         setOpenPanel(erroredIds[0]);
       }
       return;
     }
-
-    if (erroredIds.length === 0) {
-      return;
-    }
-
-    if (erroredIds.includes(openPanel ?? '')) {
-      return;
-    }
-
-    const visibleIds = visiblePanels.map(p => p.id);
-    const currentIndex = Math.max(0, visibleIds.indexOf(openPanel ?? ''));
-
-    // forward search with wrap — compact loop that logs steps
-    const start = (currentIndex + 1) % visibleIds.length;
-    let found: string | null = null;
-    for (let offset = 0; offset < visibleIds.length; offset++) {
-      const idx = (start + offset) % visibleIds.length;
-      const id = visibleIds[idx];
-      if (erroredIds.includes(id)) {
-        found = id;
-        break;
+    if (erroredIds.length && !erroredIds.includes(openPanel ?? '')) {
+      const index = Math.max(0, visibleIds.indexOf(openPanel ?? ''));
+      const start = (index + 1) % visibleIds.length;
+      for (let offset = 0; offset < visibleIds.length; offset++) {
+        const id = visibleIds[(start + offset) % visibleIds.length];
+        if (erroredIds.includes(id)) {
+          setOpenPanel(id);
+          return;
+        }
       }
     }
-
-    if (found) {
-      setOpenPanel(found);
+    if (!erroredIds.length && openPanel !== null && !visibleIds.includes(openPanel)) {
+      setOpenPanel(visibleIds[0] ?? null);
     }
-  };
-
-  useEffect(() => {
-
-    // delegate to extracted function
-    updateOpenPanelOnErrors();
-  }, [errorKeys, submitCount]); // now runs when form is submitted (submitCount changes)
+  }, [panels, errors, openPanel, submitCount]);
 
   const [fileCounterState, setFileCounter] = useState<boolean>(false);
 

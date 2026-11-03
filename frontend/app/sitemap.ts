@@ -4,20 +4,10 @@ import enTeam from './i18n/locales/en/ourTeam.json';
 import enAffiliates from './i18n/locales/en/ourTeamAffiliates.json';
 
 const publicRoutes = [
-  '',
-  '/about-us',
-  '/academy',
-  '/acceleration',
-  '/affiliate-registration-form',
-  '/investment',
-  '/investor-registration',
-  '/join-as-a-mentor',
-  '/join-as-a-trainee',
-  '/join-our-team',
-  '/join-us',
-  '/our-team',
-  '/pnp',
-  '/startups-validation',
+  '', '/about-us', '/academy', '/acceleration',
+  '/affiliate-registration-form', '/investment', '/investor-registration',
+  '/join-as-a-mentor', '/join-as-a-trainee', '/join-our-team', '/join-us',
+  '/our-team', '/pnp', '/startups-validation',
 ];
 
 const people = enTeam.roles as unknown as Record<string, {
@@ -32,14 +22,13 @@ const profileSlugs = Array.from(new Set(
 const affiliates = enAffiliates.affiliates.partners;
 
 export default function sitemap(): MetadataRoute.Sitemap {
+  // Partner-specific /apply routes explicitly declare noindex. Do not list
+  // these or the archived /startup route in the public indexable sitemap.
   const routes = [
     ...publicRoutes,
     ...profileSlugs.map((slug) => `/profile/${encodeURIComponent(slug)}`),
     ...affiliates.map((affiliate) => `/affiliate/${encodeURIComponent(affiliate.slug)}`),
-    ...affiliates.map((affiliate) => `/affiliate/${encodeURIComponent(affiliate.slug)}/apply`),
   ];
-
-  // English is the only public, indexable locale until the Persian launch.
   return routes.map((path) => ({
     url: `${SITE_URL}/en${path}`,
     changeFrequency: path === '' ? 'weekly' as const : 'monthly' as const,

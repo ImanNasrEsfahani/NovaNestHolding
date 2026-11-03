@@ -1,5 +1,5 @@
 'use client';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { UnifiedFormStatus } from '@/components/common/form/UnifiedFormSubmit';
 import TextArea from '@/components/common/TextArea';
@@ -20,7 +20,8 @@ interface Props {
 }
 
 export default function MentorRegistrationFormClient({ lang, translations }: Props) {
-  const { send } = useSubmit();
+  const send = useSubmit((s) => s.send);
+  const handleSendChange = useSubmit((s) => s.handleSendChange);
   const [submissionResult, setSubmissionResult] = useState<{ status: 'success' | 'pending' | 'error'; message: string } | null>(null);
 
   const [formSubmitted, setFormSubmitted] = useState(false); // State to track form submission
@@ -36,29 +37,24 @@ export default function MentorRegistrationFormClient({ lang, translations }: Pro
     defaultValues: initialMentorRegistrationFormData
   });
 
-  const {
-    handleSubmitingChange,
-    handleSendChange,
-    handleNotifChange,
-    handleSuccessChange
-  } = useSubmit((s) => s);
+  const birthValidate = useMemo(() => birthDateValidatorFactory(18, {
+    birthDateRequired: translations.birthDateRequired ?? 'Birth date is required',
+    birthDateErrorMessage: translations.birthDateErrorMessage ?? 'Invalid birth date',
+    birthDateErrorMessageForFutureDate: (translations as any).birthDateErrorMessageForFutureDate ?? translations.birthDateErrorMessage ?? 'Birth date cannot be in the future',
+    birthDateErrorMessageForAge: (translations as any).birthDateErrorMessageForAge ?? translations.birthDateErrorMessage ?? 'You must be at least 18 years old',
+  }), [translations]);
 
-  const birthValidate = useMemo(
-    () =>
-      birthDateValidatorFactory(18, {
-        birthDateRequired: translations.birthDateRequired ?? 'Birth date is required',
-        birthDateErrorMessage: translations.birthDateErrorMessage ?? 'Invalid birth date',
-        birthDateErrorMessageForFutureDate: (translations as any).birthDateErrorMessageForFutureDate ?? translations.birthDateErrorMessage ?? 'Birth date cannot be in the future',
-        birthDateErrorMessageForAge: (translations as any).birthDateErrorMessageForAge ?? translations.birthDateErrorMessage ?? 'You must be at least 18 years old',
-      }),
-    [
-      translations.birthDateRequired,
-      translations.birthDateErrorMessage,
-      // include optional keys if present
-      (translations as any).birthDateErrorMessageForFutureDate,
-      (translations as any).birthDateErrorMessageForAge,
-    ]
-  );
+  // One cancellable timeout per tick. Leaving the route clears the timer;
+  // a saved form with pending emails never redirects automatically.
+  useEffect(() => {
+    if (!formSubmitted || submissionResult?.status !== 'success') return;
+    if (redirectCountdown <= 0) {
+      window.location.assign('/en');
+      return;
+    }
+    const timeout = window.setTimeout(() => setRedirectCountdown(n => Math.max(n - 1, 0)), 1000);
+    return () => window.clearTimeout(timeout);
+  }, [formSubmitted, submissionResult?.status, redirectCountdown]);
 
   const onSubmit = async (formData: MentorRegistrationFormDataType) => {
     setSubmissionResult(null);
@@ -85,12 +81,6 @@ export default function MentorRegistrationFormClient({ lang, translations }: Pro
       // Only a verified database reference permits clearing the form.
       reset(initialMentorRegistrationFormData);
       setFormSubmitted(true);
-      const interval = setInterval(() => {
-        setRedirectCountdown(prev => {
-          if (prev <= 1) { clearInterval(interval); window.location.href = '/'; return 0; }
-          return prev - 1;
-        });
-      }, 1000);
       if (response.status === 202 || response.data.notifications_sent !== true) {
         setSubmissionResult({
           status: 'pending',
@@ -318,20 +308,27 @@ export default function MentorRegistrationFormClient({ lang, translations }: Pro
           </>
         ) : (
           <div className="text-center">
-            <h3 className="text-3xl font-bold text-green-600">
-              Your application has been successfully submitted.
+            <h3 className={`text-3xl font-bold ${submissionResult?.status === 'pending' ? 'text-amber-800' : 'text-green-600'}`}>
+              {submissionResult?.status === 'pending'
+                ? (lang === 'fa' ? 'درخواست ثبت شد؛ اعلان‌های ایمیلی در انتظارند.' : 'Application saved; email notifications are pending.')
+                : (lang === 'fa' ? 'درخواست شما با موفقیت ثبت شد.' : 'Your application has been successfully submitted.')}
             </h3>
             <p className="mt-4 text-gray-700">
-              Our team will review your information and contact you if your profile is selected for the next steps.
+              {submissionResult?.status === 'pending'
+                ? (lang === 'fa' ? 'لطفاً فرم را دوباره ارسال نکنید. تیم ما درخواست ثبت‌شده را بررسی خواهد کرد.' : 'Please do not resubmit. Our team will review your saved application.')
+                : (lang === 'fa' ? 'تیم ما اطلاعات شما را بررسی خواهد کرد.' : 'Our team will review your information and contact you about the next steps.')}
             </p>
-            <p className="mt-2 text-gray-500">
-              You will be redirected to the homepage shortly… ({redirectCountdown})
-            </p>
+            {submissionResult?.status === 'success' && (
+              <p className="mt-2 text-gray-500">
+                {lang === 'fa' ? 'انتقال به صفحه اصلی' : 'Returning to homepage'}… ({redirectCountdown})
+              </p>
+            )}
             <button
-              onClick={() => (window.location.href = '/')}
+              type="button"
+              onClick={() => window.location.assign('/en')}
               className="mt-6 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
             >
-              Go to Homepage
+              {lang === 'fa' ? 'صفحه اصلی' : 'Go to Homepage'}
             </button>
           </div>
         )}
