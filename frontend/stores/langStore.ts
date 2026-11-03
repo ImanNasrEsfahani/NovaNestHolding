@@ -1,19 +1,16 @@
 import { create } from 'zustand';
-import { CookieValueTypes, getCookie } from 'cookies-next';
 
-type State = {
-  lang: string | CookieValueTypes | undefined;
+// Compatibility store for legacy client-only consumers. The active language is
+// derived from the route; never read cookies or mutate this store in a Server Component.
+type LangState = {
+  lang: string;
   rendered: boolean;
+  setLanguage: (language: string) => void;
+  setRendered: (value: boolean) => void;
 };
-
-type Action = {
-  setLanguage: (language: State["lang"]) => void;
-  setRendered: (value: State["rendered"]) => void;
-}
-
-export const useLang = create<State & Action>((set) => ({
-  lang: getCookie("i18next") ? getCookie("i18next") : "",
+export const useLang = create<LangState>((set) => ({
+  lang: 'en',
   rendered: false,
-  setLanguage: (lang) => set(() => ({ lang: lang })),
-  setRendered: (value) => set(() => ({rendered: value})),
+  setLanguage: (lang) => set({ lang }),
+  setRendered: (rendered) => set({ rendered }),
 }));

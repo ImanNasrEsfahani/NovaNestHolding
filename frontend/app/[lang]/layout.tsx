@@ -2,12 +2,12 @@ import type { Metadata } from 'next';
 import Footer from '@/components/home/Footer';
 import Navbar from '@/components/common/Navbar';
 import ScrollUpButton from '@/components/common/ScrollUpButton';
+import FormStateScope from '@/stores/FormStateScope';
 import { SITE_URL } from '@/utils/site';
 import { createPageMetadata, DEFAULT_SITE_TITLE } from '@/utils/socialMetadata';
 import { dir } from 'i18next';
 import { languages } from 'app/i18n/setting';
 import './globals.css';
-import { useLang } from 'stores/langStore';
 
 // The site-wide fallback. A route can override each part separately using
 // createPageMetadata in its own page.tsx / generateMetadata.
@@ -28,99 +28,36 @@ export default function RootLayout({
   params: { lang: string };
   children: React.ReactNode;
 }) {
-  useLang.setState({
-    lang,
-  });
-
+  // Never mutate a shared client store from a Server Component. The route is
+  // the source of truth for locale, including during concurrent SSR requests.
   return (
     <html lang={lang} dir={dir(lang)}>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link
-          rel="apple-touch-icon"
-          sizes="57x57"
-          href="/apple-icon-57x57.png"
-        />
-        <link
-          rel="apple-touch-icon"
-          sizes="60x60"
-          href="/apple-icon-60x60.png"
-        />
-        <link
-          rel="apple-touch-icon"
-          sizes="72x72"
-          href="/apple-icon-72x72.png"
-        />
-        <link
-          rel="apple-touch-icon"
-          sizes="76x76"
-          href="/apple-icon-76x76.png"
-        />
-        <link
-          rel="apple-touch-icon"
-          sizes="114x114"
-          href="/apple-icon-114x114.png"
-        />
-        <link
-          rel="apple-touch-icon"
-          sizes="120x120"
-          href="/apple-icon-120x120.png"
-        />
-        <link
-          rel="apple-touch-icon"
-          sizes="144x144"
-          href="/apple-icon-144x144.png"
-        />
-        <link
-          rel="apple-touch-icon"
-          sizes="152x152"
-          href="/apple-icon-152x152.png"
-        />
-        <link
-          rel="apple-touch-icon"
-          sizes="180x180"
-          href="/apple-icon-180x180.png"
-        />
-        <link
-          rel="icon"
-          type="image/x-icon"
-          sizes="any"
-          href="/favicon.ico?v=20261102"
-        />
-        <link
-          rel="icon"
-          type="image/png"
-          sizes="192x192"
-          href="/android-icon-192x192.png"
-        />
-        <link
-          rel="icon"
-          type="image/png"
-          sizes="32x32"
-          href="/favicon-32x32.png"
-        />
-        <link
-          rel="icon"
-          type="image/png"
-          sizes="96x96"
-          href="/favicon-96x96.png"
-        />
-        <link
-          rel="icon"
-          type="image/png"
-          sizes="16x16"
-          href="/favicon-16x16.png"
-        />
+        <link rel="apple-touch-icon" sizes="57x57" href="/apple-icon-57x57.png" />
+        <link rel="apple-touch-icon" sizes="60x60" href="/apple-icon-60x60.png" />
+        <link rel="apple-touch-icon" sizes="72x72" href="/apple-icon-72x72.png" />
+        <link rel="apple-touch-icon" sizes="76x76" href="/apple-icon-76x76.png" />
+        <link rel="apple-touch-icon" sizes="114x114" href="/apple-icon-114x114.png" />
+        <link rel="apple-touch-icon" sizes="120x120" href="/apple-icon-120x120.png" />
+        <link rel="apple-touch-icon" sizes="144x144" href="/apple-icon-144x144.png" />
+        <link rel="apple-touch-icon" sizes="152x152" href="/apple-icon-152x152.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180x180.png" />
+        <link rel="icon" type="image/x-icon" sizes="any" href="/favicon.ico?v=20261102" />
+        <link rel="icon" type="image/png" sizes="192x192" href="/android-icon-192x192.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
         <link rel="manifest" href="/manifest.json" />
-
         <meta name="msapplication-TileColor" content="#ffffff" />
         <meta name="msapplication-TileImage" content="/ms-icon-144x144.png" />
         <meta name="theme-color" content="#ffffff" />
       </head>
-
       <body>
         <Navbar lang={lang} />
-        <main className="w-full mx-auto">{children}</main>
+        <FormStateScope>
+          <main className="w-full mx-auto">{children}</main>
+        </FormStateScope>
         <Footer lang={lang} />
         <ScrollUpButton />
       </body>

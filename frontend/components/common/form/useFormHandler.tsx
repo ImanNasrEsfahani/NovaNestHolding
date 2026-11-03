@@ -1,131 +1,121 @@
 'use client';
-import { useEffect, useMemo } from 'react';
-import { useForm } from 'react-hook-form';
-import { useSubmit } from 'stores/dataStore';
-import { FieldValues, DefaultValues } from 'react-hook-form';
 
-type SubmitApi = (formData: FormData, csrfToken?: string) => Promise<any>;
+import { useEffect, useMemo, useState } from 'react';
+import { useForm, type FieldValues, type DefaultValues } from 'react-hook-form';
+import type { SubmissionStatus } from './UnifiedFormSubmit';
+
+type SubmitApiResponse = {
+  status: number;
+  data?: { reference?: number; notifications_sent?: boolean; message?: string };
+};
+type SubmitApi = (data: FormData, csrfToken?: string) => Promise<SubmitApiResponse>;
 type GetCsrf = () => Promise<string>;
 
-
-interface UseFormHandlerOptions<TForm extends FieldValues> {
+type UseFormHandlerOptions<TForm extends FieldValues> = {
   initialValues: DefaultValues<TForm>;
   submitApi: SubmitApi;
   getCsrfToken?: GetCsrf;
-  fileFieldNames?: string[]; // e.g. ['cvFile']
-  fileState?: Record<string, File | '' | undefined>; // pass useFile's state object
-  handleFileChange?: (payload: Record<string, File | ''>) => void; // pass the file store handler
+  fileFieldNames?: string[];
+  fileState?: Record<string, File | '' | null | undefined>;
+  handleFileChange?: (payload: Record<string, File | ''>) => void;
   resetValues?: DefaultValues<TForm>;
-  csrfFetchUrl?: string; // optional override
-}
+  csrfFetchUrl?: string;
+};
 
+/** Compatibility helper for older forms. Submission state is LOCAL, errors
+ * propagate to callers, and fields/files reset only after confirmed storage.
+ * This helper has no active callers at the time of this change.
+ */
 export function useFormHandler<TForm extends FieldValues>({
-  initialValues,
-  submitApi,
-  getCsrfToken,
-  fileFieldNames = [],
-  fileState,
-  handleFileChange,
-  resetValues,
-  csrfFetchUrl,
+  initialValues, submitApi, getCsrfToken, fileFieldNames = [], fileState,
+  handleFileChange, resetValues, csrfFetchUrl,
 }: UseFormHandlerOptions<TForm>) {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-  } = useForm<TForm>({
-    mode: 'onBlur',
-    defaultValues: initialValues as DefaultValues<TForm>,
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<TForm>({
+    mode: 'onBlur', defaultValues: initialValues,
   });
-
-  const {
-    csrfToken,
-    handleTokenChange,
-    handleSubmitingChange,
-    handleSendChange,
-    handleNotifChange,
-    handleSuccessChange,
-  } = useSubmit();
+  const [csrfToken, setCsrfToken] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submissionResult, setSubmissionResult] = useState<{
+    status: SubmissionStatus; reference?: number;
+  } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    async function fetchToken() {
+    if (!getCsrfToken && !csrfFetchUrl) return;
+    const load = async () => {
       try {
         const token = getCsrfToken
           ? await getCsrfToken()
-          : csrfFetchUrl
-          ? await (await fetch(csrfFetchUrl)).text()
-          : undefined;
-        if (!cancelled && token) handleTokenChange(token);
-      } catch (e) {
-        // swallow - optional logging in caller
+          : await (await fetch(csrfFetchUrl!)).text();
+        if (!cancelled && token) setCsrfToken(token);
+      } catch (error) {
+        if (!cancelled) console.error('Unable to load optional CSRF token', error);
       }
-    }
-    fetchToken();
-    return () => {
-      cancelled = true;
     };
-  }, [getCsrfToken, csrfFetchUrl, handleTokenChange]);
+    void load();
+    return () => { cancelled = true; };
+  }, [getCsrfToken, csrfFetchUrl]);
 
-  const onSubmit = async (formData: TForm) => {
-    handleSubmitingChange(true);
-    handleSendChange(true);
-
-    const sendFormData = new FormData();
-
-    if (fileFieldNames.length && fileState) {
-      for (const name of fileFieldNames) {
-        const file = (fileState as any)[name] as File | '';
-        if (file) sendFormData.append(name, file, (file as File).name);
+  const onSubmit = async (values: TForm) => {
+    setIsSubmitting(true);
+    setSubmissionResult(null);
+    const data = new FormData();
+    const uploaded = new Set<string>();
+    for (const name of fileFieldNames) {
+      const file = fileState?.[name];
+      if (typeof File !== 'undefined' && file instanceof File) {
+        data.append(name, file, file.name);
+        uploaded.add(name);
       }
     }
-
-    Object.entries(formData as any).forEach(([fieldName, fieldValue]) => {
-      if (typeof fieldValue !== 'object' || fieldValue === null) {
-        sendFormData.append(fieldName, String(fieldValue));
-      } else if (Array.isArray(fieldValue) && fieldValue[0] != null) {
-        sendFormData.append(fieldName, fieldValue[0]);
+    for (const [name, value] of Object.entries(values)) {
+      if (uploaded.has(name) || value == null) continue;
+      if (typeof File !== 'undefined' && value instanceof File) {
+        data.append(name, value, value.name);
+      } else if (value instanceof Date && !Number.isNaN(value.getTime())) {
+        const y = value.getFullYear();
+        const m = String(value.getMonth() + 1).padStart(2, '0');
+        const d = String(value.getDate()).padStart(2, '0');
+        data.append(name, `${y}-${m}-${d}`);
+      } else if (typeof value !== 'object') {
+        data.append(name, String(value));
+      } else if (typeof FileList !== 'undefined' && value instanceof FileList && value.length) {
+        data.append(name, value[0], value[0].name);
       }
-    });
-
+    }
     try {
-      const res = await submitApi(sendFormData, csrfToken);
-      handleSuccessChange(true);
-      handleNotifChange(true);
-      handleSendChange(false);
+      const response = await submitApi(data, csrfToken);
+      const reference = response.data?.reference;
+      if ((response.status !== 201 && response.status !== 202) ||
+          !Number.isInteger(reference) || !reference || reference <= 0) {
+        throw new Error('API did not confirm storage with a valid reference');
+      }
       reset(resetValues ?? initialValues);
-      setTimeout(() => handleNotifChange(false), 10000);
-      return res;
+      if (handleFileChange) {
+        for (const name of uploaded) handleFileChange({ [name]: '' });
+      }
+      setSubmissionResult({
+        status: response.status === 202 || response.data?.notifications_sent !== true
+          ? 'pending' : 'success',
+        reference,
+      });
+      return response;
     } catch (error) {
-      handleSuccessChange(true);
-      handleNotifChange(false);
-      handleSendChange(false);
-      setTimeout(() => handleNotifChange(false), 10000);
+      setSubmissionResult({ status: 'error' });
       throw error;
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const errorsList = useMemo(
-    () => Object.entries(errors).map(([name, value]) => ({ name, value })),
-    [errors]
-  );
-
-  const createFileAdapter = (fieldName: string) => {
-    return (file: File) => {
-      if (!handleFileChange) return;
-      handleFileChange({ [fieldName]: file });
-    };
+  const errorsList = useMemo(() => Object.entries(errors).map(([name, value]) => ({ name, value })), [errors]);
+  const createFileAdapter = (fieldName: string) => (file: File) => {
+    handleFileChange?.({ [fieldName]: file });
   };
 
   return {
-    register,
-    handleSubmit,
-    errors,
-    errorsList,
-    reset,
-    onSubmit,
-    createFileAdapter,
-    onSubmitWrapped: handleSubmit(onSubmit),
+    register, handleSubmit, errors, errorsList, reset, onSubmit,
+    createFileAdapter, onSubmitWrapped: handleSubmit(onSubmit),
+    isSubmitting, submissionResult,
   };
 }

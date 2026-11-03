@@ -1,69 +1,21 @@
 'use client';
 
-// import { useEffect, useState } from 'react';
-import i18next from 'i18next';
-import {
-  initReactI18next,
-} from 'react-i18next';
-// import { useCookies } from 'react-cookie';
+import { createInstance } from 'i18next';
+import { initReactI18next } from 'react-i18next';
 import resourcesToBackend from 'i18next-resources-to-backend';
-import LanguageDetector from 'i18next-browser-languagedetector';
 import { getOptions } from './setting';
-// import { useLang } from 'stores/langStore';
 
-let initialized = false;
-
+/** A fresh i18next instance per invocation: no global initialized flag or
+ * cross-locale namespace cache. Not currently used by production components,
+ * but safe if this helper is reintroduced later.
+ */
 export async function initClientI18n(lng: string, ns: string | string[]) {
-  if (!initialized) {
-    await i18next
-      .use(initReactI18next)
-      .use(LanguageDetector)
-      .use(
-        resourcesToBackend(
-          (language: string, namespace: string) =>
-            import(`./locales/${language}/${namespace}.json`)
-        )
-      )
-      .init(getOptions(lng, ns));
-    initialized = true;
-  } else {
-    // ensure namespace loaded
-    const namespaces = Array.isArray(ns) ? ns : [ns];
-    await Promise.all(
-      namespaces.map(n =>
-        i18next.hasResourceBundle(lng, n)
-          ? Promise.resolve()
-          : i18next.loadNamespaces(n)
-      )
-    );
-  }
-  return { i18n: i18next, t: i18next.getFixedT(lng) };
+  const instance = createInstance();
+  await instance
+    .use(initReactI18next)
+    .use(resourcesToBackend((language: string, namespace: string) =>
+      import(`./locales/${language}/${namespace}.json`)
+    ))
+    .init(getOptions(lng, ns));
+  return { i18n: instance, t: instance.getFixedT(lng, ns) };
 }
-
-// export function getServerTranslation(lng: any, ns: any, options?: any) {
-//   const [cookies, setCookie] = useCookies([cookieName]);
-//   const ret = useTranslationOrg(ns, options);
-//   const { i18n } = ret;
-//   if (runsOnServerSide && lng && i18n.resolvedLanguage !== lng) {
-//     i18n.changeLanguage(lng);
-//   } else {
-//     // eslint-disable-next-line react-hooks/rules-of-hooks
-//     const [activeLng, setActiveLng] = useState(i18n.resolvedLanguage);
-//     // eslint-disable-next-line react-hooks/rules-of-hooks
-//     useEffect(() => {
-//       if (activeLng === i18n.resolvedLanguage) return;
-//       setActiveLng(i18n.resolvedLanguage);
-//     }, [activeLng, i18n.resolvedLanguage]);
-//     // eslint-disable-next-line react-hooks/rules-of-hooks
-//     useEffect(() => {
-//       if (!lng || i18n.resolvedLanguage === lng) return;
-//       i18n.changeLanguage(lng);
-//     }, [lng, i18n]);
-//     // eslint-disable-next-line react-hooks/rules-of-hooks
-//     useEffect(() => {
-//       if (cookies.i18next === lng) return;
-//       setCookie(cookieName, lng ? lng : useLang.getState().lang, { path: '/' });
-//     }, [lng]);
-//   }
-//   return ret;
-// }
