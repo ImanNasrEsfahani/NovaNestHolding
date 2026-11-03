@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Footer from '@/components/home/Footer';
 import Navbar from '@/components/common/Navbar';
 import ScrollUpButton from '@/components/common/ScrollUpButton';
-import FormStateScope from '@/stores/FormStateScope';
+import FormStateScope from 'stores/FormStateScope';
 import { SITE_URL } from '@/utils/site';
 import { createPageMetadata, DEFAULT_SITE_TITLE } from '@/utils/socialMetadata';
 import { dir } from 'i18next';
