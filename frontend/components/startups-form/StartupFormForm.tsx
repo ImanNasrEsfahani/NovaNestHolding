@@ -1,11 +1,11 @@
 import { getServerTranslation } from 'app/i18n';
-import StartupFormFormClient from '@/components/startups-form/StartupFormFormClient';
+import StartupFormDeferred from './StartupFormDeferred';
 
-export default function StartupFormForm({lang}: {lang: string}) {
+/** Build the localized copy on the server. The form JS loads near the viewport. */
+export default function StartupFormForm({ lang }: { lang: string }) {
   const { t } = getServerTranslation(lang, 'formComponent');
   const { t: tCountry } = getServerTranslation(lang, 'countryInput');
-  
-  // Pass translations as props to client component
+
   const translations = {
     secondTitle: t('startUp', { returnObjects: true }).secondTitle,
     MVP: t('MVP'),
@@ -15,7 +15,7 @@ export default function StartupFormForm({lang}: {lang: string}) {
     sendingButton: t('sendingButton'),
     successMessage: t('successMessage'),
     failedMessage: t('failedMessage'),
-    
+
     formTitle: t('startUp', { returnObjects: true }).formTitle,
     formSubtitle: t('startUp', { returnObjects: true }).formSubtitle,
 
@@ -36,12 +36,12 @@ export default function StartupFormForm({lang}: {lang: string}) {
     acceleratorsRequired: t('startUp', { returnObjects: true }).commons.acceleratorsRequired,
     acceleratorsPlaceholder: t('startUp', { returnObjects: true }).commons.acceleratorsPlaceholder,
     acceleratorsErrorMessage: t('acceleratorsErrorMessage', { returnObjects: true }),
-    
+
     howDidYouKnowUs: t('startUp', { returnObjects: true }).commons.knowUs,
     howDidYouKnowUsRequired: t('startUp', { returnObjects: true }).commons.KnowUsRequired,
     howDidYouKnowUsPlaceholder: t('startUp', { returnObjects: true }).commons.KnowUsPlaceholder,
     howDidYouKnowUsErrorMessage: t('howDidYouKnowUsErrorMessage', { returnObjects: true }),
   };
 
-  return <StartupFormFormClient lang={lang} translations={translations} />
+  return <StartupFormDeferred lang={lang} translations={translations} />;
 }
