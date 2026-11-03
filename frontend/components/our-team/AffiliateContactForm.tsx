@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import TextArea from '@/components/common/TextArea';
 import { UnifiedFormSubmit, UnifiedFormStatus } from '@/components/common/form/UnifiedFormSubmit';
@@ -24,6 +24,11 @@ export default function AffiliateContactForm({ affiliateName, affiliateSlug, lab
     mode: 'onBlur', defaultValues: { firstName: '', lastName: '', email: '', phoneNumber: '', message: '' },
   });
   const [result, setResult] = useState<SubmitResult | null>(null);
+  // AffiliateProfile may omit lang; after hydration the URL is authoritative.
+  const [buttonLanguage, setButtonLanguage] = useState<'fa' | 'en'>(languageFrom(lang));
+  useEffect(() => {
+    setButtonLanguage(window.location.pathname.startsWith('/fa/') ? 'fa' : 'en');
+  }, []);
   const onSubmit = async (form: Fields) => {
     setResult(null);
     // AffiliateProfile currently omits the optional lang prop. Derive the
@@ -98,7 +103,7 @@ export default function AffiliateContactForm({ affiliateName, affiliateSlug, lab
           required={labels.messageRequired} nameTextArea="message" patternValue="" patternMessage=""
           placeholder={labels.message} maxLength={1300} maxLengthMessage="1300 characters maximum" validate="" />
         <div className="mx-auto mt-8 flex justify-center pb-2">
-          <UnifiedFormSubmit lang={languageFrom(lang)} label={labels.sendButton}
+          <UnifiedFormSubmit lang={buttonLanguage} label={labels.sendButton}
             loadingLabel={labels.sendingButton} busy={isSubmitting} className="w-44 md:w-52" />
         </div>
         <UnifiedFormStatus status={result?.kind || null} message={result?.message}

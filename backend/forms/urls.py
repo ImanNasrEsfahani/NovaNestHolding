@@ -5,7 +5,8 @@ from .affiliate_applications import AffiliateApplicationView
 from .affiliate_inquiries import AffiliateInquiryView
 from .consultation_requests import SmallReservationView
 from .public_form_views import (JoinOurTeamView, MentorRegistrationView,
-                                TraineeRegistrationView, ProfileContactView, WorkWithUsView)
+                                TraineeRegistrationView, ProfileContactView)
+from .work_with_us_cv import WorkWithUsCVView
 
 app_name = 'forms'
 urlpatterns = [
@@ -22,5 +23,5 @@ urlpatterns = [
     path('join-as-mentor', MentorRegistrationView.as_view(), name='join-as-mentor'),
     path('join-as-a-trainee', TraineeRegistrationView.as_view(), name='join-as-a-trainee'),
     path('contact-profile', ProfileContactView.as_view(), name='contact-profile'),
-    path('work-with-us', WorkWithUsView.as_view(), name='work-with-us'),
+    path('work-with-us', WorkWithUsCVView.as_view(), name='work-with-us'),
 ]

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, forwardRef, useImperativeHandle } from 'react'
+import { useFile } from 'stores/fileStore';
 
 type FileUploadProps = {
   nameInput: string;
@@ -17,16 +18,25 @@ interface FileUploadRef {
 const FileUpload = forwardRef<FileUploadRef, FileUploadProps>(({ nameInput, label, onChange, disabled, required, errors, file }, ref) => {
   const [fileName, setFileName] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  // The Pitch Deck branch unmounts its input on No. Read and clear the route-scoped file state.
+  const currentPitchDeck = useFile(state => state.filePostPitch.pitchDeckFile);
+  const clearPitchDeck = useFile(state => state.handlePitchFileChange);
+  const displayedFile = nameInput === 'pitchDeckFile' ? currentPitchDeck : file;
+
+  useEffect(() => {
+    if (nameInput !== 'pitchDeckFile') return;
+    return () => clearPitchDeck(null);
+  }, [nameInput, clearPitchDeck]);
 
   // Keep the widget in sync with the file currently owned by its parent.
   useEffect(() => {
-    if (!file) {
+    if (!displayedFile) {
       setFileName(null);
       if (inputRef.current) inputRef.current.value = '';
     } else {
-      setFileName(file instanceof File ? file.name : String(file));
+      setFileName(displayedFile instanceof File ? displayedFile.name : String(displayedFile));
     }
-  }, [file]);
+  }, [displayedFile]);
 
   // "No CV" must really deselect the previous file. In particular, trainee
   // and jobs keep the input mounted while disabling the upload panel.

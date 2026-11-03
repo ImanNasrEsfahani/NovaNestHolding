@@ -137,7 +137,8 @@ export default function MentorRegistrationFormClient({ lang, translations }: Pro
   const setFileCounterAndClear = (v: boolean) => {
     setFileCounter(v);
 
-    const fields: (keyof TraineeRegistrationFormDataType)[] = ['birthDate', 'fieldOfExpert', 'fieldOfExpertOther', 'tellUsAboutYourself'];
+    // Expertise is always visible, regardless of CV mode. Only hide/unregister the alternate details.
+    const fields: (keyof TraineeRegistrationFormDataType)[] = ['birthDate', 'tellUsAboutYourself'];
 
     if (v) {
       // when resume is uploaded we want these fields NOT validated also unregister them so validation rules are removed
@@ -146,10 +147,10 @@ export default function MentorRegistrationFormClient({ lang, translations }: Pro
       return;
     }
 
-    clearErrors(fields);
-    // re-register with the same rules used by the inputs
-    register('fieldOfExpert', { required: translations.FieldOfExpertRequired || true });
-    register('fieldOfExpertOther', { required: translations.FieldOfExpertOtherRequired || true });
+    // Disabling CV must also forget the previously selected file.
+    handleCvFileChange({ cvFile: '' });
+    clearErrors([...fields, 'cvFile']);
+    // The optional Other input is registered only while Other is selected.
     register('tellUsAboutYourself', { required: translations.TellUsAboutYourselfRequired || true });
 
     // register birthDate using the shared validator
@@ -187,7 +188,7 @@ export default function MentorRegistrationFormClient({ lang, translations }: Pro
         sendFormData.append(fieldName, String(fieldValue));
       }
     });
-    if (cvFileState.cvFile instanceof File) {
+    if (fileCounterState && cvFileState.cvFile instanceof File) {
       sendFormData.append('cvFile', cvFileState.cvFile);
     }
 

@@ -12,9 +12,11 @@ export async function submitTraineeRegistrationForm(sendFormData: FormData) {
 
   if (!sendFormData.has('birthDate') && typeof document !== 'undefined') {
     const form = document.activeElement instanceof HTMLElement ? document.activeElement.closest('form') : null;
-    const date = (form?.querySelector<HTMLInputElement>('input[name="birthDate"]') ??
-                  document.querySelector<HTMLInputElement>('input[name="birthDate"]'))?.value;
-    if (date) sendFormData.set('birthDate', date);
+    const input = form?.querySelector<HTMLInputElement>('input[name="birthDate"]');
+    // Hidden/disabled alternate inputs must not resurrect a discarded birth date.
+    if (input && !input.disabled && !input.closest('[aria-hidden="true"]') && input.value) {
+      sendFormData.set('birthDate', input.value);
+    }
   }
   return apiClient.post<PublicFormResponse>('/join-as-a-trainee', sendFormData, {
     headers: { 'Content-Type': 'multipart/form-data', Accept: 'application/json' },

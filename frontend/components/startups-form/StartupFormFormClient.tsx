@@ -129,7 +129,12 @@ export default function StartupFormFormClient({ lang, translations }: Props) {
           !Number.isInteger(reference) || reference <= 0) {
         throw new Error('Server did not confirm the saved submission');
       }
-      // Only a verified database reference permits clearing the form.
+      // Clear attachments in this route's scoped store ONLY after Django
+      // confirms a saved record; keep everything intact on network errors.
+      handleBusinessFileChange(null);
+      handlePitchFileChange(null);
+      handleFinancialFileChange(null);
+      handleFinancialModelFileChange(null);
       reset(initialStartupsFormData);
       setStartUpFormType('');
       if (response.status === 202 || response.data.notifications_sent !== true) {

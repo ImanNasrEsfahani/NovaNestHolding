@@ -1,7 +1,6 @@
 import apiClient from '@/utils/api';
 import type { PublicFormResponse } from '../jobs';
 import { clearVisibleCvInput, syncCvFileWithVisibleInput } from '@/utils/activeCvUpload';
-import { useFile } from 'stores/fileStore';
 
 /** /join-us is a different form from /join-our-team: preserve its own field names. */
 export async function submitWorkWithUsForm(sendFormData: FormData, csrfToken?: string) {
@@ -35,7 +34,6 @@ export async function submitWorkWithUsForm(sendFormData: FormData, csrfToken?: s
       Number.isInteger(reference) && reference > 0) {
     // The form is reset by its React component; reset the raw file input too.
     clearVisibleCvInput();
-    useFile.getState().handleCvFileChange({ cvFile: null });
   }
   return response;
 }
