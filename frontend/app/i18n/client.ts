@@ -1,6 +1,6 @@
 'use client';
 
-import { createInstance } from 'i18next';
+import { createInstance, type Namespace } from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import resourcesToBackend from 'i18next-resources-to-backend';
 import { getOptions } from './setting';
@@ -17,5 +17,7 @@ export async function initClientI18n(lng: string, ns: string | string[]) {
       import(`./locales/${language}/${namespace}.json`)
     ))
     .init(getOptions(lng, ns));
-  return { i18n: instance, t: instance.getFixedT(lng, ns) };
+  // i18next constrains the namespace to its typed resource keys. At runtime
+  // this helper accepts namespace names supplied by the caller.
+  return { i18n: instance, t: instance.getFixedT(lng, ns as Namespace) };
 }
