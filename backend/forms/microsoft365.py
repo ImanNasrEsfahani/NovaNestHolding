@@ -11,7 +11,7 @@ Restrict this application's mailbox access using Exchange application RBAC.
 import base64
 import logging
 from email.utils import getaddresses
-from uuid import UUID
+from uuid import UUID, uuid4
 from urllib.parse import quote
 
 import requests
@@ -24,6 +24,14 @@ logger = logging.getLogger(__name__)
 
 TOKEN_TIMEOUT = (10, 20)
 SEND_TIMEOUT = (10, 30)
+
+# A custom X-header may not survive a Graph MIME -> Exchange -> TNEF conversion.
+# The received messages from this tenant preserve the RFC 5322 Message-ID.
+# Tag that *header*, not the subject or body, with a distinct one-time ID.
+# Configure Exchange's existing signature rule to EXCEPT messages where the
+# Message-ID header MATCHES the pattern documented in README_EXCHANGE_FA.md.
+WEBSITE_MESSAGE_ID_PREFIX = 'novanest-website-'
+WEBSITE_MESSAGE_ID_DOMAIN = 'novanestholding.com'
 
 
 class Microsoft365MailError(RuntimeError):
@@ -92,6 +100,26 @@ def _access_token(tenant, client_id, client_secret):
     return token
 
 
+def _tag_website_message(mime):
+    """Tag message headers before Graph serializes the MIME.
+
+    Message-ID remains unique and RFC 5322-valid. This tenant was observed
+    to preserve the original Django-generated Message-ID even when it dropped
+    X-NovaNest-Origin. Keep the X-header as a secondary diagnostic marker.
+    """
+    # Replacing (rather than adding) ensures there is only one Message-ID,
+    # including when a caller supplied one through Django extra_headers.
+    if mime.get('Message-ID') is not None:
+        del mime['Message-ID']
+    mime['Message-ID'] = (
+        f'<{WEBSITE_MESSAGE_ID_PREFIX}{uuid4().hex}@{WEBSITE_MESSAGE_ID_DOMAIN}>'
+    )
+    if mime.get('X-NovaNest-Origin') is not None:
+        del mime['X-NovaNest-Origin']
+    mime['X-NovaNest-Origin'] = 'website-backend'
+    return mime
+
+
 def _send_one(message):
     tenant, client_id, client_secret, sender = _configuration()
     # Using an arbitrary From address would impersonate a mailbox. Require
@@ -112,10 +140,7 @@ def _send_one(message):
     except ValidationError as exc:
         raise Microsoft365MailError('Invalid recipient address') from exc
 
-    mime = message.message()
-    # Website emails already have the branded footer. Identify them for
-    # Exchange Online's organization-signature exclusion rule.
-    mime['X-NovaNest-Origin'] = 'website-backend'
+    mime = _tag_website_message(message.message())
     # Django's SMTP backend passes Bcc in the envelope, not MIME. Graph's
     # MIME-only endpoint needs Bcc in the RFC 5322 message for routing.
     if message.bcc:
