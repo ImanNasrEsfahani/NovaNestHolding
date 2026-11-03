@@ -39,10 +39,6 @@
       },
       "content": [
         {
-          "label": "Startup",
-          "href": "/startup"
-        },
-        {
           "label": "PNP",
           "href": "/pnp"
         }

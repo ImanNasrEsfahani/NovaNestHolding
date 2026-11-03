@@ -34,9 +34,6 @@ export default function Page({ params }: { params: { lang: string } }) {
         />
         <HomeCardsContainer lang={lang} />
         <SpecialFeatures lang={lang} />
-        <div className="max-w-xs mx-auto mb-24">
-          <ButtonRefactor text={t('ReserveMyFreeConsultation')} type="simple-link" href={`/${lang}/startup/#startup-application-form`} />
-        </div>
         <Intro
           title={tPNP('Intro.title', { returnObjects: true })}
           subtitle={tPNP('Intro.subtitle', { returnObjects: true })}

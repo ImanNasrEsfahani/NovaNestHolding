@@ -17,7 +17,6 @@ const publicRoutes = [
   '/join-us',
   '/our-team',
   '/pnp',
-  '/startup',
   '/startups-validation',
 ];
 
