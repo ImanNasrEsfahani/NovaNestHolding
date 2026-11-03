@@ -92,7 +92,9 @@ export function useFormHandler<TForm extends FieldValues>({
       }
       reset(resetValues ?? initialValues);
       if (handleFileChange) {
-        for (const name of uploaded) handleFileChange({ [name]: '' });
+        // Set.forEach works with the existing ES5 TypeScript target, unlike
+        // for...of over a Set without downlevelIteration enabled.
+        uploaded.forEach((name) => handleFileChange({ [name]: '' }));
       }
       setSubmissionResult({
         status: response.status === 202 || response.data?.notifications_sent !== true
