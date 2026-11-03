@@ -11,6 +11,9 @@ from django.test import SimpleTestCase, override_settings
 from .microsoft365 import Microsoft365MailError
 
 SENDER = 'info@novanestholding.com'
+# RFC 5322 permits folding white space around a field body. Python's email
+# parser can retain a single leading space for Message-ID, so normalize only
+# that transport whitespace before checking the ID itself.
 WEBSITE_ID_PATTERN = re.compile(
     r'^<novanest-website-[0-9a-f]{32}@novanestholding[.]com>$'
 )
@@ -70,9 +73,26 @@ class Microsoft365BackendTests(SimpleTestCase):
                       ''.join(p.get_content() for p in parsed.walk() if p.get_content_type() == 'text/plain'))
         # One valid RFC 5322 Message-ID carries our Exchange exception marker.
         self.assertEqual(len(parsed.get_all('Message-ID')), 1)
-        self.assertRegex(str(parsed['Message-ID']), WEBSITE_ID_PATTERN)
+        self.assertRegex(str(parsed['Message-ID']).strip(), WEBSITE_ID_PATTERN)
         self.assertEqual(parsed['X-NovaNest-Origin'], 'website-backend')
         self.assertEqual(parsed['From'], SENDER)
+
+    @patch('forms.microsoft365.requests.post')
+    def test_legacy_x_header_is_applied_before_and_after_mime_build(self, post):
+        post.side_effect = [graph_result(200, {'access_token': 'token'}), graph_result(202)]
+        msg = self.make_email()
+        # A legacy/caller-provided value must be replaced case-insensitively.
+        msg.extra_headers = {'x-novanest-origin': 'incorrect', 'X-Correlation-Test': 'ok'}
+        self.assertEqual(msg.send(), 1)
+        self.assertEqual(msg.extra_headers['X-NovaNest-Origin'], 'website-backend')
+        self.assertNotIn('x-novanest-origin', msg.extra_headers)
+        self.assertEqual(msg.message()['X-NovaNest-Origin'], 'website-backend')
+        payload = base64.b64decode(post.call_args.kwargs['data'], validate=True)
+        self.assertIn(b'X-NovaNest-Origin: website-backend\r\n', payload)
+        parsed = BytesParser(policy=policy.default).parsebytes(payload)
+        self.assertEqual(parsed.get_all('X-NovaNest-Origin'), ['website-backend'])
+        self.assertEqual(parsed['X-Correlation-Test'], 'ok')
+        self.assertRegex(str(parsed['Message-ID']).strip(), WEBSITE_ID_PATTERN)
 
     @patch('forms.microsoft365.requests.post')
     def test_distinct_messages_have_distinct_website_message_ids(self, post):
@@ -86,7 +106,7 @@ class Microsoft365BackendTests(SimpleTestCase):
         for call in (post.call_args_list[1], post.call_args_list[3]):
             raw = base64.b64decode(call.kwargs['data'], validate=True)
             parsed = BytesParser(policy=policy.default).parsebytes(raw)
-            ids.append(str(parsed['Message-ID']))
+            ids.append(str(parsed['Message-ID']).strip())
             self.assertRegex(ids[-1], WEBSITE_ID_PATTERN)
         self.assertNotEqual(ids[0], ids[1])
 
@@ -100,7 +120,7 @@ class Microsoft365BackendTests(SimpleTestCase):
         mime = base64.b64decode(post.call_args.kwargs['data'])
         parsed = BytesParser(policy=policy.default).parsebytes(mime)
         self.assertEqual(len(parsed.get_all('Message-ID')), 1)
-        self.assertRegex(str(parsed['Message-ID']), WEBSITE_ID_PATTERN)
+        self.assertRegex(str(parsed['Message-ID']).strip(), WEBSITE_ID_PATTERN)
         self.assertEqual(parsed.get_all('X-NovaNest-Origin'), ['website-backend'])
 
     @patch('forms.microsoft365.requests.post')
@@ -116,7 +136,7 @@ class Microsoft365BackendTests(SimpleTestCase):
                  if part.get_filename() == 'resume.pdf']
         self.assertEqual(len(files), 1)
         self.assertEqual(files[0].get_payload(decode=True), b'%PDF-1.4 test')
-        self.assertRegex(str(parsed['Message-ID']), WEBSITE_ID_PATTERN)
+        self.assertRegex(str(parsed['Message-ID']).strip(), WEBSITE_ID_PATTERN)
 
     @patch('forms.microsoft365.requests.post')
     def test_send_rejected(self, post):

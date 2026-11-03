@@ -140,6 +140,16 @@ def _send_one(message):
     except ValidationError as exc:
         raise Microsoft365MailError('Invalid recipient address') from exc
 
+    # Put the original Exchange exclusion marker into Django's own
+    # EmailMessage headers BEFORE Django builds the MIME object. Keep the
+    # post-serialization tag as a second safeguard below. This does not
+    # guarantee that Graph / Exchange will preserve an arbitrary X-header.
+    original_headers = getattr(message, 'extra_headers', None) or {}
+    message.extra_headers = {
+        **{name: value for name, value in original_headers.items()
+           if name.lower() != 'x-novanest-origin'},
+        'X-NovaNest-Origin': 'website-backend',
+    }
     mime = _tag_website_message(message.message())
     # Django's SMTP backend passes Bcc in the envelope, not MIME. Graph's
     # MIME-only endpoint needs Bcc in the RFC 5322 message for routing.
