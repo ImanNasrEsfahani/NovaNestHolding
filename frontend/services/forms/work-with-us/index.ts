@@ -1,23 +1,28 @@
 import apiClient from '@/utils/api';
 import type { PublicFormResponse } from '../jobs';
+import { clearVisibleCvInput, syncCvFileWithVisibleInput } from '@/utils/activeCvUpload';
+import { useFile } from 'stores/fileStore';
 
 /** /join-us is a different form from /join-our-team: preserve its own field names. */
 export async function submitWorkWithUsForm(sendFormData: FormData, csrfToken?: string) {
   const language = typeof window !== 'undefined' && window.location.pathname.startsWith('/fa/') ? 'fa' : 'en';
   sendFormData.set('language', language);
-  // The old component adds a File and then a duplicate invalid cvFile value.
-  // Keep the actual user-uploaded File without discarding it.
-  if (typeof File !== 'undefined') {
-    const cv = sendFormData.getAll('cvFile').find((value): value is File => value instanceof File);
-    if (cv) sendFormData.set('cvFile', cv);
-    else sendFormData.delete('cvFile');
+
+  // Use only the actual file chosen in the currently visible Work With Us form.
+  // The old shared Zustand slot may still contain a CV from another page.
+  const { file } = syncCvFileWithVisibleInput(sendFormData);
+  const position = String(sendFormData.get('your_position') ?? '').trim();
+  // Also guard the translated Professor option if native validation is bypassed.
+  if ((position === 'Professor' || position === 'استاد دانشگاه') && !file &&
+      typeof document !== 'undefined') {
+    throw new Error(language === 'fa' ? 'لطفاً فایل رزومه را انتخاب کنید.' : 'Please select a CV file.');
   }
-  // No date field is exposed on this form. The old shared default may produce
-  // "undefined" for birthDate; do not store a fabricated date.
+
+  // No birth-date input exists on this page. Ignore old shared form defaults.
   const date = String(sendFormData.get('birthDate') ?? '').trim();
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) sendFormData.delete('birthDate');
-  // Do not catch/relabel errors as success.
-  return apiClient.post<PublicFormResponse>('/work-with-us', sendFormData, {
+
+  const response = await apiClient.post<PublicFormResponse>('/work-with-us', sendFormData, {
     headers: {
       'Content-Type': 'multipart/form-data',
       Accept: 'application/json',
@@ -25,4 +30,12 @@ export async function submitWorkWithUsForm(sendFormData: FormData, csrfToken?: s
     },
     timeout: 150000,
   });
+  const reference = response.data?.reference;
+  if ((response.status === 201 || response.status === 202) &&
+      Number.isInteger(reference) && reference > 0) {
+    // The form is reset by its React component; reset the raw file input too.
+    clearVisibleCvInput();
+    useFile.getState().handleCvFileChange({ cvFile: null });
+  }
+  return response;
 }
