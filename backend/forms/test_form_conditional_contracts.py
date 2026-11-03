@@ -6,6 +6,7 @@ from datetime import date, timedelta
 from unittest.mock import patch
 
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.cache import cache
 from django.test import TestCase
 from django.urls import reverse
 
@@ -14,6 +15,11 @@ from .models import JoinOurTeamApplication, MentorRegistration, TraineeRegistrat
 
 @patch('forms.public_form_views.notify_registration', return_value=False)
 class ConditionalFormContractTests(TestCase):
+    def setUp(self):
+        # The production 20/hour limit is shared by all public form endpoints.
+        # Reset it between independent API test cases, not between requests.
+        cache.clear()
+
     basics = {
         'firstName': 'Nadia', 'lastName': 'Example',
         'email': 'nadia@example.com', 'phoneNumber': '+16045550111',

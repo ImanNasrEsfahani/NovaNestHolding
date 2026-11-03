@@ -5,6 +5,8 @@ resolves the service/page from a fixed whitelist. Actual delivery goes via the
 configured Microsoft Graph backend; each stored flag means provider accepted
 that one email, not that it reached the recipient's inbox.
 """
+import hashlib
+import json
 import logging
 import os
 from datetime import timezone as datetime_timezone
@@ -12,12 +14,14 @@ from datetime import timezone as datetime_timezone
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.core.validators import validate_email
+from django.db import transaction
 from rest_framework import serializers, status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
 from rest_framework.views import APIView
 
+from submission_audit.models import ConsultationIdempotencyRecord
 from .email_service import render_standard_email
 from .models import ConsultationRequest
 
@@ -39,6 +43,8 @@ class ConsultationRequestSerializer(serializers.Serializer):
     email = serializers.EmailField(max_length=254)
     phone_number = serializers.CharField(max_length=50, trim_whitespace=True)
     language = serializers.ChoiceField(choices=('en', 'fa'), default='en', required=False)
+    # Optional for older clients. A UUID stabilizes retries after timeouts.
+    idempotency_key = serializers.UUIDField(required=False, write_only=True)
     # Client-provided admin recipients, notification flags, URLs and IDs are ignored.
 
 
@@ -160,6 +166,29 @@ class ConsultationThrottle(AnonRateThrottle):
     rate = '20/hour'
 
 
+def _payload_digest(fields):
+    """Stable digest of validated business data, excluding the retry UUID.
+
+    This hash is not a substitute for database encryption; it only rejects
+    accidental reuse of one UUID with different content.
+    """
+    encoded = json.dumps(fields, sort_keys=True, separators=(',', ':'), ensure_ascii=False)
+    return hashlib.sha256(encoded.encode('utf-8')).hexdigest()
+
+
+def _consultation_response(enquiry, *, already_processed=False):
+    delivered = enquiry.visitor_notified and enquiry.admin_notified
+    body = {
+        'reference': enquiry.pk,
+        'notifications_sent': delivered,
+        'message': ('Consultation request saved and notifications accepted.' if delivered else
+                    'Consultation request saved. Some emails are pending; please do not submit again.'),
+    }
+    if already_processed:
+        body['already_processed'] = True
+    return Response(body, status=status.HTTP_201_CREATED if delivered else status.HTTP_202_ACCEPTED)
+
+
 class SmallReservationView(APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
@@ -171,13 +200,32 @@ class SmallReservationView(APIView):
         serializer.is_valid(raise_exception=True)
         fields = dict(serializer.validated_data)
         language = fields.pop('language', 'en')
-        enquiry = ConsultationRequest.objects.create(
-            submission_language=language, **fields,
-        )
-        delivered = notify_consultation(enquiry)
-        return Response({
-            'reference': enquiry.pk,
-            'notifications_sent': delivered,
-            'message': ('Consultation request saved and notifications accepted.' if delivered else
-                        'Consultation request saved. Some emails are pending; please do not submit again.'),
-        }, status=status.HTTP_201_CREATED if delivered else status.HTTP_202_ACCEPTED)
+        key = fields.pop('idempotency_key', None)
+        form_fields = {'submission_language': language, **fields}
+
+        if key is None:
+            enquiry = ConsultationRequest.objects.create(**form_fields)
+        else:
+            digest = _payload_digest(form_fields)
+            # Hold the reservation and the FK in the same transaction: a
+            # concurrent retry sees either the completed entry or no entry.
+            with transaction.atomic():
+                reservation, created = ConsultationIdempotencyRecord.objects.get_or_create(
+                    key=key, defaults={'payload_digest': digest},
+                )
+                if not created:
+                    if reservation.payload_digest != digest:
+                        return Response(
+                            {'idempotency_key': ['This key belongs to a different consultation request.']},
+                            status=status.HTTP_409_CONFLICT,
+                        )
+                    if reservation.consultation_id is not None:
+                        # Never resend emails from a public retry. An authorised
+                        # admin retry can deliver any missing notification.
+                        return _consultation_response(reservation.consultation, already_processed=True)
+                enquiry = ConsultationRequest.objects.create(**form_fields)
+                reservation.consultation = enquiry
+                reservation.save(update_fields=['consultation'])
+
+        notify_consultation(enquiry)
+        return _consultation_response(enquiry)

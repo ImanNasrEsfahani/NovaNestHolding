@@ -5,6 +5,7 @@ Run from backend/: python manage.py test forms.test_public_form_contracts
 from unittest.mock import patch
 
 from django.core import mail
+from django.core.cache import cache
 from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -17,6 +18,11 @@ from .models import (InvestorRegistration, JoinOurTeamApplication,
 @override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend',
                    DEFAULT_FROM_EMAIL='info@novanestholding.com')
 class FormContractTests(TestCase):
+    def setUp(self):
+        # Avoid unrelated tests exhausting the shared anonymous throttle.
+        # Throttling stays enabled and unchanged for real requests.
+        cache.clear()
+
     basics = {'firstName': 'Test', 'lastName': 'Applicant',
               'email': 'applicant@example.org', 'phoneNumber': '+16045550100'}
 

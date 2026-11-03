@@ -1,6 +1,7 @@
 """API regression checks for English and Persian professor CV requirement."""
 from unittest.mock import patch
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.cache import cache
 from django.test import TestCase
 from django.urls import reverse
 from forms.models import WorkWithUsRegistration
@@ -8,6 +9,8 @@ from forms.models import WorkWithUsRegistration
 
 class WorkWithUsCVContractTests(TestCase):
     def setUp(self):
+        # Isolate the per-IP throttling cache between tests, not in production.
+        cache.clear()
         self.url = reverse('forms:work-with-us')
         self.base = {
             'your_first_name': 'Test',
