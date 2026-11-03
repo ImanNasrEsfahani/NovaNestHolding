@@ -1,14 +1,13 @@
 FROM node:20-alpine AS dependencies
 
 WORKDIR /app
-RUN apk add --no-cache openssl
-
-# package-lock.json is currently not committed to this repository.
-# Support both situations: reproducible npm ci when present, npm install otherwise.
-COPY package*.json ./
-COPY prisma ./prisma
-ENV DATABASE_URL=postgresql://unused:unused@localhost:5432/unused
 ENV HUSKY=0
+
+# This project uses the Django/MySQL backend. No Prisma client or dummy
+# PostgreSQL DATABASE_URL is required to install the Next.js frontend.
+COPY package*.json ./
+# Use reproducible npm ci when a VALID committed lockfile exists.
+# Until then retain npm install rather than generating a fake lockfile.
 RUN if [ -f package-lock.json ]; then \
       npm ci --no-audit --no-fund; \
     else \
@@ -25,7 +24,6 @@ ARG NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ARG NEXT_PUBLIC_DJANGO_HOST_URL=http://localhost:8000
 ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
 ENV NEXT_PUBLIC_DJANGO_HOST_URL=$NEXT_PUBLIC_DJANGO_HOST_URL
-ENV DATABASE_URL=postgresql://unused:unused@localhost:5432/unused
 ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN npm run build && npm prune --omit=dev

@@ -20,7 +20,7 @@ module.exports = {
     ecmaVersion: 12,
     sourceType: 'module',
   },
-  plugins: ['react', '@typescript-eslint', 'tailwindcss', 'no-loops'],
+  plugins: ['react', '@typescript-eslint', 'tailwindcss'],
   rules: {
     '@typescript-eslint/no-unused-vars': 'warn',
     'react/jsx-uses-react': 'off',

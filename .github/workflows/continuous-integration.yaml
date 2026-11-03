@@ -13,7 +13,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       HUSKY: '0'
-      DATABASE_URL: postgresql://unused:unused@localhost:5432/unused
     defaults:
       run:
         working-directory: frontend

@@ -21,7 +21,6 @@ jobs:
       NEXT_TELEMETRY_DISABLED: '1'
       NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL || 'https://www.novanestholding.com' }}
       NEXT_PUBLIC_DJANGO_HOST_URL: ${{ vars.NEXT_PUBLIC_DJANGO_HOST_URL || 'http://localhost:8000' }}
-      DATABASE_URL: postgresql://unused:unused@localhost:5432/unused
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
