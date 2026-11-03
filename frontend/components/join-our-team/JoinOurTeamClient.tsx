@@ -5,7 +5,7 @@ import { JoinOurTeamFormDataType } from '@/types/global';
 import { UnifiedFormStatus } from '@/components/common/form/UnifiedFormSubmit';
 import GetCsrfToken from '@/utils/get-csrf-token';
 import { initialJoinOurTeamFormData } from '../../initials/initObjects';
-import { submitWorkWithUsForm } from 'pages/api/work-with-us';
+import { submitWorkWithUsForm } from '@/services/forms/work-with-us';
 import { useSubmit } from 'stores/dataStore';
 import { useFile } from 'stores/fileStore';
 import Image from 'next/image';

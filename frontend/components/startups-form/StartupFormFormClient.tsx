@@ -7,7 +7,7 @@ import StartupFormPersonalInformation from '@/components/startups-form/StartupFo
 // import StartupFormIdea from '@/components/startups-form/StartupFormIdea';
 import { UnifiedFormStatus } from '@/components/common/form/UnifiedFormSubmit';
 // import GetCsrfToken from '@/utils/get-csrf-token';
-import { submitStartupsForm } from '../../pages/api/startups-form';
+import { submitStartupsForm } from '@/services/forms/startups-form';
 import { useSubmit } from 'stores/dataStore';
 import { useFile } from 'stores/fileStore';
 import FormTitle from '@/components/common/form/FormTitle';

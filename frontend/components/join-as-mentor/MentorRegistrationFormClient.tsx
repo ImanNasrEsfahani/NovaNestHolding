@@ -11,7 +11,7 @@ import Input from '@/components/common/form/Input';
 import FormTitle from '@/components/common/form/FormTitle';
 import { MentorRegistrationFormDataType, MentorRegistrationFormClientTranslations } from '@/types/global';
 import { initialMentorRegistrationFormData } from '../../initials/initObjects';
-import { submitMentorRegistrationForm } from '../../pages/api/join-as-mentor';
+import { submitMentorRegistrationForm } from '@/services/forms/join-as-mentor';
 import { birthDateValidatorFactory } from '@/utils/birthDateValidatorFactory';
 
 interface Props {

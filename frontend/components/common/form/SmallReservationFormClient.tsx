@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import Input from '@/components/common/form/Input';
 import FormTitle from '@/components/common/form/FormTitle';
 import { UnifiedFormSubmit, UnifiedFormStatus, type SubmissionStatus } from '@/components/common/form/UnifiedFormSubmit';
-import { SubmitSmallReservationForm, type ConsultationPayload } from '../../../pages/api/small-reservation';
+import { SubmitSmallReservationForm, type ConsultationPayload } from '@/services/forms/small-reservation';
 
 type FormValues = {
   firstName: string;

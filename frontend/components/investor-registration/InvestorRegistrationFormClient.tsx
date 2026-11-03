@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import type { InvestorRegistrationFormDataType } from '@/types/global';
 import TextArea from '@/components/common/TextArea';
 import { initialInvestorRegistrationFormData } from '../../initials/initObjects';
-import { submitInvestorRegistrationForm } from '../../pages/api/investor-registration';
+import { submitInvestorRegistrationForm } from '@/services/forms/investor-registration';
 import PersonalInfoInput from '@/components/common/form/PersonalInfoInput';
 import FormTitle from '@/components/common/form/FormTitle';
 import Input from '@/components/common/form/Input';

@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { useSubmit } from 'stores/dataStore';
 
 import TextArea from '@/components/common/TextArea';
-import { ContactProfileForm } from '../../pages/api/profile/index';
+import { ContactProfileForm } from '@/services/forms/profile';
 
 import FormTitle from '@/components/common/form/FormTitle';
 import PersonalInfoInput from '@/components/common/form/PersonalInfoInput';

@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import type { JoinAsaPartnerFormDataType } from '@/types/global';
 import TextArea from '@/components/common/TextArea';
 import { initialJoinAsaPartnerFormData } from '../../initials/initObjects';
-import { submitPartnerMembershipForm } from '../../pages/api/partner-membership';
+import { submitPartnerMembershipForm } from '@/services/forms/partner-membership';
 import PersonalInfoInput from '@/components/common/form/PersonalInfoInput';
 import FormTitle from '@/components/common/form/FormTitle';
 import Input from '@/components/common/form/Input';

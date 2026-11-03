@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import type { ContactFormDataType } from '@/types/global';
 import { initialContactFormData } from '../../../initials/initObjects';
-import { submitContactForm } from '../../../pages/api/contact-us';
+import { submitContactForm } from '@/services/forms/contact-us';
 import PersonalInfoInput from '@/components/common/form/PersonalInfoInput';
 import TextArea from '@/components/common/TextArea';
 import FormTitle from './FormTitle';

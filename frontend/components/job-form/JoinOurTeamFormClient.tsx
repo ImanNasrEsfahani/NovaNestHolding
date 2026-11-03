@@ -5,7 +5,7 @@ import { JoinOurTeamFormDataType } from '@/types/global';
 import { UnifiedFormStatus } from '@/components/common/form/UnifiedFormSubmit';
 import GetCsrfToken from '@/utils/get-csrf-token';
 import { initialJoinOurTeamFormData } from '../../initials/initObjects';
-import { submitJoinOurTeamForm } from '../../pages/api/jobs';
+import { submitJoinOurTeamForm } from '@/services/forms/jobs';
 import PersonalInfoInput from '@/components/common/form/PersonalInfoInput';
 import ButtonRefactor from '@/components/common/ButtonRefactor';
 import { useSubmit } from 'stores/dataStore';

@@ -12,7 +12,7 @@ import Input from '@/components/common/form/Input';
 import FormTitle from '@/components/common/form/FormTitle';
 import { TraineeRegistrationFormDataType } from '@/types/global';
 import { initialTraineeRegistrationFormData } from '../../initials/initObjects';
-import { submitTraineeRegistrationForm } from '../../pages/api/join-as-a-trainee';
+import { submitTraineeRegistrationForm } from '@/services/forms/join-as-a-trainee';
 import { birthDateValidatorFactory } from '@/utils/birthDateValidatorFactory';
 import YesOrNoQuestion from '@/components/startups-form/YesOrNoQuestion';
 import FileUpload from '@/components/common/form/FileUpload';
