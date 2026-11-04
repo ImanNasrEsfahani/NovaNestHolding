@@ -35,14 +35,16 @@ export default function PersonCard({ person, lang, duplicate = false }: Props) {
         className="flex h-full flex-1 flex-col focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
       >
         {/* Preserve image width and its original 3:4 aspect ratio. */}
-        <div className="relative aspect-[0.75/1] shrink-0 overflow-hidden bg-gradient-to-br from-primary/10 to-primary/5">
-          <Image
-            src={person.image}
-            alt={person.name}
-            fill
-            className="object-center object-cover transition-transform duration-500 group-hover/card:scale-[1.02]"
-            sizes="(max-width: 768px) 100vw, 288px"
-          />
+        <div className="shrink-0 bg-white py-2">
+          <div className="relative aspect-[0.75/1] shrink-0 overflow-hidden bg-gradient-to-br from-primary/10 to-primary/5">
+            <Image
+              src={person.image}
+              alt={person.name}
+              fill
+              className="object-center object-cover transition-transform duration-500 group-hover/card:scale-[1.02]"
+              sizes="(max-width: 768px) 100vw, 288px"
+            />
+          </div>
         </div>
 
         {/* A single-line name and content-led height keep the card compact. */}

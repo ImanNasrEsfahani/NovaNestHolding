@@ -16,13 +16,15 @@ export function AffiliateCard({ partner, lang, duplicate = false }: {
     <Link href={`/${lang === 'fa' ? 'fa' : 'en'}/affiliate/${encodeURIComponent(partner.slug)}`}
       aria-label={partner.name} tabIndex={duplicate ? -1 : undefined}
       className="group/card flex h-full w-full flex-col overflow-hidden rounded-2xl border border-[#E9DED1] bg-white shadow-md transition-all duration-500 hover:-translate-y-2 hover:scale-[1.01] hover:shadow-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">
-      <div className="relative aspect-[0.75/1] shrink-0 overflow-hidden bg-gradient-to-br from-primary/10 to-primary/5">
-        {logo ? (
-          <Image src={logo} alt={`${partner.name} logo`} fill sizes="(max-width: 768px) 76vw, 288px"
-            className="object-contain p-7 transition-transform duration-500 group-hover/card:scale-[1.02]" />
-        ) : (
-          <div className="flex h-full items-center justify-center font-header text-5xl font-bold text-primary" aria-hidden="true">{initials(partner.name)}</div>
-        )}
+      <div className="shrink-0 bg-white py-2">
+        <div className="relative aspect-[0.75/1] shrink-0 overflow-hidden bg-gradient-to-br from-primary/10 to-primary/5">
+          {logo ? (
+            <Image src={logo} alt={`${partner.name} logo`} fill sizes="(max-width: 768px) 76vw, 288px"
+              className="object-contain p-7 transition-transform duration-500 group-hover/card:scale-[1.02]" />
+          ) : (
+            <div className="flex h-full items-center justify-center font-header text-5xl font-bold text-primary" aria-hidden="true">{initials(partner.name)}</div>
+          )}
+        </div>
       </div>
       <div className="min-w-0 px-3 py-2 text-center" dir={lang === 'fa' ? 'rtl' : 'ltr'}>
         <h3 title={partner.name} className="mb-1 block w-full min-w-0 truncate font-header text-xl font-bold leading-[1.15] text-blue">{partner.name}</h3>
