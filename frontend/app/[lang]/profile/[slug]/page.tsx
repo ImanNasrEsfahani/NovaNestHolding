@@ -1,28 +1,35 @@
-import React from 'react';
-import { getServerTranslation } from 'app/i18n';
 import Profile from '@/components/profile/Profile';
-import { Person } from '@/types/global';
+import type { Person } from '@/types/global';
+import englishTeam from '../../../i18n/locales/en/ourTeam.json';
+import persianTeam from '../../../i18n/locales/fa/ourTeam.json';
 import { notFound } from 'next/navigation';
 
+type PageParams = { slug: string; lang: string };
 
-export default async function Page({
-  params: { slug, lang }
-}: {
-  params: { slug: string; lang: string };
-}) {
+// Use the same source data as the Our Team cards. Importing the JSON directly
+// also makes the list of profile routes visible to Next.js at build time.
+function getPeople(lang: string): Person[] {
+  const roles = lang === 'fa' ? persianTeam.roles : englishTeam.roles;
+  return Object.values(roles).flatMap((role) => role.people) as Person[];
+}
 
-  const { t } = getServerTranslation(lang, 'ourTeam');
+// Pre-render every currently published mentor/profile URL rather than relying
+// entirely on first-request generation of the dynamic [slug] route.
+export function generateStaticParams(): Array<{ slug: string }> {
+  const slugs = new Set(
+    Object.values(englishTeam.roles)
+      .flatMap((role) => role.people)
+      .map((person) => person.slug)
+      .filter(Boolean)
+  );
+  return Array.from(slugs, (slug) => ({ slug }));
+}
 
-  const roles = t('roles', { returnObjects: true });
-  const mentors = roles.Mentors ?? [];
-  const trainees = roles.Trainees ?? [];
-  const coreTeam = roles["Core Team"] ?? [];
+// Keep on-demand generation available for new slugs added in future builds.
+export const dynamicParams = true;
 
-  // concat the three arrays into one
-  const allPeople: Person[] = [...mentors.people, ...trainees.people, ...coreTeam.people];
-
-  // find the person that matches the slug from the URL
-  const person = allPeople.find((p) => p?.slug === slug);
+export default function Page({ params: { slug, lang } }: { params: PageParams }) {
+  const person = getPeople(lang).find((entry) => entry.slug === slug);
 
   if (!person) {
     notFound();

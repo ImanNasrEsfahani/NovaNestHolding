@@ -1,7 +1,8 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
 import PersonCard from './PersonCard';
-import { Person } from '@/types/global';
+import type { Person } from '@/types/global';
 import useSeamlessAutoScroll from './useSeamlessAutoScroll';
 import styles from './PeopleCarousel.module.css';
 
@@ -9,6 +10,8 @@ type Props = { people: Person[] };
 const copies = [0, 1, 2] as const;
 
 export default function PeopleCarousel({ people }: Props) {
+  const pathname = usePathname();
+  const lang = pathname?.split('/')[1] === 'fa' ? 'fa' : 'en';
   const { scrollerRef, middleGroupRef, repeats, isLooping, moveBy } = useSeamlessAutoScroll(people.length);
   if (!people.length) return null;
 
@@ -35,7 +38,7 @@ export default function PeopleCarousel({ people }: Props) {
                     <div key={`${groupNumber}-${repetition}-${person.slug || index}-${index}`}
                       aria-hidden={duplicate || undefined}
                       className="flex h-auto min-h-[560px] w-[76vw] max-w-72 shrink-0 self-stretch sm:w-64 md:min-h-[590px] md:w-72">
-                      <div className="w-full h-full"><PersonCard person={person} duplicate={duplicate} /></div>
+                      <div className="w-full h-full"><PersonCard person={person} lang={lang} duplicate={duplicate} /></div>
                     </div>
                   );
                 })
