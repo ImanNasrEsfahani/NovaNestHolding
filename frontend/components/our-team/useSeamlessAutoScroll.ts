@@ -19,6 +19,10 @@ type Gesture = {
  * Mentors and Affiliates share markup, but use separate input/animation engines.
  * Desktop retains its existing behaviour. Mobile uses touch events and its own
  * clock, fractional scroll position and snap completion.
+ *
+ * Click safety: capture only after a deliberate horizontal drag is recognized.
+ * Capturing on pointerdown retargets ordinary clicks from card links to the
+ * scroll container; capturing only once dragging begins preserves both actions.
  */
 export default function useSeamlessAutoScroll(itemCount: number, secondsPerCard = 3.5) {
   const scrollerRef = useRef<HTMLDivElement>(null);
@@ -168,7 +172,8 @@ export default function useSeamlessAutoScroll(itemCount: number, secondsPerCard 
       clickTimer = setTimeout(() => { blockedClick = false; }, 400);
     };
 
-    // Desktop engine: same pointer gestures, easing and auto-scrolling as before.
+    // Desktop: let ordinary pointerdown/up target the nested profile Link.
+    // Only an intentional horizontal drag should capture the pointer.
     const endGesture = (event?: PointerEvent, cancelled = false) => {
       const held = gesture;
       if (!held || (event && event.pointerId !== held.id)) return;
@@ -196,9 +201,8 @@ export default function useSeamlessAutoScroll(itemCount: number, secondsPerCard 
       cancelSnap(); wrap();
       gesture = { id: event.pointerId, kind: event.pointerType, x: event.clientX, y: event.clientY, previousX: event.clientX, origin: node.scrollLeft, horizontal: false, vertical: false };
       phase = 'drag';
-      if (event.pointerType === 'mouse') {
-        try { node.setPointerCapture(event.pointerId); } catch { /* Ignore unsupported capture. */ }
-      }
+      // Deliberately no capture here: the pointerup/click must reach the link
+      // when the user simply clicks rather than dragging.
     };
     const onMove = (event: PointerEvent) => {
       const held = gesture;
@@ -209,7 +213,14 @@ export default function useSeamlessAutoScroll(itemCount: number, secondsPerCard 
       const dy = event.clientY - held.y;
       if (!held.horizontal && !held.vertical) {
         if (Math.abs(dy) > 9 && Math.abs(dy) > Math.abs(dx) * 1.2) { held.vertical = true; endGesture(event, true); return; }
-        if (Math.abs(dx) > 7 && Math.abs(dx) > Math.abs(dy)) held.horizontal = true;
+        if (Math.abs(dx) > 7 && Math.abs(dx) > Math.abs(dy)) {
+          held.horizontal = true;
+          // Capture only after a real horizontal drag begins; never for a tap
+          // or click on a profile (or affiliate) link.
+          if (held.kind === 'mouse') {
+            try { node.setPointerCapture(event.pointerId); } catch { /* Unsupported capture. */ }
+          }
+        }
       }
       if (!held.horizontal) return;
       if (event.cancelable) event.preventDefault();
@@ -219,6 +230,11 @@ export default function useSeamlessAutoScroll(itemCount: number, secondsPerCard 
     const onCancel = (event: PointerEvent) => endGesture(event, true);
     const onLost = (event: PointerEvent) => { if (gesture?.id === event.pointerId) endGesture(event, true); };
     const onBlur = () => endGesture(undefined, true);
+    // Prevent browser-native dragging of links/images from taking over an
+    // intentional carousel swipe before our horizontal-drag threshold.
+    const onDragStart = (event: DragEvent) => {
+      if ((event.target as Element | null)?.closest?.('a, img')) event.preventDefault();
+    };
 
     // Mobile engine: TouchEvents avoid implicit PointerCapture / pointercancel.
     // No input handler on mobile can leave phase='drag' after the gesture ends.
@@ -303,10 +319,11 @@ export default function useSeamlessAutoScroll(itemCount: number, secondsPerCard 
       window.addEventListener('blur', onMobileBlur);
     } else {
       node.addEventListener('pointerdown', onDown);
+      node.addEventListener('dragstart', onDragStart);
+      node.addEventListener('lostpointercapture', onLost);
       window.addEventListener('pointermove', onMove, { passive: false });
       window.addEventListener('pointerup', endGesture);
       window.addEventListener('pointercancel', onCancel);
-      node.addEventListener('lostpointercapture', onLost);
       window.addEventListener('blur', onBlur);
     }
     node.addEventListener('click', onClick, true);
@@ -348,10 +365,11 @@ export default function useSeamlessAutoScroll(itemCount: number, secondsPerCard 
         window.removeEventListener('blur', onMobileBlur);
       } else {
         node.removeEventListener('pointerdown', onDown);
+        node.removeEventListener('dragstart', onDragStart);
+        node.removeEventListener('lostpointercapture', onLost);
         window.removeEventListener('pointermove', onMove);
         window.removeEventListener('pointerup', endGesture);
         window.removeEventListener('pointercancel', onCancel);
-        node.removeEventListener('lostpointercapture', onLost);
         window.removeEventListener('blur', onBlur);
       }
       node.removeEventListener('click', onClick, true);
