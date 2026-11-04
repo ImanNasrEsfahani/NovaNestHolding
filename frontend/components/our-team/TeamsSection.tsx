@@ -24,7 +24,7 @@ function TeamCard({ member, lang, duplicate = false }: { member: TeamMember; lan
 
   return (
     <article className="group/card flex h-full w-full flex-col overflow-hidden rounded-2xl border border-[#E9DED1] bg-white shadow-md transition-all duration-500 hover:-translate-y-2 hover:scale-[1.01] hover:shadow-xl">
-      <div className="shrink-0 bg-white py-2">
+      <div className="shrink-0 bg-white pb-2">
         <div className="relative aspect-[0.75/1] shrink-0 overflow-hidden bg-gradient-to-br from-primary/10 to-primary/5">
           {photo ? (
             <Image
@@ -43,7 +43,7 @@ function TeamCard({ member, lang, duplicate = false }: { member: TeamMember; lan
         </div>
       </div>
       <div className="min-w-0 px-3 py-2 text-center" dir={lang === 'fa' ? 'rtl' : 'ltr'}>
-        <h3 title={member.name} className="mb-1 block w-full min-w-0 truncate font-header text-xl font-bold leading-[1.15] text-blue">
+        <h3 title={member.name} className="mb-2 block w-full min-w-0 truncate font-header text-xl font-bold leading-[1.15] text-blue">
           {member.name}
         </h3>
         {member.position && (

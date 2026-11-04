@@ -35,7 +35,7 @@ export default function PersonCard({ person, lang, duplicate = false }: Props) {
         className="flex h-full flex-1 flex-col focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
       >
         {/* Preserve image width and its original 3:4 aspect ratio. */}
-        <div className="shrink-0 bg-white py-2">
+        <div className="shrink-0 bg-white pb-2">
           <div className="relative aspect-[0.75/1] shrink-0 overflow-hidden bg-gradient-to-br from-primary/10 to-primary/5">
             <Image
               src={person.image}
@@ -49,7 +49,7 @@ export default function PersonCard({ person, lang, duplicate = false }: Props) {
 
         {/* A single-line name and content-led height keep the card compact. */}
         <div className="min-w-0 px-3 py-2 text-center">
-          <h3 title={person.name} className="mb-1 block w-full min-w-0 truncate font-header text-xl font-bold leading-[1.15] text-blue">
+          <h3 title={person.name} className="mb-2 block w-full min-w-0 truncate font-header text-xl font-bold leading-[1.15] text-blue">
             {person.name}
           </h3>
           <span className="inline-block max-w-full rounded-full bg-primary/10 px-3 py-1 text-[13px] font-semibold leading-[18px] text-primary">

@@ -16,7 +16,7 @@ export function AffiliateCard({ partner, lang, duplicate = false }: {
     <Link href={`/${lang === 'fa' ? 'fa' : 'en'}/affiliate/${encodeURIComponent(partner.slug)}`}
       aria-label={partner.name} tabIndex={duplicate ? -1 : undefined}
       className="group/card flex h-full w-full flex-col overflow-hidden rounded-2xl border border-[#E9DED1] bg-white shadow-md transition-all duration-500 hover:-translate-y-2 hover:scale-[1.01] hover:shadow-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary">
-      <div className="shrink-0 bg-white py-2">
+      <div className="shrink-0 bg-white pb-2">
         <div className="relative aspect-[0.75/1] shrink-0 overflow-hidden bg-gradient-to-br from-primary/10 to-primary/5">
           {logo ? (
             <Image src={logo} alt={`${partner.name} logo`} fill sizes="(max-width: 768px) 76vw, 288px"
@@ -27,7 +27,7 @@ export function AffiliateCard({ partner, lang, duplicate = false }: {
         </div>
       </div>
       <div className="min-w-0 px-3 py-2 text-center" dir={lang === 'fa' ? 'rtl' : 'ltr'}>
-        <h3 title={partner.name} className="mb-1 block w-full min-w-0 truncate font-header text-xl font-bold leading-[1.15] text-blue">{partner.name}</h3>
+        <h3 title={partner.name} className="mb-2 block w-full min-w-0 truncate font-header text-xl font-bold leading-[1.15] text-blue">{partner.name}</h3>
         {partner.category && <span className="inline-block max-w-full rounded-full bg-primary/10 px-3 py-1 text-[13px] font-semibold leading-[18px] text-primary">{partner.category}</span>}
       </div>
     </Link>
