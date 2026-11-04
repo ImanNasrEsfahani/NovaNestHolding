@@ -17,12 +17,8 @@ type ContactLink = { type: string; value: string };
 const contactLinksBySlug = profileContactLinks as Record<string, ContactLink[]>;
 
 export default function PersonCard({ person, lang, duplicate = false }: Props) {
-  // Point directly at the localized Next.js route, not /profile/... which
-  // requires a middleware redirect during a client-side navigation.
+  // Keep localized profile links and the existing contact directory unchanged.
   const profileHref = localizedHref(`/profile/${encodeURIComponent(person.slug)}`, lang);
-
-  // Use the same per-person contact directory as the dedicated profile page.
-  // This keeps LinkedIn URLs in a single place when a profile has no legacy link.
   const configuredLinkedIn = contactLinksBySlug[person.slug]?.find(
     (link) => link.type.toLowerCase() === 'linkedin' &&
       /^https:\/\/(?:www\.)?linkedin\.com\//i.test(link.value)
@@ -30,7 +26,7 @@ export default function PersonCard({ person, lang, duplicate = false }: Props) {
   const linkedinHref = configuredLinkedIn || person.linkedIn;
 
   return (
-    <article className="group/card relative bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-500 overflow-hidden border border-[#E9DED1] h-full flex flex-col transform hover:scale-[1.01] hover:-translate-y-2">
+    <article className="group/card relative flex h-full flex-col overflow-hidden rounded-2xl border border-[#E9DED1] bg-white shadow-md transition-all duration-500 hover:-translate-y-2 hover:scale-[1.01] hover:shadow-xl">
       <Link
         href={profileHref}
         prefetch={false}
@@ -38,35 +34,37 @@ export default function PersonCard({ person, lang, duplicate = false }: Props) {
         aria-label={`View ${person.name}'s profile`}
         className="flex h-full flex-1 flex-col focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
       >
-        <div className="relative aspect-[0.75/1] h-auto overflow-hidden bg-gradient-to-br from-primary/10 to-primary/5">
+        {/* Preserve image width and its original 3:4 aspect ratio. */}
+        <div className="relative aspect-[0.75/1] shrink-0 overflow-hidden bg-gradient-to-br from-primary/10 to-primary/5">
           <Image
             src={person.image}
             alt={person.name}
             fill
-            className="object-center object-cover group-hover/card:scale-[1.02] transition-transform duration-500"
+            className="object-center object-cover transition-transform duration-500 group-hover/card:scale-[1.02]"
             sizes="(max-width: 768px) 100vw, 288px"
           />
         </div>
 
-        <div className="p-6 flex-grow flex flex-col justify-between">
+        {/* Option B: a compact information block, with all details retained. */}
+        <div className="flex flex-grow flex-col justify-between px-4 py-3 text-center">
           <div>
-            <h3 className="text-2xl font-header font-bold text-blue mb-2">
+            <h3 className="mb-1 font-header text-xl font-bold leading-[1.15] text-blue">
               {person.name}
             </h3>
-            <span className="inline-block bg-primary/10 text-primary text-md font-semibold px-3 py-1 rounded-full mb-3">
+            <span className="inline-block max-w-full rounded-full bg-primary/10 px-3 py-1 text-[13px] font-semibold leading-[18px] text-primary">
               {person.position}
             </span>
           </div>
 
-          <div className="pt-4 border-t border-[#E9DED1]">
-            <span className="text-sm text-grayDark capitalize">
+          <div className="border-t border-[#E9DED1] pt-2">
+            <span className="text-sm capitalize leading-[18px] text-grayDark">
               {person.text}
             </span>
           </div>
         </div>
       </Link>
 
-      {/* This is a sibling of the profile link, never a nested anchor. */}
+      {/* LinkedIn is a sibling of the profile link (not a nested anchor). */}
       {linkedinHref && (
         <Link
           href={linkedinHref}
@@ -74,7 +72,7 @@ export default function PersonCard({ person, lang, duplicate = false }: Props) {
           target="_blank"
           rel="noopener noreferrer"
           aria-label={`Open ${person.name} on LinkedIn`}
-          className="absolute top-3 right-3 z-30 rounded-full bg-white p-2 shadow-sm text-blue transition-colors duration-200 transform group-hover/card:scale-[0.95238] group-hover/card:translate-y-2 hover:bg-primary hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+          className="absolute right-3 top-3 z-30 rounded-full bg-white p-2 text-blue shadow-sm transition-colors duration-200 transform group-hover/card:scale-[0.95238] group-hover/card:translate-y-2 hover:bg-primary hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
         >
           <LinkedInIcon />
         </Link>

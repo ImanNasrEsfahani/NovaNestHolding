@@ -24,12 +24,12 @@ export function AffiliateCard({ partner, lang, duplicate = false }: {
           <div className="flex h-full items-center justify-center font-header text-5xl font-bold text-primary" aria-hidden="true">{initials(partner.name)}</div>
         )}
       </div>
-      <div className="flex flex-1 flex-col justify-between p-6" dir={lang === 'fa' ? 'rtl' : 'ltr'}>
+      <div className="flex flex-1 flex-col justify-between px-4 py-3 text-center" dir={lang === 'fa' ? 'rtl' : 'ltr'}>
         <div>
-          <h3 className="mb-3 font-header text-2xl font-bold leading-snug text-blue">{partner.name}</h3>
-          {partner.category && <span className="mb-3 inline-block rounded-full bg-primary/10 px-3 py-1 text-sm font-semibold text-primary">{partner.category}</span>}
+          <h3 className="mb-1 font-header text-xl font-bold leading-[1.15] text-blue">{partner.name}</h3>
+          {partner.category && <span className="inline-block max-w-full rounded-full bg-primary/10 px-3 py-1 text-[13px] font-semibold leading-[18px] text-primary">{partner.category}</span>}
         </div>
-        {partner.city && <div className="border-t border-[#E9DED1] pt-4 text-sm text-grayDark">{partner.city}</div>}
+        {partner.city && <div className="border-t border-[#E9DED1] pt-2 text-sm leading-[18px] text-grayDark">{partner.city}</div>}
       </div>
     </Link>
   );
@@ -68,7 +68,7 @@ export default function AffiliatesSection({ lang, content }: { lang: string; con
                     const duplicate = groupNumber !== 1 || repetition !== 0;
                     return (
                       <div key={`${groupNumber}-${repetition}-${partner.slug}`} aria-hidden={duplicate || undefined}
-                        className="flex h-auto min-h-[560px] w-[76vw] max-w-72 shrink-0 self-stretch sm:w-64 md:min-h-[590px] md:w-72">
+                        className="flex h-auto min-h-[480px] w-[76vw] max-w-72 shrink-0 self-stretch sm:w-64 md:min-h-[525px] md:w-72">
                         <AffiliateCard partner={partner} lang={lang} duplicate={duplicate} />
                       </div>
                     );

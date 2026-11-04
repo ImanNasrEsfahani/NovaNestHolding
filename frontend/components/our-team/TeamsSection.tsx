@@ -21,8 +21,7 @@ export type TeamsContent = {
 
 function TeamCard({ member, lang, duplicate = false }: { member: TeamMember; lang: string; duplicate?: boolean }) {
   const photo = safeLocalImage(member.photo);
-  // Render the given name and remaining surname(s) on separate lines on every card,
-  // regardless of the width of the display. Keep the complete name accessible.
+  // Always keep team names on two lines, as required by the existing design.
   const [givenName, ...surnameParts] = member.name.trim().split(/\s+/);
   const surname = surnameParts.join(' ');
 
@@ -44,19 +43,19 @@ function TeamCard({ member, lang, duplicate = false }: { member: TeamMember; lan
           </div>
         )}
       </div>
-      <div className="flex flex-1 flex-col justify-between p-6" dir={lang === 'fa' ? 'rtl' : 'ltr'}>
+      <div className="flex flex-1 flex-col justify-between px-4 py-3 text-center" dir={lang === 'fa' ? 'rtl' : 'ltr'}>
         <div>
-          <h3 aria-label={member.name} className="mb-3 font-header text-2xl font-bold leading-snug text-blue">
+          <h3 aria-label={member.name} className="mb-1 font-header text-xl font-bold leading-[1.15] text-blue">
             <span aria-hidden="true" className="block whitespace-nowrap">{givenName}</span>
             <span aria-hidden="true" className="block whitespace-nowrap">{surname || '\u00a0'}</span>
           </h3>
           {member.position && (
-            <span className="mb-3 inline-block rounded-full bg-primary/10 px-3 py-1 text-sm font-semibold text-primary">
+            <span className="inline-block max-w-full rounded-full bg-primary/10 px-3 py-1 text-[13px] font-semibold leading-[18px] text-primary">
               {member.position}
             </span>
           )}
         </div>
-        <div className="border-t border-[#E9DED1] pt-4 text-sm text-grayDark">NovaNest Holding</div>
+        <div className="border-t border-[#E9DED1] pt-2 text-sm leading-[18px] text-grayDark">NovaNest Holding</div>
       </div>
     </article>
   );
@@ -104,7 +103,7 @@ export default function TeamsSection({ lang, content }: { lang: string; content:
                     const duplicate = groupNumber !== 1 || repetition !== 0;
                     return (
                       <div key={`${groupNumber}-${repetition}-${member.slug}`} aria-hidden={duplicate || undefined}
-                        className="flex h-auto min-h-[560px] w-[76vw] max-w-72 shrink-0 self-stretch sm:w-64 md:min-h-[590px] md:w-72">
+                        className="flex h-auto min-h-[480px] w-[76vw] max-w-72 shrink-0 self-stretch sm:w-64 md:min-h-[525px] md:w-72">
                         <TeamCard member={member} lang={lang} duplicate={duplicate} />
                       </div>
                     );
