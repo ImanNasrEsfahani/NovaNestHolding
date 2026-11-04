@@ -46,21 +46,13 @@ export default function PersonCard({ person, lang, duplicate = false }: Props) {
         </div>
 
         {/* A single-line name and content-led height keep the card compact. */}
-        <div className="flex min-w-0 flex-grow flex-col justify-between px-3 py-2 text-center">
-          <div>
-            <h3 title={person.name} className="mb-1 block w-full min-w-0 truncate font-header text-xl font-bold leading-[1.15] text-blue">
-              {person.name}
-            </h3>
-            <span className="inline-block max-w-full rounded-full bg-primary/10 px-3 py-1 text-[13px] font-semibold leading-[18px] text-primary">
-              {person.position}
-            </span>
-          </div>
-
-          <div className="border-t border-[#E9DED1] pt-1.5">
-            <span className="text-sm capitalize leading-[18px] text-grayDark">
-              {person.text}
-            </span>
-          </div>
+        <div className="min-w-0 px-3 py-2 text-center">
+          <h3 title={person.name} className="mb-1 block w-full min-w-0 truncate font-header text-xl font-bold leading-[1.15] text-blue">
+            {person.name}
+          </h3>
+          <span className="inline-block max-w-full rounded-full bg-primary/10 px-3 py-1 text-[13px] font-semibold leading-[18px] text-primary">
+            {person.position}
+          </span>
         </div>
       </Link>
 

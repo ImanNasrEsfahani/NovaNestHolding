@@ -40,18 +40,15 @@ function TeamCard({ member, lang, duplicate = false }: { member: TeamMember; lan
           </div>
         )}
       </div>
-      <div className="flex min-w-0 flex-1 flex-col justify-between px-3 py-2 text-center" dir={lang === 'fa' ? 'rtl' : 'ltr'}>
-        <div>
-          <h3 title={member.name} className="mb-1 block w-full min-w-0 truncate font-header text-xl font-bold leading-[1.15] text-blue">
-            {member.name}
-          </h3>
-          {member.position && (
-            <span className="inline-block max-w-full rounded-full bg-primary/10 px-3 py-1 text-[13px] font-semibold leading-[18px] text-primary">
-              {member.position}
-            </span>
-          )}
-        </div>
-        <div className="border-t border-[#E9DED1] pt-1.5 text-sm leading-[18px] text-grayDark">NovaNest Holding</div>
+      <div className="min-w-0 px-3 py-2 text-center" dir={lang === 'fa' ? 'rtl' : 'ltr'}>
+        <h3 title={member.name} className="mb-1 block w-full min-w-0 truncate font-header text-xl font-bold leading-[1.15] text-blue">
+          {member.name}
+        </h3>
+        {member.position && (
+          <span className="inline-block max-w-full rounded-full bg-primary/10 px-3 py-1 text-[13px] font-semibold leading-[18px] text-primary">
+            {member.position}
+          </span>
+        )}
       </div>
     </article>
   );
