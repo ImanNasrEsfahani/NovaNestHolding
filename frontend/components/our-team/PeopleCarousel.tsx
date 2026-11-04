@@ -37,7 +37,7 @@ export default function PeopleCarousel({ people }: Props) {
                   return (
                     <div key={`${groupNumber}-${repetition}-${person.slug || index}-${index}`}
                       aria-hidden={duplicate || undefined}
-                      className="flex h-auto min-h-[480px] w-[76vw] max-w-72 shrink-0 self-stretch sm:w-64 md:min-h-[525px] md:w-72">
+                      className="flex h-auto w-[76vw] max-w-72 shrink-0 self-stretch sm:w-64 md:w-72">
                       <div className="h-full w-full"><PersonCard person={person} lang={lang} duplicate={duplicate} /></div>
                     </div>
                   );

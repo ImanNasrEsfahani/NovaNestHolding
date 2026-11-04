@@ -21,9 +21,6 @@ export type TeamsContent = {
 
 function TeamCard({ member, lang, duplicate = false }: { member: TeamMember; lang: string; duplicate?: boolean }) {
   const photo = safeLocalImage(member.photo);
-  // Always keep team names on two lines, as required by the existing design.
-  const [givenName, ...surnameParts] = member.name.trim().split(/\s+/);
-  const surname = surnameParts.join(' ');
 
   return (
     <article className="group/card flex h-full w-full flex-col overflow-hidden rounded-2xl border border-[#E9DED1] bg-white shadow-md transition-all duration-500 hover:-translate-y-2 hover:scale-[1.01] hover:shadow-xl">
@@ -43,11 +40,10 @@ function TeamCard({ member, lang, duplicate = false }: { member: TeamMember; lan
           </div>
         )}
       </div>
-      <div className="flex flex-1 flex-col justify-between px-4 py-3 text-center" dir={lang === 'fa' ? 'rtl' : 'ltr'}>
+      <div className="flex min-w-0 flex-1 flex-col justify-between px-3 py-2 text-center" dir={lang === 'fa' ? 'rtl' : 'ltr'}>
         <div>
-          <h3 aria-label={member.name} className="mb-1 font-header text-xl font-bold leading-[1.15] text-blue">
-            <span aria-hidden="true" className="block whitespace-nowrap">{givenName}</span>
-            <span aria-hidden="true" className="block whitespace-nowrap">{surname || '\u00a0'}</span>
+          <h3 title={member.name} className="mb-1 block w-full min-w-0 truncate font-header text-xl font-bold leading-[1.15] text-blue">
+            {member.name}
           </h3>
           {member.position && (
             <span className="inline-block max-w-full rounded-full bg-primary/10 px-3 py-1 text-[13px] font-semibold leading-[18px] text-primary">
@@ -55,7 +51,7 @@ function TeamCard({ member, lang, duplicate = false }: { member: TeamMember; lan
             </span>
           )}
         </div>
-        <div className="border-t border-[#E9DED1] pt-2 text-sm leading-[18px] text-grayDark">NovaNest Holding</div>
+        <div className="border-t border-[#E9DED1] pt-1.5 text-sm leading-[18px] text-grayDark">NovaNest Holding</div>
       </div>
     </article>
   );
@@ -103,7 +99,7 @@ export default function TeamsSection({ lang, content }: { lang: string; content:
                     const duplicate = groupNumber !== 1 || repetition !== 0;
                     return (
                       <div key={`${groupNumber}-${repetition}-${member.slug}`} aria-hidden={duplicate || undefined}
-                        className="flex h-auto min-h-[480px] w-[76vw] max-w-72 shrink-0 self-stretch sm:w-64 md:min-h-[525px] md:w-72">
+                        className="flex h-auto w-[76vw] max-w-72 shrink-0 self-stretch sm:w-64 md:w-72">
                         <TeamCard member={member} lang={lang} duplicate={duplicate} />
                       </div>
                     );

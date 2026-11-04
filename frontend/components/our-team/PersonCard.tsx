@@ -45,10 +45,10 @@ export default function PersonCard({ person, lang, duplicate = false }: Props) {
           />
         </div>
 
-        {/* Option B: a compact information block, with all details retained. */}
-        <div className="flex flex-grow flex-col justify-between px-4 py-3 text-center">
+        {/* A single-line name and content-led height keep the card compact. */}
+        <div className="flex min-w-0 flex-grow flex-col justify-between px-3 py-2 text-center">
           <div>
-            <h3 className="mb-1 font-header text-xl font-bold leading-[1.15] text-blue">
+            <h3 title={person.name} className="mb-1 block w-full min-w-0 truncate font-header text-xl font-bold leading-[1.15] text-blue">
               {person.name}
             </h3>
             <span className="inline-block max-w-full rounded-full bg-primary/10 px-3 py-1 text-[13px] font-semibold leading-[18px] text-primary">
@@ -56,7 +56,7 @@ export default function PersonCard({ person, lang, duplicate = false }: Props) {
             </span>
           </div>
 
-          <div className="border-t border-[#E9DED1] pt-2">
+          <div className="border-t border-[#E9DED1] pt-1.5">
             <span className="text-sm capitalize leading-[18px] text-grayDark">
               {person.text}
             </span>
