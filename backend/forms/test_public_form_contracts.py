@@ -34,7 +34,10 @@ class FormContractTests(TestCase):
             self.assertEqual(getattr(saved, name), value, name)
         self.assertTrue(saved.admin_notified)
         self.assertTrue(saved.applicant_notified)
-        self.assertEqual(len(mail.outbox), 2)
+        expected_email_count = 3 if model is ProfileContact else 2
+        if model is ProfileContact:
+            self.assertTrue(saved.mentor_notified)
+        self.assertEqual(len(mail.outbox), expected_email_count)
         admin = next(item for item in mail.outbox if 'info@novanestholding.com' in item.to)
         for name, value in expected.items():
             if value:
@@ -83,10 +86,12 @@ class FormContractTests(TestCase):
         self.assertEqual(saved.birthDate.isoformat(), data['birthDate'])
 
     def test_profile_contact_identifies_profile(self):
-        data = {**self.basics, 'profileSlug': 'test-person', 'subject': 'Partnership',
+        data = {**self.basics, 'profileSlug': 'majid-soltanzadeh', 'subject': 'Partnership',
                 'message': 'I would like to connect.'}
         response = self.client.post(reverse('forms:contact-profile'), data)
         self.assert_record_saved(response, ProfileContact, data)
+        mentor = next(item for item in mail.outbox if 'jobdata@gmail.com' in item.to)
+        self.assertEqual(mentor.reply_to, ['applicant@example.org'])
 
     def test_work_with_us_snake_case_fields_saved(self):
         data = {

@@ -278,6 +278,8 @@ class ProfileContact(PublicFormNotificationState):
   profileSlug = models.SlugField(max_length=150, blank=True)
   subject = models.CharField(max_length=300, blank=True)
   message = models.TextField()
+  # Unlike other forms, profile contact has a third independently tracked email.
+  mentor_notified = models.BooleanField(default=False)
 
 
 class WorkWithUsRegistration(PublicFormNotificationState):

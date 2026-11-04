@@ -14,10 +14,11 @@ from django.core.validators import validate_email
 from django.db.models.fields.files import FieldFile
 
 from .email_service import render_standard_email
+from .profile_mentor_recipients import profile_mentor_recipient
 
 log = logging.getLogger(__name__)
 NOTIFICATION_FIELD_NAMES = {'id', 'created_at', 'createdAt', 'updatedAt',
-    'submission_language', 'applicant_notified', 'admin_notified', 'notification_error'}
+    'submission_language', 'applicant_notified', 'admin_notified', 'mentor_notified', 'notification_error'}
 
 LABELS = {
     'firstName': 'First name', 'lastName': 'Last name', 'phoneNumber': 'Phone',
@@ -148,6 +149,24 @@ def build_registration_email(instance, kind, role, recipients):
         note = 'For internal review. Handle personal data and attached CVs confidentially.'
         language = 'en'
         reply_to = [instance.email]
+    elif role == 'mentor' and kind == 'Profile contact inquiry':
+        mentor = profile_mentor_recipient(instance.profileSlug)
+        if mentor is None:
+            raise ValueError('Profile contact has no configured mentor email')
+        mentor_name, _ = mentor
+        language = 'fa' if instance.submission_language == 'fa' else 'en'
+        full_name = f'{instance.firstName} {instance.lastName}'.strip()
+        if language == 'fa':
+            subject = f'[NovaNest Holding] پیام جدید پروفایل {mentor_name} {reference}'
+            title = 'پیام جدید از صفحه پروفایل شما'
+            intro = f'یک پیام جدید از طرف {full_name} برای {mentor_name} ثبت شده است. اطلاعات فرستنده و پیام در ادامه آمده است.'
+            note = 'برای پاسخ مستقیم به متقاضی، روی Reply بزنید.'
+        else:
+            subject = f'[NovaNest Holding] New profile message for {mentor_name} {reference}'
+            title = 'New message from your NovaNest profile'
+            intro = f'{full_name} has sent you a message through your NovaNest profile. Their contact details and message follow.'
+            note = 'Use Reply to respond directly to the sender.'
+        reply_to = [instance.email]
     elif instance.submission_language == 'fa':
         subject = f'نووانست هلدینگ | دریافت درخواست {reference}'
         title = 'درخواست شما دریافت شد'
@@ -197,10 +216,15 @@ def notify_registration(instance, kind):
         log.exception('Invalid REGISTRATION_ADMIN_EMAILS for %s %s', kind, instance.pk)
         administrators = []
     failed = []
-    for column, role, addresses in [
+    tasks = [
         ('admin_notified', 'admin', administrators),
         ('applicant_notified', 'applicant', [instance.email]),
-    ]:
+    ]
+    if kind == 'Profile contact inquiry':
+        # Destination is read from a server-owned allowlist, never form input.
+        mentor = profile_mentor_recipient(instance.profileSlug)
+        tasks.append(('mentor_notified', 'mentor', [mentor[1]] if mentor else []))
+    for column, role, addresses in tasks:
         if getattr(instance, column):
             continue
         try:

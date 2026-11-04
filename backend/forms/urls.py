@@ -4,7 +4,7 @@ from .views import (StartUpsFormView, ContactUsView, PartnerMembershipView,
 from .affiliate_applications import AffiliateApplicationView
 from .affiliate_inquiries import AffiliateInquiryView
 from .consultation_idempotent import IdempotentSmallReservationView
-from .public_form_views import ProfileContactView
+from .profile_contact_view import ProfileContactView
 from .form_contract_validation import (JoinOurTeamView, MentorRegistrationView,
                                        TraineeRegistrationView, WorkWithUsCVView)
 
