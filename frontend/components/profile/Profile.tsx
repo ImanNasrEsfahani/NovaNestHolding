@@ -94,7 +94,7 @@ export default function Profile({ person, lang }: { person: Person, lang: string
                             src={person.thumbnail || '/static/images/our-team/header.webp'}
                             alt={`${fullName} thumbnail`}
                             fill
-                            className="object-cover"
+                            className="object-cover object-top"
                             sizes="250px"
                         />
                     </div>
