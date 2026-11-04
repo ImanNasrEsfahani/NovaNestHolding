@@ -9,7 +9,7 @@
       "title": "Mentors",
       "people": [
         {
-          "image": "/static/images/our-team/mentors/rasoul-moradimehr.png",
+          "image": "/static/images/our-team/mentors/rasoul-moradimehr.webp",
           "position": "Founder & Chairman",
           "name": "Rasoul Moradimehr",
           "linkedIn": "https://www.linkedin.com/in/rasoul-moradi-mehr/",
@@ -23,7 +23,7 @@
           "email": "Rasoul@novanestholding.com",
           "linkedin": "https://www.linkedin.com/in/rasoul-moradi-mehr/",
           "whatsapp": "https://wa.me/17789865432",
-          "thumbnail": "/static/images/our-team/mentors/rasoul-moradimehr.png",
+          "thumbnail": "/static/images/our-team/mentors/rasoul-moradimehr.webp",
           "location": "Vancouver, Canada",
           "skills": [
             "Business Development",
@@ -48,7 +48,7 @@
           ]
         },
         {
-          "image": "/static/images/our-team/mentors/majid-soltanzadeh.png",
+          "image": "/static/images/our-team/mentors/majid-soltanzadeh.webp",
           "position": "Personal and Business Coach",
           "name": "Majid Soltanzadeh",
           "linkedIn": "https://www.linkedin.com/in/majid-soltanzadeh/",
@@ -62,7 +62,7 @@
           "email": "Majid@novanestholding.com",
           "linkedin": "https://www.linkedin.com/in/majid-soltanzadeh/",
           "whatsapp": "https://wa.me/17789865432",
-          "thumbnail": "/static/images/our-team/mentors/majid-soltanzadeh.png",
+          "thumbnail": "/static/images/our-team/mentors/majid-soltanzadeh.webp",
           "location": "Vancouver, Canada",
           "skills": [
             "Business Coaching",
