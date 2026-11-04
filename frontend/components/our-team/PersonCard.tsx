@@ -5,6 +5,7 @@ import Link from 'next/link';
 import LinkedInIcon from '../icons/footer/LinkedIn';
 import type { Person } from '@/types/global';
 import { localizedHref } from '@/utils/site';
+import profileContactLinks from '@/components/profile/profileContactLinks.json';
 
 type Props = {
   person: Person;
@@ -12,10 +13,21 @@ type Props = {
   duplicate?: boolean;
 };
 
+type ContactLink = { type: string; value: string };
+const contactLinksBySlug = profileContactLinks as Record<string, ContactLink[]>;
+
 export default function PersonCard({ person, lang, duplicate = false }: Props) {
   // Point directly at the localized Next.js route, not /profile/... which
   // requires a middleware redirect during a client-side navigation.
   const profileHref = localizedHref(`/profile/${encodeURIComponent(person.slug)}`, lang);
+
+  // Use the same per-person contact directory as the dedicated profile page.
+  // This keeps LinkedIn URLs in a single place when a profile has no legacy link.
+  const configuredLinkedIn = contactLinksBySlug[person.slug]?.find(
+    (link) => link.type.toLowerCase() === 'linkedin' &&
+      /^https:\/\/(?:www\.)?linkedin\.com\//i.test(link.value)
+  )?.value;
+  const linkedinHref = configuredLinkedIn || person.linkedIn;
 
   return (
     <article className="group/card relative bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-500 overflow-hidden border border-[#E9DED1] h-full flex flex-col transform hover:scale-[1.01] hover:-translate-y-2">
@@ -55,9 +67,9 @@ export default function PersonCard({ person, lang, duplicate = false }: Props) {
       </Link>
 
       {/* This is a sibling of the profile link, never a nested anchor. */}
-      {person.linkedIn && (
+      {linkedinHref && (
         <Link
-          href={person.linkedIn}
+          href={linkedinHref}
           tabIndex={duplicate ? -1 : undefined}
           target="_blank"
           rel="noopener noreferrer"

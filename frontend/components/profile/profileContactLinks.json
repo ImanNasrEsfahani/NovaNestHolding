@@ -21,5 +21,12 @@
       "message": "Hi",
       "label": "WhatsApp — message Hi"
     }
+  ],
+  "alireza-mobini": [
+    {
+      "type": "linkedin",
+      "value": "https://www.linkedin.com/in/ar-mobini-a922504b/",
+      "label": "LinkedIn"
+    }
   ]
 }
