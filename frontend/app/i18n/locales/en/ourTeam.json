@@ -48,7 +48,7 @@
           ]
         },
         {
-          "image": "/static/images/our-team/mentors/arvin-radan.png",
+          "image": "/static/images/our-team/mentors/arvin-radan.webp",
           "position": "Business Developer and Strategist",
           "name": "Dr. Arvin Radan",
           "linkedIn": "https://www.linkedin.com/in/arvin-radan",
@@ -62,7 +62,7 @@
           "email": "Arvin@novanestholding.com",
           "linkedin": "https://www.linkedin.com/in/arvin-radan",
           "whatsapp": "https://wa.me/17789865432",
-          "thumbnail": "/static/images/our-team/mentors/arvin-radan.png",
+          "thumbnail": "/static/images/our-team/mentors/arvin-radan.webp",
           "location": "Vancouver, Canada",
           "skills": [
             "Business Development",
@@ -137,7 +137,7 @@
           ]
         },
         {
-          "image": "/static/images/our-team/mentors/pouya-azadeh.png",
+          "image": "/static/images/our-team/mentors/pouya-azadeh.webp",
           "position": "International Operations Specialist",
           "name": "Dr. Pouya Azadeh",
           "linkedIn": "https://www.linkedin.com/in/pouya-azadeh-891049233?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=ios_app",
@@ -151,7 +151,7 @@
           "email": "Pouya@novanestholding.com",
           "linkedin": "https://www.linkedin.com/in/pouya-azadeh-891049233?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=ios_app",
           "whatsapp": "https://wa.me/16048301033",
-          "thumbnail": "/static/images/our-team/mentors/pouya-azadeh.png",
+          "thumbnail": "/static/images/our-team/mentors/pouya-azadeh.webp",
           "location": "Vancouver, Canada",
           "skills": [
             "Simultaneous & Consecutive Interpretation (Chinese–English–Persian)",

@@ -94,7 +94,7 @@
           ]
         },
         {
-          "image": "/static/images/our-team/mentors/arvin-radan.png",
+          "image": "/static/images/our-team/mentors/arvin-radan.webp",
           "position": "Business Developer and Strategist",
           "name": "Arvin Radan",
           "linkedIn": "https://www.linkedin.com/in/arvin-radan/",
@@ -108,7 +108,7 @@
           "email": "Arvin@novanestholding.com",
           "linkedin": "https://www.linkedin.com/in/arvin-radan/",
           "whatsapp": "https://wa.me/17789865432",
-          "thumbnail": "/static/images/our-team/mentors/arvin-radan.png",
+          "thumbnail": "/static/images/our-team/mentors/arvin-radan.webp",
           "location": "Vancouver, Canada",
           "skills": [
             "Business Development",
