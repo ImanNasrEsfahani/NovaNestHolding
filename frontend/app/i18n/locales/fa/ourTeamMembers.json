@@ -14,6 +14,12 @@
         "name": "محدثه مرادی مهر",
         "position": "متخصص کسب و کار",
         "photo": "/static/images/our-team/teams/mohadeseh-moradimehr.webp"
+      },
+      {
+        "slug": "iman-nasr",
+        "name": "ایمان نصر",
+        "position": "مدیر ارشد فناوری",
+        "photo": "/static/images/our-team/teams/iman-nasr.webp"
       }
     ]
   }
