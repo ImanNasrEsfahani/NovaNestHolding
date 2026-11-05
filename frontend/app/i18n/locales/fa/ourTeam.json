@@ -204,7 +204,13 @@
             "Fundraising Support",
             "SME Consulting"
           ],
-          "interests": [],
+          "interests": [
+            "Technology Commercialization",
+            "Knowledge-Based Enterprises",
+            "Industrial Innovation",
+            "Technology Transfer",
+            "Technology Entrepreneurship"
+          ],
           "education": "PhD in Electrical Engineering · Master's in Management",
           "about": [
             "Alireza Mobini has worked in the technology and startup ecosystem since 2013, evaluating ideas and teams across innovation centers, incubators, and technology parks. Since 2021, he has served as a Grade 1 Consultant for the Iran SME Organization, a senior consulting designation for industrial estates and small and medium enterprises.",
