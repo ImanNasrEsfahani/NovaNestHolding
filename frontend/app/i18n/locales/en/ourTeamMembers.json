@@ -4,10 +4,10 @@
     "description": "Meet the people helping build and grow NovaNest Holding.",
     "members": [
       {
-        "slug": "shahryar-delkani",
-        "name": "Shahryar Delkani",
-        "position": "Team Member",
-        "photo": "/static/images/our-team/teams/shahryar-delkani.webp"
+        "slug": "iman-nasr",
+        "name": "Iman Nasr",
+        "position": "Chief Technology Officer",
+        "photo": "/static/images/our-team/teams/iman-nasr.webp"
       },
       {
         "slug": "mohadeseh-moradimehr",
@@ -16,10 +16,10 @@
         "photo": "/static/images/our-team/teams/mohadeseh-moradimehr.webp"
       },
       {
-        "slug": "iman-nasr",
-        "name": "Iman Nasr",
-        "position": "Chief Technology Officer",
-        "photo": "/static/images/our-team/teams/iman-nasr.webp"
+        "slug": "shahryar-delkani",
+        "name": "Shahryar Delkani",
+        "position": "Marketing & Business Development Associate",
+        "photo": "/static/images/our-team/teams/shahryar-delkani.webp"
       }
     ]
   }
