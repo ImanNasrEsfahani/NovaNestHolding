@@ -3,12 +3,18 @@ import { getServerTranslation } from 'app/i18n';
 
 import Image from 'next/image';
 import PreferredContactLinks from '@/components/profile/PreferredContactLinks';
+import mentorOrganizationEmails from '@/components/profile/mentorOrganizationEmails.json';
 import ContactForm from '@/components/profile/ContactForm';
 import { Person } from '@/types/global';
 
 export default function Profile({ person, lang }: { person: Person, lang: string }) {
 
     const fullName = `${person.first_name || ''} ${person.last_name || ''}`.trim() || 'Unknown';
+    // Use the published corporate address for each mentor's public profile.
+    // The mapping is independent of the private delivery addresses in Microsoft 365.
+    const corporateEmail = (mentorOrganizationEmails as Record<string, string>)[person.slug];
+    const emailToDisplay = (corporateEmail || person.email || '').trim();
+    const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailToDisplay);
 
     const { t } = getServerTranslation(lang, 'formComponent');
     const { t: tCountry } = getServerTranslation(lang, 'countryInput');
@@ -138,7 +144,19 @@ export default function Profile({ person, lang }: { person: Person, lang: string
                             </div>
                             <div>
                                 <h4 className="text-md text-gray-600 uppercase">{tOurTeam('profile.Email')}</h4>
-                                <p className="mt-1 pl-2">{person.email || '—'}</p>
+                                <p className="mt-1 pl-2">
+                                    {isValidEmail ? (
+                                        <a
+                                            href={`mailto:${emailToDisplay}`}
+                                            className="break-all text-primary underline-offset-4 hover:underline focus-visible:rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                                            aria-label={`Send email to ${fullName}: ${emailToDisplay}`}
+                                        >
+                                            {emailToDisplay}
+                                        </a>
+                                    ) : (
+                                        '—'
+                                    )}
+                                </p>
                             </div>
                         </div>
 
