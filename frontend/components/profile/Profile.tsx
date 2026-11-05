@@ -4,6 +4,7 @@ import { getServerTranslation } from 'app/i18n';
 import Image from 'next/image';
 import PreferredContactLinks from '@/components/profile/PreferredContactLinks';
 import mentorOrganizationEmails from '@/components/profile/mentorOrganizationEmails.json';
+import mentorInterests from '@/components/profile/mentorInterests.json';
 import ContactForm from '@/components/profile/ContactForm';
 import { Person } from '@/types/global';
 
@@ -15,6 +16,11 @@ export default function Profile({ person, lang }: { person: Person, lang: string
     const corporateEmail = (mentorOrganizationEmails as Record<string, string>)[person.slug];
     const emailToDisplay = (corporateEmail || person.email || '').trim();
     const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailToDisplay);
+    // Per-profile interests are data-driven; keep the original ourTeam interests as priority.
+    const configuredInterests = (mentorInterests as Record<string, string[]>)[person.slug];
+    const displayedInterests = person.interests?.length
+        ? person.interests
+        : Array.isArray(configuredInterests) ? configuredInterests : [];
 
     const { t } = getServerTranslation(lang, 'formComponent');
     const { t: tCountry } = getServerTranslation(lang, 'countryInput');
@@ -125,7 +131,7 @@ export default function Profile({ person, lang }: { person: Person, lang: string
                         <div className="mt-4">
                             <h4 className="text-md text-gray-600 uppercase mb-1">{tOurTeam('profile.Interests')}</h4>
                             <div className="flex flex-wrap gap-2">
-                                {(person.interests?.length ? person.interests : ['—']).map((s, i) => (
+                                {(displayedInterests.length ? displayedInterests : ['—']).map((s, i) => (
                                     <span key={i} className="text-md bg-gray-100 px-3 py-1 rounded-full">
                                         {s}
                                     </span>
