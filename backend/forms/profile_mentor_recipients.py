@@ -19,6 +19,7 @@ _PROFILE_MENTOR_RECIPIENTS = {
     'alireza-mobini': ('Dr. Alireza Mobini', 'ar_mobini2009@yahoo.com'),
     'pouya-azadeh': ('Dr. Pouya Azadeh', 'Pouyaazadeh36@gmail.com'),
     'mojtaba-fadaei': ('Dr. Mojtaba Fadaei', 'info@asiahitech.com'),
+    'soroush-azani': ('Soroush Azani', 'info@iliaenglish.ca'),
 }
 
 

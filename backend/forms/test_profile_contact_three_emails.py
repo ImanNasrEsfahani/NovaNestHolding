@@ -72,13 +72,40 @@ class ProfileContactThreeEmailsTests(TestCase):
             'avesta-narimani': 'Rasnarim@gmail.com',
             'alireza-mobini': 'ar_mobini2009@yahoo.com',
             'pouya-azadeh': 'Pouyaazadeh36@gmail.com',
+            'soroush-azani': 'info@iliaenglish.ca',
         }
         for slug, email in expected.items():
             with self.subTest(slug=slug):
                 self.assertEqual(profile_mentor_recipient(slug)[1], email)
 
+    def test_soroush_profile_routes_three_emails(self):
+        response = self.client.post(
+            reverse('forms:contact-profile'),
+            self.form(slug='soroush-azani', language='en'),
+        )
+        self.assertEqual(response.status_code, 201, response.content)
+        self.assertTrue(response.data['notifications_sent'])
+        self.assertEqual(len(mail.outbox), 3)
+        self.assertEqual(
+            {tuple(message.to) for message in mail.outbox},
+            {
+                ('info@novanestholding.com',),
+                ('visitor@example.org',),
+                ('info@iliaenglish.ca',),
+            },
+        )
+        mentor_message = next(
+            message for message in mail.outbox
+            if message.to == ['info@iliaenglish.ca']
+        )
+        self.assertEqual(mentor_message.reply_to, ['visitor@example.org'])
+        saved = ProfileContact.objects.get(pk=response.data['reference'])
+        self.assertTrue(saved.admin_notified)
+        self.assertTrue(saved.applicant_notified)
+        self.assertTrue(saved.mentor_notified)
+
     def test_missing_and_unknown_profile_rejected_without_sending(self):
-        for invalid in ('', 'missing-profile', 'soroush-azani'):
+        for invalid in ('', 'missing-profile'):
             data = self.form(invalid)
             if not invalid:
                 data.pop('profileSlug')

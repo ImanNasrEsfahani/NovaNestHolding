@@ -318,6 +318,67 @@
             "• Full Member of the Iranian Marketing Association.",
             "• Member of the Iran Chamber of Commerce, Industries, Mines and Agriculture."
           ]
+        },
+        {
+          "image": "/static/images/our-team/mentors/soroush-azani.webp",
+          "position": "Founder & Director at ILIA English Academy",
+          "name": "Soroush Azani",
+          "linkedIn": "https://www.linkedin.com/in/soroush-azani-89b04b39/",
+          "text": "Mentor",
+          "slug": "soroush-azani",
+          "first_name": "Soroush",
+          "last_name": "Azani",
+          "websites": [
+            "https://iliaenglish.ca"
+          ],
+          "job_title": "Founder & Director at ILIA English Academy",
+          "instagram": "https://www.instagram.com/iliaenglishacademy",
+          "email": "soroush@novanestholding.com",
+          "linkedin": "https://www.linkedin.com/in/soroush-azani-89b04b39/",
+          "whatsapp": "",
+          "thumbnail": "/static/images/our-team/mentors/soroush-azani.webp",
+          "contactLinks": [
+            {
+              "type": "linkedin",
+              "value": "https://www.linkedin.com/in/soroush-azani-89b04b39/",
+              "label": "LinkedIn"
+            },
+            {
+              "type": "instagram",
+              "value": "https://www.instagram.com/iliaenglishacademy",
+              "label": "Instagram"
+            },
+            {
+              "type": "website",
+              "value": "https://iliaenglish.ca",
+              "label": "ILIA English Academy"
+            }
+          ],
+          "location": "Vancouver, Canada",
+          "skills": [
+            "English Language Education & Academic Leadership",
+            "Proficiency Test Preparation (IELTS, CELPIP, CAEL)",
+            "Teacher Training & Educator Development",
+            "Educational Consulting & Academic Support",
+            "Cross-Cultural Communication"
+          ],
+          "interests": [
+            "Educational Innovation",
+            "Teacher Professional Development",
+            "Language Assessment",
+            "Academic Leadership",
+            "Cross-Cultural Learning"
+          ],
+          "education": "CELTA · Cambridge Train-the-Trainer · British Council Teacher Training · CELPIP & CAEL Instruction Training",
+          "short_bio": "Soroush Azani is the Founder & Director at ILIA English Academy in Vancouver, with nearly 30 years of experience in English language education, teacher training, and academic leadership.",
+          "about": [
+            "With nearly 30 years of experience in English language education, academic leadership, and educational management, I have built my career around teaching, developing educators, and creating meaningful learning opportunities.",
+            "As the Founder and Director of ILIA English Academy in Vancouver, Canada, I lead a growing educational institution specializing in language education, proficiency test preparation, teacher development, and academic support.",
+            "My professional background includes leadership and teaching positions such as Director of Studies, Branch Manager, Teacher Trainer, HR Officer, and ESL Instructor, with experience at institutions including ILSC and ILAC. I have also worked with the United Nations High Commissioner for Refugees (UNHCR), gaining valuable experience in cross-cultural communication.",
+            "I hold CELTA certification, Cambridge Train-the-Trainer qualifications, British Council teacher training, and specialized training in CELPIP and CAEL instruction.",
+            "My professional interests extend to educational consulting, teacher development, language assessment, and innovative approaches to learning.",
+            "I believe quality education is built on expertise, integrity, personalized guidance, and a genuine commitment to student success."
+          ]
         }
       ]
     },
