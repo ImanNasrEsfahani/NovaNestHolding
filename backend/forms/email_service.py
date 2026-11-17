@@ -48,7 +48,7 @@ def render_standard_email(
         segments.append('\n'.join(f'{label}: {value}' for label, value in values))
     if note:
         segments.append(note)
-    segments.append('NovaNest Holding — Synergy of energy\nwww.novanestholding.com | info@novanestholding.com\n3833 Evergreen Pl, Vancouver, BC V3J 0M2, Canada | +1 (778) 986-5432')
+    segments.append('NovaNest Holding — Synergy of energy\nwww.novanestholding.com | info@novanestholding.com\n3833 Evergreen Pl, Burnaby, BC V3J 0M2, Canada | +1 (778) 986-5432')
     return '\n\n'.join(segments), html
 
 
